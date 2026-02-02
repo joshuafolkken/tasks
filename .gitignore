@@ -35,3 +35,9 @@ project.inlang/cache/
 
 *storybook.log
 storybook-static
+
+# ESLint cache
+.eslintcache
+
+# Playwright
+playwright-report

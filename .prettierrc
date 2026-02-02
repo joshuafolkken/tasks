@@ -1,9 +1,14 @@
 {
 	"useTabs": true,
 	"singleQuote": true,
-	"trailingComma": "none",
+	"trailingComma": "all",
 	"printWidth": 100,
+	"semi": false,
+	"arrowParens": "always",
+	"bracketSpacing": true,
+	"endOfLine": "lf",
 	"plugins": [
+		"@ianvs/prettier-plugin-sort-imports",
 		"prettier-plugin-svelte",
 		"prettier-plugin-tailwindcss"
 	],
@@ -11,7 +16,16 @@
 		{
 			"files": "*.svelte",
 			"options": {
-				"parser": "svelte"
+				"parser": "svelte",
+				"svelteStrictMode": true,
+				"svelteIndentScriptAndStyle": true,
+				"svelteSortOrder": "options-scripts-markup-styles"
+			}
+		},
+		{
+			"files": "*.jsonc",
+			"options": {
+				"trailingComma": "none"
 			}
 		}
 	],

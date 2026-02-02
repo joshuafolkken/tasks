@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { setLocale } from '$lib/paraglide/runtime';
-	import { m } from '$lib/paraglide/messages.js';
+	import { m } from '$lib/paraglide/messages.js'
+	import { setLocale } from '$lib/paraglide/runtime'
 </script>
 
 <h1>{m.hello_world({ name: 'SvelteKit User' })}</h1>
@@ -9,7 +9,7 @@
 	<button onclick={() => setLocale('ja')}>ja</button>
 </div>
 <p>
-	If you use VSCode, install the 
+	If you use VSCode, install the
 
 	<a
 		href="https://marketplace.visualstudio.com/items?itemName=inlang.vs-code-extension"

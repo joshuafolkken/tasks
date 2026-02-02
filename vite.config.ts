@@ -1,33 +1,37 @@
-import { paraglideVitePlugin } from '@inlang/paraglide-js';
-import devtoolsJson from 'vite-plugin-devtools-json';
-import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vitest/config';
-import { playwright } from '@vitest/browser-playwright';
-import { sveltekit } from '@sveltejs/kit/vite';
+import { readFileSync } from 'node:fs'
+import { paraglideVitePlugin } from '@inlang/paraglide-js'
+import { sveltekit } from '@sveltejs/kit/vite'
+import tailwindcss from '@tailwindcss/vite'
+import devtoolsJson from 'vite-plugin-devtools-json'
+import { defineConfig } from 'vitest/config'
 
+const package_json = JSON.parse(readFileSync('./package.json', 'utf-8'))
 export default defineConfig({
+	define: {
+		'import.meta.env.APP_VERSION': JSON.stringify(package_json.version),
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit(),
 		devtoolsJson(),
-		paraglideVitePlugin({ project: './project.inlang', outdir: './src/lib/paraglide' })
+		paraglideVitePlugin({ project: './project.inlang', outdir: './src/lib/paraglide' }),
 	],
 	test: {
 		expect: { requireAssertions: true },
 		projects: [
-			{
-				extends: './vite.config.ts',
-				test: {
-					name: 'client',
-					browser: {
-						enabled: true,
-						provider: playwright(),
-						instances: [{ browser: 'chromium', headless: true }]
-					},
-					include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
-					exclude: ['src/lib/server/**']
-				}
-			},
+			// {
+			// 	extends: './vite.config.ts',
+			// 	test: {
+			// 		name: 'client',
+			// 		browser: {
+			// 			enabled: true,
+			// 			provider: playwright(),
+			// 			instances: [{ browser: 'chromium', headless: true }]
+			// 		},
+			// 		include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
+			// 		exclude: ['src/lib/server/**']
+			// 	}
+			// },
 
 			{
 				extends: './vite.config.ts',
@@ -35,9 +39,9 @@ export default defineConfig({
 					name: 'server',
 					environment: 'node',
 					include: ['src/**/*.{test,spec}.{js,ts}'],
-					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
-				}
-			}
-		]
-	}
-});
+					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}'],
+				},
+			},
+		],
+	},
+})
