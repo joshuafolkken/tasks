@@ -10,3 +10,5 @@ bun.lockb
 /drizzle/
 
 .pnpm-store/
+/project.inlang/
+**/paraglide/
