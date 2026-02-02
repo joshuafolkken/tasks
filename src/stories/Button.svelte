@@ -11,7 +11,7 @@
 		/** Button contents */
 		label: string
 		/** The onclick event handler */
-		onclick?: () => void
+		onclick?: (() => void) | undefined
 	}
 
 	const { primary = false, backgroundColor, size = 'medium', label, ...props }: Props = $props()

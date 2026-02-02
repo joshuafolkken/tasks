@@ -3,10 +3,10 @@
 	import Button from './Button.svelte'
 
 	interface Props {
-		user?: { name: string }
-		onLogin?: () => void
-		onLogout?: () => void
-		onCreateAccount?: () => void
+		user?: { name: string } | undefined
+		onLogin?: (() => void) | undefined
+		onLogout?: (() => void) | undefined
+		onCreateAccount?: (() => void) | undefined
 	}
 
 	const { user, onLogin, onLogout, onCreateAccount }: Props = $props()
