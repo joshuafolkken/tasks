@@ -30,12 +30,15 @@ const handleSupabase: Handle = async ({ event, resolve }) => {
 			data: { user },
 			error,
 		} = await event.locals.supabase.auth.getUser()
+
 		if (error) {
 			return { session: null, user: null }
 		}
+
 		const {
 			data: { session },
 		} = await event.locals.supabase.auth.getSession()
+
 		return { session, user }
 	}
 
