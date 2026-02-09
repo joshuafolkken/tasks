@@ -1,3 +1,15 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@layer base {
+	button:not(:disabled),
+	[role='button']:not(:disabled),
+	label:not(:has(input:disabled)),
+	summary,
+	select,
+	input[type='checkbox']:not(:disabled),
+	input[type='radio']:not(:disabled) {
+		cursor: pointer;
+	}
+}
