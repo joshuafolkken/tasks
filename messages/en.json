@@ -1,4 +1,21 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from en!"
+	"hello_world": "Hello, {name} from en!",
+	"login_welcome_back": "Welcome Back",
+	"login_please_sign_in": "Please sign in to your account",
+	"login_sign_in_with": "Sign in with {provider}",
+	"login_secure_authentication": "Secure Authentication",
+	"login_terms_privacy": "By continuing, you agree to our Terms of Service and Privacy Policy.",
+	"login_connecting": "Connecting...",
+	"account_title": "Account Settings",
+	"account_profile": "Account Profile",
+	"account_update_description": "Update your profile information",
+	"account_email": "Email",
+	"account_full_name": "Full Name",
+	"account_username": "Username",
+	"account_website": "Website",
+	"account_loading": "Loading...",
+	"account_update_profile": "Update Profile",
+	"account_sign_out": "Sign Out",
+	"common_error_label": "Error:"
 }

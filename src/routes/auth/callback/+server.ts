@@ -1,10 +1,13 @@
 import { redirect } from '@sveltejs/kit'
 import { HTTP_STATUS } from '$lib/http'
+import { i18n } from '$lib/i18n'
+import { ROUTES } from '$lib/routes'
+import { url_utilities } from '$lib/url'
 import type { RequestHandler } from './$types'
 
 export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	const code = url.searchParams.get('code')
-	const next = url.searchParams.get('next') ?? '/account'
+	const next = url_utilities.safe_redirect_path(url.searchParams.get('next'), ROUTES.ACCOUNT)
 
 	if (code) {
 		const { error } = await supabase.auth.exchangeCodeForSession(code)
@@ -14,5 +17,5 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 		}
 	}
 
-	redirect(HTTP_STATUS.SEE_OTHER, '/auth/error')
+	redirect(HTTP_STATUS.SEE_OTHER, i18n.localized_path(url, ROUTES.AUTH_ERROR))
 }
