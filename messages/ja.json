@@ -1,4 +1,21 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from ja!"
+	"hello_world": "Hello, {name} from ja!",
+	"login_welcome_back": "おかえりなさい",
+	"login_please_sign_in": "アカウントにサインインしてください",
+	"login_sign_in_with": "{provider}でサインイン",
+	"login_secure_authentication": "セキュアな認証",
+	"login_terms_privacy": "続行することで、利用規約とプライバシーポリシーに同意したことになります。",
+	"login_connecting": "接続中...",
+	"account_title": "アカウント設定",
+	"account_profile": "アカウントプロフィール",
+	"account_update_description": "プロフィール情報を更新",
+	"account_email": "メールアドレス",
+	"account_full_name": "氏名",
+	"account_username": "ユーザー名",
+	"account_website": "ウェブサイト",
+	"account_loading": "読み込み中...",
+	"account_update_profile": "プロフィールを更新",
+	"account_sign_out": "サインアウト",
+	"common_error_label": "エラー:"
 }

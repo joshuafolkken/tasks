@@ -1,26 +1,29 @@
 <script lang="ts">
 	import type { SubmitFunction } from '@sveltejs/kit'
 	import { enhance } from '$app/forms'
+	import {
+		account_email,
+		account_full_name,
+		account_loading,
+		account_profile,
+		account_sign_out,
+		account_title,
+		account_update_description,
+		account_update_profile,
+		account_username,
+		account_website,
+	} from '$lib/paraglide/messages'
 	import type { PageProps } from './$types'
 
 	const { data, form }: PageProps = $props()
 	const { session, profile } = $derived(data)
 
-	// let profile_form: HTMLFormElement
 	let is_loading = $state(false)
 	const full_name = $derived(profile?.full_name ?? '') as string
 	const username = $derived(profile?.username ?? '') as string
 	const website = $derived(profile?.website ?? '') as string
 
-	const handle_submit: SubmitFunction = () => {
-		is_loading = true
-
-		return () => {
-			is_loading = false
-		}
-	}
-
-	const handle_signout: SubmitFunction = () => {
+	const handle_form_submit: SubmitFunction = () => {
 		is_loading = true
 
 		return async ({ update }) => {
@@ -31,17 +34,19 @@
 </script>
 
 <svelte:head>
-	<title>Account Settings</title>
+	<title>{account_title()}</title>
 </svelte:head>
 
 <div class="flex flex-col items-center justify-center py-10">
 	<div class="w-full max-w-md rounded-xl border border-gray-100 bg-white p-8 shadow-lg">
-		<h1 class="mb-2 text-center text-2xl font-bold text-gray-900">Account Profile</h1>
-		<p class="mb-8 text-center text-gray-600">Update your profile information</p>
+		<h1 class="mb-2 text-center text-2xl font-bold text-gray-900">{account_profile()}</h1>
+		<p class="mb-8 text-center text-gray-600">{account_update_description()}</p>
 
-		<form class="space-y-4" method="post" action="?/update" use:enhance={handle_submit}>
+		<form class="space-y-4" method="post" action="?/update" use:enhance={handle_form_submit}>
 			<div>
-				<label for="email" class="mb-1 block text-sm font-medium text-gray-700">Email</label>
+				<label for="email" class="mb-1 block text-sm font-medium text-gray-700">
+					{account_email()}
+				</label>
 				<input
 					id="email"
 					type="text"
@@ -52,8 +57,9 @@
 			</div>
 
 			<div>
-				<label for="full_name" class="mb-1 block text-sm font-medium text-gray-700">Full Name</label
-				>
+				<label for="full_name" class="mb-1 block text-sm font-medium text-gray-700">
+					{account_full_name()}
+				</label>
 				<input
 					id="full_name"
 					name="full_name"
@@ -64,7 +70,9 @@
 			</div>
 
 			<div>
-				<label for="username" class="mb-1 block text-sm font-medium text-gray-700">Username</label>
+				<label for="username" class="mb-1 block text-sm font-medium text-gray-700">
+					{account_username()}
+				</label>
 				<input
 					id="username"
 					name="username"
@@ -75,7 +83,9 @@
 			</div>
 
 			<div>
-				<label for="website" class="mb-1 block text-sm font-medium text-gray-700">Website</label>
+				<label for="website" class="mb-1 block text-sm font-medium text-gray-700">
+					{account_website()}
+				</label>
 				<input
 					id="website"
 					name="website"
@@ -91,20 +101,20 @@
 					type="submit"
 					disabled={is_loading}
 				>
-					{is_loading ? 'Loading...' : 'Update Profile'}
+					{is_loading ? account_loading() : account_update_profile()}
 				</button>
 			</div>
 		</form>
 
 		<div class="my-6 border-t border-gray-100"></div>
 
-		<form method="post" action="?/signout" use:enhance={handle_signout}>
+		<form method="post" action="?/signout" use:enhance={handle_form_submit}>
 			<button
 				class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
 				type="submit"
 				disabled={is_loading}
 			>
-				Sign Out
+				{account_sign_out()}
 			</button>
 		</form>
 	</div>
