@@ -14,8 +14,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
-  TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+  # TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+  # TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+  PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+  PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
 
 jobs:
   ci:
