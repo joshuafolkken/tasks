@@ -13,38 +13,18 @@ export const load: PageServerLoad = async ({ url, locals: { safe_get_session } }
 }
 
 export const actions: Actions = {
-	// eslint-disable-next-line max-lines-per-function
-	default: async (event) => {
-		const {
-			request,
-			locals: { supabase },
-		} = event
+	signInWithGoogle: async ({ locals: { supabase }, url }) => {
+		const { data, error } = await supabase.auth.signInWithOAuth({
+			provider: 'google',
+			options: {
+				redirectTo: `${url.origin}/auth/callback`,
+			},
+		})
 
-		const form_data = await request.formData()
-		const email = form_data.get('email') as string
-		const is_valid_email = /^[\w.+-]+@([\w-]+\.)+[\w-]{2,8}$/u.test(email)
-
-		if (!is_valid_email) {
-			return fail(HTTP_STATUS.BAD_REQUEST, {
-				errors: { email: 'Please enter a valid email address' },
-				email,
-			})
+		if (error) {
+			return fail(HTTP_STATUS.INTERNAL_SERVER_ERROR, { message: error.message })
 		}
 
-		const { error } = await supabase.auth.signInWithOtp({ email })
-
-		if (error !== null) {
-			return fail(HTTP_STATUS.BAD_REQUEST, {
-				success: false,
-				email,
-				message: error.message,
-				// message: `There was an issue, Please contact support.`,
-			})
-		}
-
-		return {
-			success: true,
-			message: 'Please check your email for a magic link to log into the website.',
-		}
+		return redirect(HTTP_STATUS.SEE_OTHER, data.url)
 	},
 }
