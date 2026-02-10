@@ -1,7 +1,7 @@
-import type { Session } from '@supabase/supabase-js'
 import { fail, redirect, type Actions } from '@sveltejs/kit'
 import { HTTP_STATUS } from '$lib/http'
 import { i18n } from '$lib/i18n'
+import { auth } from '$lib/server/auth'
 import type { PageServerLoad } from './$types'
 
 function string_field(value: FormDataEntryValue | null): string {
@@ -20,21 +20,8 @@ async function get_profile_form_data(
 	}
 }
 
-async function require_session(
-	url: URL,
-	safe_get_session: () => Promise<{ session: Session | null }>,
-): Promise<Session> {
-	const { session } = await safe_get_session()
-
-	if (!session) {
-		redirect(HTTP_STATUS.SEE_OTHER, i18n.home_path(url))
-	}
-
-	return session
-}
-
 const load: PageServerLoad = async ({ url, locals: { supabase, safe_get_session } }) => {
-	const session = await require_session(url, safe_get_session)
+	const session = await auth.require_session(url, safe_get_session)
 
 	const { data: profile } = await supabase
 		.from('profiles')
@@ -48,7 +35,7 @@ const load: PageServerLoad = async ({ url, locals: { supabase, safe_get_session 
 const actions: Actions = {
 	update: async ({ request, url, locals: { supabase, safe_get_session } }) => {
 		const { full_name, username, website, avatar_url } = await get_profile_form_data(request)
-		const session = await require_session(url, safe_get_session)
+		const session = await auth.require_session(url, safe_get_session)
 
 		const { error } = await supabase.from('profiles').upsert({
 			id: session.user.id,
@@ -66,7 +53,7 @@ const actions: Actions = {
 		return { full_name, username, website, avatar_url }
 	},
 	signout: async ({ url, locals: { supabase, safe_get_session } }) => {
-		await require_session(url, safe_get_session)
+		await auth.require_session(url, safe_get_session)
 
 		const { error } = await supabase.auth.signOut()
 
@@ -74,7 +61,8 @@ const actions: Actions = {
 			return fail(HTTP_STATUS.INTERNAL_SERVER_ERROR)
 		}
 
-		return redirect(HTTP_STATUS.SEE_OTHER, i18n.home_path(url))
+		// eslint-disable-next-line @typescript-eslint/only-throw-error
+		throw redirect(HTTP_STATUS.SEE_OTHER, i18n.home_path(url))
 	},
 }
 

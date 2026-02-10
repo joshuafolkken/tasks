@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { SubmitFunction } from '@sveltejs/kit'
 	import { enhance } from '$app/forms'
+	import FormInput from '$lib/components/FormInput.svelte'
 	import {
 		account_email,
 		account_full_name,
@@ -43,57 +44,28 @@
 		<p class="mb-8 text-center text-gray-600">{account_update_description()}</p>
 
 		<form class="space-y-4" method="post" action="?/update" use:enhance={handle_form_submit}>
-			<div>
-				<label for="email" class="mb-1 block text-sm font-medium text-gray-700">
-					{account_email()}
-				</label>
-				<input
-					id="email"
-					type="text"
-					value={session.user.email}
-					disabled
-					class="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-gray-500"
-				/>
-			</div>
+			<FormInput id="email" label={account_email()} value={session.user.email} is_disabled />
 
-			<div>
-				<label for="full_name" class="mb-1 block text-sm font-medium text-gray-700">
-					{account_full_name()}
-				</label>
-				<input
-					id="full_name"
-					name="full_name"
-					type="text"
-					value={form?.full_name ?? full_name}
-					class="w-full rounded-lg border border-gray-300 px-4 py-2 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-				/>
-			</div>
+			<FormInput
+				id="full_name"
+				label={account_full_name()}
+				name="full_name"
+				value={form?.full_name ?? full_name}
+			/>
 
-			<div>
-				<label for="username" class="mb-1 block text-sm font-medium text-gray-700">
-					{account_username()}
-				</label>
-				<input
-					id="username"
-					name="username"
-					type="text"
-					value={form?.username ?? username}
-					class="w-full rounded-lg border border-gray-300 px-4 py-2 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-				/>
-			</div>
+			<FormInput
+				id="username"
+				label={account_username()}
+				name="username"
+				value={form?.username ?? username}
+			/>
 
-			<div>
-				<label for="website" class="mb-1 block text-sm font-medium text-gray-700">
-					{account_website()}
-				</label>
-				<input
-					id="website"
-					name="website"
-					type="text"
-					value={form?.website ?? website}
-					class="w-full rounded-lg border border-gray-300 px-4 py-2 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-				/>
-			</div>
+			<FormInput
+				id="website"
+				label={account_website()}
+				name="website"
+				value={form?.website ?? website}
+			/>
 
 			<div class="pt-2">
 				<button
