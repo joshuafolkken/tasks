@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { SubmitFunction } from '@sveltejs/kit'
 	import { enhance } from '$app/forms'
+	import Card from '$lib/components/Card.svelte'
 	import FormInput from '$lib/components/FormInput.svelte'
 	import {
 		account_email,
@@ -20,9 +21,9 @@
 	const { session, profile } = $derived(data)
 
 	let is_loading = $state(false)
-	const full_name = $derived(profile?.full_name ?? '') as string
-	const username = $derived(profile?.username ?? '') as string
-	const website = $derived(profile?.website ?? '') as string
+	const full_name = $derived(profile?.full_name ?? '')
+	const username = $derived(profile?.username ?? '')
+	const website = $derived(profile?.website ?? '')
 
 	const handle_form_submit: SubmitFunction = () => {
 		is_loading = true
@@ -39,7 +40,7 @@
 </svelte:head>
 
 <div class="flex flex-col items-center justify-center py-10">
-	<div class="w-full max-w-md rounded-xl border border-gray-100 bg-white p-8 shadow-lg">
+	<Card class="w-full max-w-md">
 		<h1 class="mb-2 text-center text-2xl font-bold text-gray-900">{account_profile()}</h1>
 		<p class="mb-8 text-center text-gray-600">{account_update_description()}</p>
 
@@ -89,5 +90,5 @@
 				{account_sign_out()}
 			</button>
 		</form>
-	</div>
+	</Card>
 </div>

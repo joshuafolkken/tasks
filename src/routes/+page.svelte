@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { SubmitFunction } from '@sveltejs/kit'
+	import Card from '$lib/components/Card.svelte'
 	import FormErrorMessage from '$lib/components/FormErrorMessage.svelte'
 	import SocialAuthButton from '$lib/components/SocialAuthButton.svelte'
 	import { LOGIN_PROVIDERS } from '$lib/config/auth-providers'
@@ -41,7 +42,7 @@
 			<p class="mt-2 text-sm text-gray-600">{login_please_sign_in()}</p>
 		</div>
 
-		<div class="rounded-2xl bg-white p-8 shadow-xl ring-1 ring-gray-900/5">
+		<Card class="space-y-8">
 			{#if form?.message}
 				<FormErrorMessage label={common_error_label()} message={form.message} />
 			{/if}
@@ -75,7 +76,7 @@
 					</div>
 				</div>
 			</div>
-		</div>
+		</Card>
 
 		<p class="text-center text-xs text-gray-500">
 			{login_terms_privacy()}
