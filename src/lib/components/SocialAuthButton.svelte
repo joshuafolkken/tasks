@@ -9,6 +9,7 @@
 		action: string
 		provider_name: string
 		is_loading?: boolean
+		is_disabled?: boolean
 		handle_submit: SubmitFunction
 		icon: Snippet
 		variant?: 'white' | 'dark'
@@ -18,6 +19,7 @@
 		action,
 		provider_name,
 		is_loading = false,
+		is_disabled = false,
 		handle_submit,
 		icon,
 		variant = 'white',
@@ -32,7 +34,7 @@
 <form method="POST" {action} use:enhance={handle_submit}>
 	<button
 		type="submit"
-		disabled={is_loading}
+		disabled={is_loading || is_disabled}
 		class="group relative flex w-full items-center justify-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold transition-all hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 {variants[
 			variant
 		]}"
