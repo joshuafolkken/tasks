@@ -1,21 +1,25 @@
 <script lang="ts">
 	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte'
 	import './layout.css'
+	import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 	import { invalidate } from '$app/navigation'
 	import favicon from '$lib/assets/favicon.svg'
+	import { SUPABASE_AUTH_DEPENDENCY } from '$lib/config/constants'
 	import { onMount } from 'svelte'
 
 	let { data, children } = $props()
 	let { supabase, session } = $derived(data)
 
-	onMount(() => {
-		const { data } = supabase.auth.onAuthStateChange((_event, _session) => {
-			if (_session?.expires_at !== session?.expires_at) {
-				invalidate('supabase:auth')
-			}
-		})
+	function handle_auth_change(_event: AuthChangeEvent, _session: Session | null) {
+		if (_session?.expires_at !== session?.expires_at) {
+			invalidate(SUPABASE_AUTH_DEPENDENCY)
+		}
+	}
 
-		return () => data.subscription.unsubscribe()
+	onMount(() => {
+		const { data: auth_listener } = supabase.auth.onAuthStateChange(handle_auth_change)
+
+		return () => auth_listener.subscription.unsubscribe()
 	})
 </script>
 

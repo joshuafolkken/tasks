@@ -1,26 +1,11 @@
-import { createBrowserClient, createServerClient, isBrowser } from '@supabase/ssr'
-import { PUBLIC_SUPABASE_PUBLISHABLE_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public'
+import { SUPABASE_AUTH_DEPENDENCY } from '$lib/config/constants'
+import { supabase_client } from '$lib/supabase-client'
 import type { LayoutLoad } from './$types'
 
 export const load: LayoutLoad = async ({ fetch, data, depends }) => {
-	depends('supabase:auth')
+	depends(SUPABASE_AUTH_DEPENDENCY)
 
-	const supabase = isBrowser()
-		? createBrowserClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
-				global: {
-					fetch,
-				},
-			})
-		: createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
-				global: {
-					fetch,
-				},
-				cookies: {
-					getAll() {
-						return data.cookies
-					},
-				},
-			})
+	const supabase = supabase_client.create(fetch, data.cookies)
 
 	const {
 		data: { session },
