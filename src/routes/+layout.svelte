@@ -28,7 +28,7 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="mx-auto prose p-6">
+<div class="min-h-screen bg-gray-50">
 	{@render children()}
 </div>
 
