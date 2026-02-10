@@ -38,14 +38,19 @@
 	]
 
 	const { form }: PageProps = $props()
-	let is_loading = $state(false)
+	let loading_provider = $state<string | undefined>()
 
-	const handle_submit: SubmitFunction = () => {
-		is_loading = true
+	const create_submit_handler = (provider_id: string): SubmitFunction => {
+		return () => {
+			loading_provider = provider_id
 
-		return async ({ update }) => {
-			await update()
-			is_loading = false
+			return async ({ update }) => {
+				await update()
+
+				if (loading_provider === provider_id) {
+					loading_provider = undefined
+				}
+			}
 		}
 	}
 </script>
@@ -73,8 +78,9 @@
 					<SocialAuthButton
 						action={provider.action}
 						provider_name={provider.name}
-						{is_loading}
-						{handle_submit}
+						is_loading={loading_provider === provider.id}
+						is_disabled={loading_provider !== undefined}
+						handle_submit={create_submit_handler(provider.id)}
 						variant={provider.variant}
 					>
 						{#snippet icon()}
