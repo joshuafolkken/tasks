@@ -39,7 +39,8 @@
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
 		"storybook": "storybook dev -p 6006",
-		"build-storybook": "storybook build"
+		"build-storybook": "storybook build",
+		"version:minor": "npm version minor --no-git-tag-version --loglevel=error"
 	},
 	"devDependencies": {
 		"@aikidosec/safe-chain": "^1.4.2",
