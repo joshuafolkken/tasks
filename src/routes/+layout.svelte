@@ -1,23 +1,25 @@
 <script lang="ts">
-	import { page } from '$app/state'
-	import { i18n } from '$lib/i18n'
-	import { locales, localizeHref } from '$lib/paraglide/runtime'
+	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte'
 	import './layout.css'
+	import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 	import { invalidate } from '$app/navigation'
 	import favicon from '$lib/assets/favicon.svg'
+	import { SUPABASE_AUTH_DEPENDENCY } from '$lib/config/constants'
 	import { onMount } from 'svelte'
 
 	let { data, children } = $props()
 	let { supabase, session } = $derived(data)
 
-	onMount(() => {
-		const { data } = supabase.auth.onAuthStateChange((_event, _session) => {
-			if (_session?.expires_at !== session?.expires_at) {
-				invalidate('supabase:auth')
-			}
-		})
+	function handle_auth_change(_event: AuthChangeEvent, _session: Session | null) {
+		if (_session?.expires_at !== session?.expires_at) {
+			invalidate(SUPABASE_AUTH_DEPENDENCY)
+		}
+	}
 
-		return () => data.subscription.unsubscribe()
+	onMount(() => {
+		const { data: auth_listener } = supabase.auth.onAuthStateChange(handle_auth_change)
+
+		return () => auth_listener.subscription.unsubscribe()
 	})
 </script>
 
@@ -30,22 +32,4 @@
 	{@render children()}
 </div>
 
-<footer class="fixed right-6 bottom-6 z-50">
-	<div
-		class="flex items-center gap-1 rounded-full border border-white/20 bg-white/40 p-1.5 shadow-lg ring-1 ring-gray-900/5 backdrop-blur-md transition-all hover:bg-white/60"
-	>
-		{#each locales as locale}
-			{@const active = i18n.is_locale_active(page.url.pathname, locale, locales)}
-			<!-- Reload on locale change so Paraglide runtime picks up the new locale -->
-			<a
-				href={localizeHref(page.url.pathname, { locale })}
-				data-sveltekit-reload
-				class="rounded-full px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-all {active
-					? 'bg-white text-gray-900 shadow-sm'
-					: 'text-gray-500 hover:text-gray-900'}"
-			>
-				{locale}
-			</a>
-		{/each}
-	</div>
-</footer>
+<LocaleSwitcher />

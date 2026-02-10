@@ -28,11 +28,12 @@ Whenever modifying, adding, or deleting any code:
 
 1. **Verify Type Safety**: Run `pnpm run check`.
 2. **Verify Style and Quality**: Run `pnpm run lint`.
-3. **Fix Issues**: If any check fails, fix all reported issues immediately.
-4. **Repeat**: Repeat the checks until they pass.
-5. **Completion**: Only finish the task or response after all checks pass.
+3. **Verify IDE Feedback**: ALWAYS review the "IDE feedback" provided in the prompt for any remaining lint errors. This is usually more up-to-date than terminal commands.
+4. **Fix Issues**: If any check fails (terminal or IDE feedback), fix all reported issues immediately.
+5. **Repeat**: Repeat the checks until they pass.
+6. **Completion**: Only finish the task or response after ALL checks pass.
 
-**Constraint**: Never state "it should pass" without actually having run the commands and confirmed the output. Do not end a task while errors exist.
+**Constraint**: Never state "it should pass" without actually having run the commands and confirmed the output. Do not end a task while errors exist. If verification commands fail (e.g., system error), you MUST rely on IDE feedback to ensure correctness.
 
 ## Refactoring Rules
 
