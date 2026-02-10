@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { SubmitFunction } from '@sveltejs/kit'
+	import Card from '$lib/components/Card.svelte'
 	import FormErrorMessage from '$lib/components/FormErrorMessage.svelte'
-	import GitHubIcon from '$lib/components/icons/GitHubIcon.svelte'
-	import GoogleIcon from '$lib/components/icons/GoogleIcon.svelte'
 	import SocialAuthButton from '$lib/components/SocialAuthButton.svelte'
+	import { LOGIN_PROVIDERS } from '$lib/config/auth-providers'
 	import {
 		common_error_label,
 		login_please_sign_in,
@@ -11,31 +11,7 @@
 		login_terms_privacy,
 		login_welcome_back,
 	} from '$lib/paraglide/messages'
-	import type { Component } from 'svelte'
 	import type { PageProps } from './$types'
-
-	const LOGIN_PROVIDERS: Array<{
-		id: 'google' | 'github'
-		name: string
-		action: string
-		variant: 'white' | 'dark'
-		icon: Component
-	}> = [
-		{
-			id: 'google',
-			name: 'Google',
-			action: '?/signInWithGoogle',
-			variant: 'white',
-			icon: GoogleIcon,
-		},
-		{
-			id: 'github',
-			name: 'GitHub',
-			action: '?/signInWithGitHub',
-			variant: 'dark',
-			icon: GitHubIcon,
-		},
-	]
 
 	const { form }: PageProps = $props()
 	let loading_provider = $state<string | undefined>()
@@ -66,7 +42,7 @@
 			<p class="mt-2 text-sm text-gray-600">{login_please_sign_in()}</p>
 		</div>
 
-		<div class="rounded-2xl bg-white p-8 shadow-xl ring-1 ring-gray-900/5">
+		<Card class="space-y-8">
 			{#if form?.message}
 				<FormErrorMessage label={common_error_label()} message={form.message} />
 			{/if}
@@ -100,7 +76,7 @@
 					</div>
 				</div>
 			</div>
-		</div>
+		</Card>
 
 		<p class="text-center text-xs text-gray-500">
 			{login_terms_privacy()}
