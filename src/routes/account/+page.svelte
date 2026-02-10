@@ -2,7 +2,9 @@
 	import type { SubmitFunction } from '@sveltejs/kit'
 	import { enhance } from '$app/forms'
 	import Card from '$lib/components/Card.svelte'
+	import CenteredPageLayout from '$lib/components/CenteredPageLayout.svelte'
 	import FormInput from '$lib/components/FormInput.svelte'
+	import PageHeader from '$lib/components/PageHeader.svelte'
 	import {
 		account_email,
 		account_full_name,
@@ -39,11 +41,10 @@
 	<title>{account_title()}</title>
 </svelte:head>
 
-<div class="flex flex-col items-center justify-center py-10">
-	<Card class="w-full max-w-md">
-		<h1 class="mb-2 text-center text-2xl font-bold text-gray-900">{account_profile()}</h1>
-		<p class="mb-8 text-center text-gray-600">{account_update_description()}</p>
+<CenteredPageLayout>
+	<PageHeader title={account_profile()} description={account_update_description()} />
 
+	<Card class="space-y-6">
 		<form class="space-y-4" method="post" action="?/update" use:enhance={handle_form_submit}>
 			<FormInput id="email" label={account_email()} value={session.user.email} is_disabled />
 
@@ -79,7 +80,7 @@
 			</div>
 		</form>
 
-		<div class="my-6 border-t border-gray-100"></div>
+		<div class="border-t border-gray-100"></div>
 
 		<form method="post" action="?/signout" use:enhance={handle_form_submit}>
 			<button
@@ -91,4 +92,4 @@
 			</button>
 		</form>
 	</Card>
-</div>
+</CenteredPageLayout>
