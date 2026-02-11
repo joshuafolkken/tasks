@@ -63,6 +63,7 @@ export default defineConfig(
 			'src/hooks.server.ts',
 			'src/hooks.ts',
 			'src/lib/server/db/**',
+			'src/lib/paraglide/**',
 			'src/stories/**',
 		],
 	},

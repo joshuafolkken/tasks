@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { SubmitFunction } from '@sveltejs/kit'
 	import { enhance } from '$app/forms'
+	import Spinner from '$lib/components/Spinner.svelte'
 	import { login_connecting, login_sign_in_with } from '$lib/paraglide/messages'
 	import type { Snippet } from 'svelte'
 
@@ -40,11 +41,7 @@
 		]}"
 	>
 		{#if is_loading}
-			<div
-				class="h-5 w-5 animate-spin rounded-full border-2 {variant === 'white'
-					? 'border-gray-300 border-t-blue-600'
-					: 'border-gray-600 border-t-white'}"
-			></div>
+			<Spinner size="md" variant={variant === 'white' ? 'blue' : 'dark'} />
 			<span>{login_connecting()}</span>
 		{:else}
 			{@render icon()}
