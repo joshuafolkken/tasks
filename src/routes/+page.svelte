@@ -17,8 +17,9 @@
 
 	const { form }: PageProps = $props()
 	let loading_provider = $state<string | undefined>()
+	const is_disabled = $derived(loading_provider !== undefined)
 
-	const create_submit_handler = (provider_id: string): SubmitFunction => {
+	const handle_submit = (provider_id: string): SubmitFunction => {
 		return () => {
 			loading_provider = provider_id
 
@@ -53,8 +54,8 @@
 					action={provider.action}
 					provider_name={provider.name}
 					is_loading={loading_provider === provider.id}
-					is_disabled={loading_provider !== undefined}
-					handle_submit={create_submit_handler(provider.id)}
+					{is_disabled}
+					handle_submit={handle_submit(provider.id)}
 					variant={provider.variant}
 				>
 					{#snippet icon()}
