@@ -11,6 +11,7 @@ const sign_in = async (
 	next_path?: string,
 ): Promise<ActionFailure<{ message: string }>> => {
 	const callback_url = new URL(ROUTES.AUTH_CALLBACK, url.origin)
+
 	callback_url.searchParams.set('next', next_path ?? i18n.localized_path(url, ROUTES.ACCOUNT))
 
 	const { data, error } = await supabase.auth.signInWithOAuth({
