@@ -4,14 +4,13 @@ interface ProfileData {
 	full_name: string
 	username: string
 	website: string
-	avatar_url: string
 }
 
 export const profile_service = {
 	get_profile: async (supabase: SupabaseClient, user_id: string): Promise<ProfileData | null> => {
 		const { data, error } = await supabase
 			.from('profiles')
-			.select('username, full_name, website, avatar_url')
+			.select('username, full_name, website')
 			.eq('id', user_id)
 			.single()
 
@@ -24,7 +23,6 @@ export const profile_service = {
 			full_name: data.full_name as string,
 			username: data.username as string,
 			website: data.website as string,
-			avatar_url: data.avatar_url as string,
 		}
 	},
 

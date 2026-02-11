@@ -8,13 +8,13 @@ import type { PageServerLoad } from './$types'
 
 async function get_profile_form_data(
 	request: Request,
-): Promise<{ full_name: string; username: string; website: string; avatar_url: string }> {
+): Promise<{ full_name: string; username: string; website: string }> {
 	const form_data = await request.formData()
+
 	return {
 		full_name: form_utilities.get_string(form_data.get('full_name')),
 		username: form_utilities.get_string(form_data.get('username')),
 		website: form_utilities.get_string(form_data.get('website')),
-		avatar_url: form_utilities.get_string(form_data.get('avatar_url')),
 	}
 }
 
@@ -27,21 +27,20 @@ const load: PageServerLoad = async ({ url, locals: { supabase, safe_get_session 
 
 const actions: Actions = {
 	update: async ({ request, url, locals: { supabase, safe_get_session } }) => {
-		const { full_name, username, website, avatar_url } = await get_profile_form_data(request)
+		const { full_name, username, website } = await get_profile_form_data(request)
 		const session = await auth.require_session(url, safe_get_session)
 
 		const { error } = await profile_service.update_profile(supabase, session.user.id, {
 			full_name,
 			username,
 			website,
-			avatar_url,
 		})
 
 		if (error) {
-			return fail(HTTP_STATUS.INTERNAL_SERVER_ERROR, { full_name, username, website, avatar_url })
+			return fail(HTTP_STATUS.INTERNAL_SERVER_ERROR, { full_name, username, website })
 		}
 
-		return { full_name, username, website, avatar_url }
+		return { full_name, username, website }
 	},
 	signout: async ({ url, locals: { supabase, safe_get_session } }) => {
 		await auth.require_session(url, safe_get_session)
