@@ -8,8 +8,8 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	const token_hash = url.searchParams.get('token_hash')
 	const type = url.searchParams.get('type') as EmailOtpType | null
 	const next = url.searchParams.get('next') ?? '/account'
-
 	const redirect_to = new URL(url)
+
 	redirect_to.pathname = next
 	redirect_to.searchParams.delete('token_hash')
 	redirect_to.searchParams.delete('type')
