@@ -5,6 +5,7 @@
 	import CenteredPageLayout from '$lib/components/CenteredPageLayout.svelte'
 	import FormInput from '$lib/components/FormInput.svelte'
 	import PageHeader from '$lib/components/PageHeader.svelte'
+	import SubmitButton from '$lib/components/SubmitButton.svelte'
 	import {
 		account_email,
 		account_full_name,
@@ -22,17 +23,28 @@
 	const { data, form }: PageProps = $props()
 	const { session, profile } = $derived(data)
 
-	let is_loading = $state(false)
+	type FormAction = 'update' | 'signout'
+	let loading_action = $state<FormAction | undefined>()
+	const is_disabled = $derived(loading_action !== undefined)
 	const full_name = $derived(profile?.full_name ?? '')
 	const username = $derived(profile?.username ?? '')
 	const website = $derived(profile?.website ?? '')
 
-	const handle_form_submit: SubmitFunction = () => {
-		is_loading = true
+	const full_name_value = $derived(form?.full_name ?? full_name)
+	const username_value = $derived(form?.username ?? username)
+	const website_value = $derived(form?.website ?? website)
 
-		return async ({ update }) => {
-			await update({ reset: false })
-			is_loading = false
+	const handle_submit = (action: FormAction): SubmitFunction => {
+		return () => {
+			loading_action = action
+
+			return async ({ update }) => {
+				await update({ reset: false })
+
+				if (loading_action === action) {
+					loading_action = undefined
+				}
+			}
 		}
 	}
 </script>
@@ -45,54 +57,54 @@
 	<PageHeader title={account_profile()} description={account_update_description()} />
 
 	<Card class="space-y-6">
-		<form class="space-y-4" method="post" action="?/update" use:enhance={handle_form_submit}>
+		<form class="space-y-4" method="post" action="?/update" use:enhance={handle_submit('update')}>
 			<FormInput id="email" label={account_email()} value={session.user.email} is_disabled />
 
 			<FormInput
 				id="full_name"
 				label={account_full_name()}
 				name="full_name"
-				value={form?.full_name ?? full_name}
-				is_disabled={is_loading}
+				value={full_name_value}
+				{is_disabled}
 			/>
 
 			<FormInput
 				id="username"
 				label={account_username()}
 				name="username"
-				value={form?.username ?? username}
-				is_disabled={is_loading}
+				value={username_value}
+				{is_disabled}
 			/>
 
 			<FormInput
 				id="website"
 				label={account_website()}
 				name="website"
-				value={form?.website ?? website}
-				is_disabled={is_loading}
+				value={website_value}
+				{is_disabled}
 			/>
 
 			<div class="pt-2">
-				<button
-					class="w-full rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-					type="submit"
-					disabled={is_loading}
-				>
-					{is_loading ? account_loading() : account_update_profile()}
-				</button>
+				<SubmitButton
+					label={account_update_profile()}
+					loading_label={account_loading()}
+					is_loading={loading_action === 'update'}
+					{is_disabled}
+					variant="primary"
+				/>
 			</div>
 		</form>
 
 		<div class="border-t border-gray-100"></div>
 
-		<form method="post" action="?/signout" use:enhance={handle_form_submit}>
-			<button
-				class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-				type="submit"
-				disabled={is_loading}
-			>
-				{account_sign_out()}
-			</button>
+		<form method="post" action="?/signout" use:enhance={handle_submit('signout')}>
+			<SubmitButton
+				label={account_sign_out()}
+				loading_label={account_loading()}
+				is_loading={loading_action === 'signout'}
+				{is_disabled}
+				variant="outline"
+			/>
 		</form>
 	</Card>
 </CenteredPageLayout>
