@@ -31,7 +31,7 @@
 		is_loading = true
 
 		return async ({ update }) => {
-			await update()
+			await update({ reset: false })
 			is_loading = false
 		}
 	}
@@ -53,6 +53,7 @@
 				label={account_full_name()}
 				name="full_name"
 				value={form?.full_name ?? full_name}
+				is_disabled={is_loading}
 			/>
 
 			<FormInput
@@ -60,6 +61,7 @@
 				label={account_username()}
 				name="username"
 				value={form?.username ?? username}
+				is_disabled={is_loading}
 			/>
 
 			<FormInput
@@ -67,6 +69,7 @@
 				label={account_website()}
 				name="website"
 				value={form?.website ?? website}
+				is_disabled={is_loading}
 			/>
 
 			<div class="pt-2">
