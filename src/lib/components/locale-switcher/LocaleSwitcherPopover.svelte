@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state'
 	import { click_outside } from '$lib/actions/click-outside'
-	import { APP_STATE } from '$lib/AppState.svelte'
 	import LanguageIcon from '$lib/components/icons/LanguageIcon.svelte'
 	import { locale_names } from '$lib/components/locale-switcher/locale-names'
 	import Spinner from '$lib/components/Spinner.svelte'
@@ -17,9 +16,9 @@
 		if (switching_locale) return
 		is_open = false
 		switching_locale = locale
-		APP_STATE.is_switching_locale = true
-
 		await setLocale(locale)
+		// eslint-disable-next-line require-atomic-updates -- loading state reset after async
+		switching_locale = undefined
 	}
 
 	function handle_click(): void {
@@ -49,7 +48,7 @@
 
 	{#if is_open}
 		<div
-			class="absolute top-full right-0 z-50 mt-0.5 min-w-32 rounded-lg border border-white/20 bg-white/95 p-1 shadow-xl backdrop-blur-md dark:border-gray-700/30 dark:bg-gray-800/95"
+			class="absolute right-0 bottom-full z-50 mb-0.5 min-w-32 rounded-lg border border-white/20 bg-white/95 p-1 shadow-xl backdrop-blur-md dark:border-gray-700/30 dark:bg-gray-800/95"
 			role="menu"
 		>
 			{#each locales as locale (locale)}
