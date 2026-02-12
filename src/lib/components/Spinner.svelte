@@ -10,8 +10,8 @@
 
 	const size_class = $derived(size === 'sm' ? 'h-3.5 w-3.5' : 'h-5 w-5')
 	const variant_classes: Record<NonNullable<Props['variant']>, string> = {
-		gray: 'border-gray-300 border-t-gray-900',
-		blue: 'border-gray-300 border-t-blue-600',
+		gray: 'border-gray-300 border-t-gray-900 dark:border-gray-600 dark:border-t-gray-300',
+		blue: 'border-gray-300 border-t-blue-600 dark:border-gray-600 dark:border-t-blue-500',
 		dark: 'border-gray-600 border-t-white',
 	}
 	const variant_class = $derived(variant_classes[variant])

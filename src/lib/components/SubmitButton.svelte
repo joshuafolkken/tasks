@@ -37,10 +37,10 @@
 	const social_variant_classes = 'group relative rounded-xl text-sm font-semibold'
 
 	const variant_classes: Record<ButtonVariant, string> = {
-		primary: `bg-blue-600 text-white hover:bg-blue-700 font-semibold ${form_variant_classes}`,
-		outline: `border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium ${form_variant_classes}`,
-		'social-white': `${social_variant_classes} border border-gray-300 bg-white text-gray-700 hover:bg-gray-50`,
-		'social-dark': `${social_variant_classes} border border-gray-900 bg-gray-900 text-white hover:bg-gray-800`,
+		primary: `bg-blue-600 text-white hover:bg-blue-700 font-semibold dark:bg-blue-500 dark:hover:bg-blue-600 ${form_variant_classes}`,
+		outline: `border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 ${form_variant_classes}`,
+		'social-white': `${social_variant_classes} border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600`,
+		'social-dark': `${social_variant_classes} border border-gray-900 bg-gray-900 text-white hover:bg-gray-800 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600`,
 	}
 
 	const spinner_variant = $derived(SPINNER_VARIANT_BY_BUTTON[variant])
