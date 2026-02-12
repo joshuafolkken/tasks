@@ -9,7 +9,10 @@
 	const { label, message }: Props = $props()
 </script>
 
-<div class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-700" role="alert">
+<div
+	class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400"
+	role="alert"
+>
 	<span class="font-medium">{label}</span>
 	{message}
 </div>
