@@ -28,6 +28,9 @@ ignorePaths:
   - 'src/lib/paraglide/runtime.js'
   - 'src/stories/**'
   - 'supabase/**'
+  - 'messages/km.json'
+  - 'messages/uz.json'
+  - 'src/lib/paraglide/messages/**'
 words:
   - aboutads
   - aikidosec
