@@ -68,16 +68,18 @@
 		<div class="mt-6">
 			<div class="relative">
 				<div class="absolute inset-0 flex items-center">
-					<div class="w-full border-t border-gray-200"></div>
+					<div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
 				</div>
 				<div class="relative flex justify-center text-sm">
-					<span class="bg-white px-2 text-gray-400">{login_secure_authentication()}</span>
+					<span class="bg-white px-2 text-gray-400 dark:bg-gray-800 dark:text-gray-500"
+						>{login_secure_authentication()}</span
+					>
 				</div>
 			</div>
 		</div>
 	</Card>
 
-	<p class="text-center text-xs text-gray-500">
+	<p class="text-center text-xs text-gray-500 dark:text-gray-400">
 		{login_terms_privacy()}
 	</p>
 </CenteredPageLayout>

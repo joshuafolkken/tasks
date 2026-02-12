@@ -95,7 +95,7 @@
 			</div>
 		</form>
 
-		<div class="border-t border-gray-100"></div>
+		<div class="border-t border-gray-100 dark:border-gray-700"></div>
 
 		<form method="post" action="?/signout" use:enhance={handle_submit('signout')}>
 			<SubmitButton

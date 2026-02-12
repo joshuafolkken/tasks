@@ -1,5 +1,6 @@
 <script lang="ts">
 	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte'
+	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte'
 	import './layout.css'
 	import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 	import { invalidate } from '$app/navigation'
@@ -28,8 +29,9 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	{@render children()}
 </div>
 
+<ThemeSwitcher />
 <LocaleSwitcher />
