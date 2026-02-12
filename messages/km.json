@@ -1,0 +1,21 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"hello_world": "សួស្តី {name} ពី km!",
+	"login_welcome_back": "សូមស្វាគមន៍មកវិញ",
+	"login_please_sign_in": "សូមចូលទៅកាន់គណនីរបស់អ្នក",
+	"login_sign_in_with": "ចូលដោយប្រើ {provider}",
+	"login_secure_authentication": "ការផ្ទៀងផ្ទាត់ភាពអាចជឿជាក់បាន",
+	"login_terms_privacy": "ដោយបន្ត អ្នកយល់ព្រមតាមលក្ខខណ្ឌនៃសេវាកម្ម និងគោលការណ៍ភាពឯកជនរបស់យើង។",
+	"login_connecting": "កំពុងភ្ជាប់...",
+	"account_title": "ការកំណត់គណនី",
+	"account_profile": "ទម្រង់គណនី",
+	"account_update_description": "ធ្វើបច្ចុប្បន្នភាពព័ត៌មានទម្រង់របស់អ្នក",
+	"account_email": "អ៉ីមែល",
+	"account_full_name": "ឈ្មោះពេញ",
+	"account_username": "ឈ្មោះអ្នកប្រើ",
+	"account_website": "គេហទំព័រ",
+	"account_loading": "កំពុងផ្ទុក...",
+	"account_update_profile": "ធ្វើបច្ចុប្បន្នភាពទម្រង់",
+	"account_sign_out": "ចេញពីគណនី",
+	"common_error_label": "កំហុស:"
+}
