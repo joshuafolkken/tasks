@@ -4,6 +4,7 @@
 	import './layout.css'
 	import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 	import { invalidate } from '$app/navigation'
+	import { APP_STATE } from '$lib/AppState.svelte'
 	import favicon from '$lib/assets/favicon.svg'
 	import { SUPABASE_AUTH_DEPENDENCY } from '$lib/config/constants'
 	import { onMount } from 'svelte'
@@ -29,9 +30,13 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-	{@render children()}
-</div>
+<div class={APP_STATE.is_switching_locale ? 'cursor-wait' : ''}>
+	<header class="fixed top-0 right-0 z-50 flex items-center gap-2 p-4" aria-label="App bar">
+		<LocaleSwitcher />
+		<ThemeSwitcher />
+	</header>
 
-<ThemeSwitcher />
-<LocaleSwitcher />
+	<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+		{@render children()}
+	</div>
+</div>
