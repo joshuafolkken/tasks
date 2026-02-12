@@ -9,7 +9,7 @@
 		<script>
 			;(function () {
 				const theme = localStorage['theme']
-				const system_dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+				const system_dark = globalThis.matchMedia('(prefers-color-scheme: dark)').matches
 				const is_dark = theme === 'dark' || (!theme && system_dark)
 				document.documentElement.classList.toggle('dark', is_dark)
 			})()
