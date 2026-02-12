@@ -1,0 +1,21 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"hello_world": "Salom, {name} - uz dan!",
+	"login_welcome_back": "Xush kelibsiz",
+	"login_please_sign_in": "Hisobingizga kiring",
+	"login_sign_in_with": "{provider} bilan kiring",
+	"login_secure_authentication": "Xavfsiz autentifikatsiya",
+	"login_terms_privacy": "Davom etish orqali Xizmat shartlari va Maxfiylik siyosatiga rozisiz.",
+	"login_connecting": "Ulanish...",
+	"account_title": "Hisob sozlamalari",
+	"account_profile": "Profil",
+	"account_update_description": "Profil ma'lumotlarini yangilang",
+	"account_email": "Elektron pochta",
+	"account_full_name": "To'liq ism",
+	"account_username": "Foydalanuvchi nomi",
+	"account_website": "Veb-sayt",
+	"account_loading": "Yuklanmoqda...",
+	"account_update_profile": "Profilni yangilash",
+	"account_sign_out": "Chiqish",
+	"common_error_label": "Xato:"
+}
