@@ -49,7 +49,7 @@
 <button
 	type="submit"
 	disabled={is_loading || is_disabled}
-	class="flex w-full items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-50 {common_classes} {variant_classes[
+	class="flex w-full items-center justify-center transition-colors disabled:cursor-wait disabled:opacity-50 {common_classes} {variant_classes[
 		variant
 	]}"
 >
