@@ -1,6 +1,7 @@
 import { fail, redirect, type Actions } from '@sveltejs/kit'
 import { HTTP_STATUS } from '$lib/http'
 import { i18n } from '$lib/i18n'
+import { DEMO_SUPABASE_ROUTES } from '$lib/routes'
 import { auth } from '$lib/server/auth'
 import { profile_service } from '$lib/server/services/profile'
 import { form_utilities } from '$lib/server/utils/form'
@@ -18,8 +19,10 @@ async function get_profile_form_data(
 	}
 }
 
+const require_session_demo = auth.require_session(DEMO_SUPABASE_ROUTES.HOME)
+
 const load: PageServerLoad = async ({ url, locals: { supabase, safe_get_session } }) => {
-	const session = await auth.require_session(url, safe_get_session)
+	const session = await require_session_demo(url, safe_get_session)
 	const profile = await profile_service.get_profile(supabase, session.user.id)
 
 	return { session, profile }
@@ -28,7 +31,7 @@ const load: PageServerLoad = async ({ url, locals: { supabase, safe_get_session 
 const actions: Actions = {
 	update: async ({ request, url, locals: { supabase, safe_get_session } }) => {
 		const { full_name, username, website } = await get_profile_form_data(request)
-		const session = await auth.require_session(url, safe_get_session)
+		const session = await require_session_demo(url, safe_get_session)
 
 		const { error } = await profile_service.update_profile(supabase, session.user.id, {
 			full_name,
@@ -43,7 +46,7 @@ const actions: Actions = {
 		return { full_name, username, website }
 	},
 	signout: async ({ url, locals: { supabase, safe_get_session } }) => {
-		await auth.require_session(url, safe_get_session)
+		await require_session_demo(url, safe_get_session)
 
 		const { error } = await supabase.auth.signOut()
 
@@ -52,7 +55,7 @@ const actions: Actions = {
 		}
 
 		// eslint-disable-next-line @typescript-eslint/only-throw-error
-		throw redirect(HTTP_STATUS.SEE_OTHER, i18n.home_path(url))
+		throw redirect(HTTP_STATUS.SEE_OTHER, i18n.localized_path(url, DEMO_SUPABASE_ROUTES.HOME))
 	},
 }
 

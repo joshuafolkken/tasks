@@ -50,7 +50,7 @@
 </script>
 
 <svelte:head>
-	<title>{account_title()}</title>
+	<title>{account_title()} (Supabase Demo)</title>
 </svelte:head>
 
 <CenteredPageLayout>
