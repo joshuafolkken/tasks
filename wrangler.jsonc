@@ -21,11 +21,18 @@
 			"head_sampling_rate": 0.5
 		}
 	},
-
 	"routes": [
 		{
 			"pattern": "tasks.joshuafolkken.com",
 			"custom_domain": true
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "tasks_db",
+			"database_name": "tasks-db",
+			"database_id": "aa12e1ae-3f83-444e-bd58-761152760d1f",
+			"remote": true
 		}
 	]
 }
