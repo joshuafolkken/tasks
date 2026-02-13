@@ -15,7 +15,11 @@
 
 	async function handle_select(locale: Locale): Promise<void> {
 		if (switching_locale) return
+
 		is_open = false
+
+		if (i18n.is_locale_active(page.url.pathname, locale, locales)) return
+
 		switching_locale = locale
 		APP_STATE.is_switching_locale = true
 
