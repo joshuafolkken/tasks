@@ -105,7 +105,6 @@
 		"@supabase/ssr": "^0.8.0",
 		"@supabase/supabase-js": "^2.95.3",
 		"better-auth": "^1.4.18",
-		"dotenv": "^17.2.4",
 		"drizzle-orm": "^0.45.1",
 		"sharp": "^0.34.5"
 	},
@@ -113,7 +112,8 @@
 		"overrides": {
 			"esbuild": "^0.25.0",
 			"cookie": "^0.7.0",
-			"undici": "^7.18.2"
+			"undici": "^7.18.2",
+			"lodash": ">=4.17.23"
 		},
 		"onlyBuiltDependencies": [
 			"esbuild",

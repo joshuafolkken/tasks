@@ -100,7 +100,6 @@ function parse_cli_arguments(): CliArguments {
 			yes: { type: 'boolean', short: 'y' },
 			help: { type: 'boolean', short: 'h' },
 		},
-		// eslint-disable-next-line @typescript-eslint/naming-convention
 		allowPositionals: true,
 	})
 }
