@@ -36,6 +36,7 @@ ignorePaths:
   - 'test-results/**'
   - 'src/lib/paraglide/**'
   - '.wrangler/**'
+  - 'wrangler.jsonc'
 words:
   - aboutads
   - aikidosec
