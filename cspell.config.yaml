@@ -37,6 +37,7 @@ ignorePaths:
   - 'src/lib/paraglide/**'
   - '.wrangler/**'
   - 'wrangler.jsonc'
+  - '.dev.vars.example'
 words:
   - aboutads
   - aikidosec
