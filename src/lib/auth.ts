@@ -18,19 +18,16 @@ function create_auth(platform_environment: Env): ReturnType<typeof betterAuth> {
 			provider: 'sqlite',
 			schema,
 		}),
-		// eslint-disable-next-line @typescript-eslint/dot-notation
-		secret: platform_environment['BETTER_AUTH_SECRET'],
+		secret: platform_environment.BETTER_AUTH_SECRET,
 		baseURL: platform_environment.BETTER_AUTH_URL,
 		socialProviders: {
 			google: {
 				clientId: platform_environment.GOOGLE_CLIENT_ID,
-				// eslint-disable-next-line @typescript-eslint/dot-notation
-				clientSecret: platform_environment['GOOGLE_CLIENT_SECRET'],
+				clientSecret: platform_environment.GOOGLE_CLIENT_SECRET,
 			},
 			github: {
 				clientId: platform_environment.AUTH_GITHUB_CLIENT_ID,
-				// eslint-disable-next-line @typescript-eslint/dot-notation
-				clientSecret: platform_environment['AUTH_GITHUB_CLIENT_SECRET'],
+				clientSecret: platform_environment.AUTH_GITHUB_CLIENT_SECRET,
 			},
 		},
 		plugins: [sveltekitCookies(getRequestEvent)],

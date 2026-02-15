@@ -1,9 +1,0 @@
-# wrangler dev 用のローカル環境変数（.env からシークレットをコピーしてください）
-# BETTER_AUTH_URL は localhost:8787 に固定（wrangler dev のデフォルトポート）
-
-BETTER_AUTH_URL=http://localhost:8787
-BETTER_AUTH_SECRET=
-GOOGLE_CLIENT_ID=765392015083-u6etg9khtqnd8r02pk9p8089hj9d6lr2.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=
-AUTH_GITHUB_CLIENT_ID=Ov23liM7PLg3xtdgCqzh
-AUTH_GITHUB_CLIENT_SECRET=
