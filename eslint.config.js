@@ -53,6 +53,7 @@ export default defineConfig(
 	{
 		// tsconfig に含まれないファイルを明示的に除外
 		ignores: [
+			'env.d.ts', // Cloudflare Env 型の拡張。Cloudflare の命名規則に従うためプロジェクトルールを適用しない
 			'src/app.d.ts',
 			'*.config.{ts,js,cjs,mjs}',
 			'src/routes/**/+layout.svelte',
@@ -60,7 +61,6 @@ export default defineConfig(
 
 			'.storybook/**',
 			'src/routes/demo/**',
-			'src/hooks.server.ts',
 			'src/hooks.ts',
 			'src/lib/server/db/**',
 			'src/lib/paraglide/**',
