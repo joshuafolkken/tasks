@@ -27,7 +27,6 @@ ignorePaths:
   - 'src/lib/paraglide/server.js'
   - 'src/lib/paraglide/runtime.js'
   - 'src/stories/**'
-  - 'supabase/**'
   - 'messages/km.json'
   - 'messages/uz.json'
   - 'src/lib/paraglide/messages/**'
@@ -37,7 +36,6 @@ ignorePaths:
   - 'src/lib/paraglide/**'
   - '.wrangler/**'
   - 'wrangler.jsonc'
-  - '.dev.vars.example'
 words:
   - aboutads
   - aikidosec
@@ -92,4 +90,3 @@ words:
   - paraglide
   - Kysely
   - Typesafe
-  - supabase
