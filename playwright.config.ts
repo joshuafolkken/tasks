@@ -17,7 +17,7 @@ const NAVIGATION_TIMEOUT = 10_000
 const getWebServerConfig = () => {
 	if (isCI) {
 		return {
-			command: 'pnpm run preview',
+			command: 'pnpm run preview:ci',
 			port: PREVIEW_PORT,
 			timeout: CI_TIMEOUT,
 			reuseExistingServer: false,

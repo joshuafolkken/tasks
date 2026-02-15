@@ -32,6 +32,12 @@ ignorePaths:
   - 'messages/uz.json'
   - 'src/lib/paraglide/messages/**'
   - 'src/lib/components/locale-switcher/locale-names.ts'
+  - 'drizzle/migrations/**'
+  - 'test-results/**'
+  - 'src/lib/paraglide/**'
+  - '.wrangler/**'
+  - 'wrangler.jsonc'
+  - '.dev.vars.example'
 words:
   - aboutads
   - aikidosec

@@ -1,9 +1,9 @@
 {
 	"name": "tasks",
 	"private": true,
-	"version": "0.21.0",
+	"version": "0.22.0",
 	"type": "module",
-	"packageManager": "pnpm@10.28.2+sha512.41872f037ad22f7348e3b1debbaf7e867cfd448f2726d9cf74c08f19507c31d2c8e7a11525b983febc2df640b5438dee6023ebb1f84ed43cc2d654d2bc326264",
+	"packageManager": "pnpm@10.29.3+sha512.498e1fb4cca5aa06c1dcf2611e6fafc50972ffe7189998c409e90de74566444298ffe43e6cd2acdc775ba1aa7cc5e092a8b7054c811ba8c5770f84693d33d2dc",
 	"scripts": {
 		"preinstall": "npx only-allow pnpm && pnpm dlx @aikidosec/safe-chain setup-ci",
 		"postinstall": "lefthook install",
@@ -14,6 +14,7 @@
 		"build": "vite build",
 		"deploy": "pnpm run build && wrangler deploy",
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
+		"preview:ci": "wrangler d1 execute tasks-db --local --file=./drizzle/migrations/0000_nervous_thor_girl_ci.sql && wrangler dev --local .svelte-kit/cloudflare/_worker.js --port 4173",
 		"preview:normal": "vite preview",
 		"preview:stop": "pnpm exec kill-port 4173 || true",
 		"prepare": "pnpm run paraglide:compile && pnpm run types && svelte-kit sync",
@@ -104,7 +105,7 @@
 		"@libsql/client": "^0.17.0",
 		"@supabase/ssr": "^0.8.0",
 		"@supabase/supabase-js": "^2.95.3",
-		"dotenv": "^17.2.4",
+		"better-auth": "^1.4.18",
 		"drizzle-orm": "^0.45.1",
 		"sharp": "^0.34.5"
 	},
@@ -112,7 +113,8 @@
 		"overrides": {
 			"esbuild": "^0.25.0",
 			"cookie": "^0.7.0",
-			"undici": "^7.18.2"
+			"undici": "^7.18.2",
+			"lodash": ">=4.17.23"
 		},
 		"onlyBuiltDependencies": [
 			"esbuild",

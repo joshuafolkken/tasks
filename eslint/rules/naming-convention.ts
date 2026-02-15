@@ -60,7 +60,7 @@ export const naming_convention_rules = {
 		// オブジェクトリテラルのプロパティは snake_case（外部APIとの互換性のため例外を許可）
 		{
 			selector: 'objectLiteralProperty',
-			format: ['snake_case', 'UPPER_CASE'],
+			format: ['snake_case', 'UPPER_CASE', 'camelCase'],
 			leadingUnderscore: 'allow',
 			filter: {
 				// 一般的な HTTP ヘッダー名のパターンのみ許可

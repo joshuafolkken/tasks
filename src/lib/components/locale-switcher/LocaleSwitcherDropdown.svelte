@@ -23,7 +23,6 @@
 
 		observer.observe(document.documentElement, {
 			attributes: true,
-			// eslint-disable-next-line @typescript-eslint/naming-convention -- DOM API property
 			attributeFilter: ['class'],
 		})
 
