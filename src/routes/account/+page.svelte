@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { SubmitFunction } from '@sveltejs/kit'
-	import { enhance } from '$app/forms'
+	import { goto } from '$app/navigation'
+	import { resolve } from '$app/paths'
+	import { authClient } from '$lib/auth-client'
 	import Card from '$lib/components/Card.svelte'
 	import CenteredPageLayout from '$lib/components/CenteredPageLayout.svelte'
 	import FormInput from '$lib/components/FormInput.svelte'
 	import PageHeader from '$lib/components/PageHeader.svelte'
-	import SubmitButton from '$lib/components/SubmitButton.svelte'
 	import {
 		account_email,
 		account_full_name,
@@ -14,38 +14,27 @@
 		account_sign_out,
 		account_title,
 		account_update_description,
-		account_update_profile,
-		account_username,
-		account_website,
 	} from '$lib/paraglide/messages'
+	import { ROUTES } from '$lib/routes'
 	import type { PageProps } from './$types'
 
-	const { data, form }: PageProps = $props()
-	const { session, profile } = $derived(data)
+	const { data }: PageProps = $props()
+	const { auth_user } = $derived(data)
 
-	type FormAction = 'update' | 'signout'
-	let loading_action = $state<FormAction | undefined>()
-	const is_disabled = $derived(loading_action !== undefined)
-	const full_name = $derived(profile?.full_name ?? '')
-	const username = $derived(profile?.username ?? '')
-	const website = $derived(profile?.website ?? '')
+	let is_signing_out = $state(false)
 
-	const full_name_value = $derived(form?.full_name ?? full_name)
-	const username_value = $derived(form?.username ?? username)
-	const website_value = $derived(form?.website ?? website)
+	async function handle_sign_out(): Promise<void> {
+		is_signing_out = true
 
-	const handle_submit = (action: FormAction): SubmitFunction => {
-		return () => {
-			loading_action = action
+		await authClient.signOut({
+			fetchOptions: {
+				onSuccess: async () => {
+					await goto(resolve(ROUTES.AUTH_LOGIN))
+				},
+			},
+		})
 
-			return async ({ update }) => {
-				await update({ reset: false })
-
-				if (loading_action === action) {
-					loading_action = undefined
-				}
-			}
-		}
+		is_signing_out = false
 	}
 </script>
 
@@ -57,54 +46,27 @@
 	<PageHeader title={account_profile()} description={account_update_description()} />
 
 	<Card class="space-y-6">
-		<form class="space-y-4" method="post" action="?/update" use:enhance={handle_submit('update')}>
-			<FormInput id="email" label={account_email()} value={session.user.email} is_disabled />
+		<div class="space-y-4">
+			<FormInput id="email" label={account_email()} value={auth_user.email} is_disabled />
 
-			<FormInput
-				id="full_name"
-				label={account_full_name()}
-				name="full_name"
-				value={full_name_value}
-				{is_disabled}
-			/>
-
-			<FormInput
-				id="username"
-				label={account_username()}
-				name="username"
-				value={username_value}
-				{is_disabled}
-			/>
-
-			<FormInput
-				id="website"
-				label={account_website()}
-				name="website"
-				value={website_value}
-				{is_disabled}
-			/>
-
-			<div class="pt-2">
-				<SubmitButton
-					label={account_update_profile()}
-					loading_label={account_loading()}
-					is_loading={loading_action === 'update'}
-					{is_disabled}
-					variant="primary"
-				/>
-			</div>
-		</form>
+			<FormInput id="name" label={account_full_name()} value={auth_user.name} is_disabled />
+		</div>
 
 		<div class="border-t border-gray-100 dark:border-gray-700"></div>
 
-		<form method="post" action="?/signout" use:enhance={handle_submit('signout')}>
-			<SubmitButton
-				label={account_sign_out()}
-				loading_label={account_loading()}
-				is_loading={loading_action === 'signout'}
-				{is_disabled}
-				variant="outline"
-			/>
-		</form>
+		<button
+			type="button"
+			disabled={is_signing_out}
+			class="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 font-medium text-gray-700 transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.98] disabled:cursor-wait disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+			onclick={async () => {
+				await handle_sign_out()
+			}}
+		>
+			{#if is_signing_out}
+				<span>{account_loading()}</span>
+			{:else}
+				<span>{account_sign_out()}</span>
+			{/if}
+		</button>
 	</Card>
 </CenteredPageLayout>
