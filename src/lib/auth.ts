@@ -26,8 +26,8 @@ function create_auth(platform_environment: Env): ReturnType<typeof betterAuth> {
 				clientSecret: platform_environment.GOOGLE_CLIENT_SECRET,
 			},
 			github: {
-				clientId: platform_environment.GITHUB_CLIENT_ID,
-				clientSecret: platform_environment.GITHUB_CLIENT_SECRET,
+				clientId: platform_environment.AUTH_GITHUB_CLIENT_ID,
+				clientSecret: platform_environment.AUTH_GITHUB_CLIENT_SECRET,
 			},
 		},
 		plugins: [sveltekitCookies(getRequestEvent)],
