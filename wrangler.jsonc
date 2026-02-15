@@ -28,12 +28,9 @@
 		}
 	],
 	"vars": {
-		"BETTER_AUTH_SECRET": "",
 		"BETTER_AUTH_URL": "https://tasks.joshuafolkken.com",
 		"GOOGLE_CLIENT_ID": "765392015083-u6etg9khtqnd8r02pk9p8089hj9d6lr2.apps.googleusercontent.com",
-		"GOOGLE_CLIENT_SECRET": "",
-		"AUTH_GITHUB_CLIENT_ID": "Ov23liM7PLg3xtdgCqzh",
-		"AUTH_GITHUB_CLIENT_SECRET": ""
+		"AUTH_GITHUB_CLIENT_ID": "Ov23liM7PLg3xtdgCqzh"
 	},
 	"d1_databases": [
 		{
