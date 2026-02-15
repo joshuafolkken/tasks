@@ -14,6 +14,7 @@
 		"build": "vite build",
 		"deploy": "pnpm run build && wrangler deploy",
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
+		"preview:ci": "wrangler d1 execute tasks-db --local --file=./drizzle/migrations/0000_nervous_thor_girl_ci.sql && wrangler dev --local .svelte-kit/cloudflare/_worker.js --port 4173",
 		"preview:normal": "vite preview",
 		"preview:stop": "pnpm exec kill-port 4173 || true",
 		"prepare": "pnpm run paraglide:compile && pnpm run types && svelte-kit sync",
