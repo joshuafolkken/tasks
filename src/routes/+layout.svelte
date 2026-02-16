@@ -4,12 +4,13 @@
 	import './layout.css'
 	import { APP_STATE } from '$lib/AppState.svelte'
 	import favicon from '$lib/assets/favicon.svg'
+	import { common_app_title } from '$lib/paraglide/messages'
 
 	let { children } = $props()
 </script>
 
 <svelte:head>
-	<title>User Management</title>
+	<title>{common_app_title()}</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 

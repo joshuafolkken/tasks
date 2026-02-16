@@ -3,12 +3,8 @@ import { ROUTES } from '$lib/routes'
 import type { PageServerLoad } from './$types'
 
 const load: PageServerLoad = ({ locals }: { locals: App.Locals }) => {
-	if (!locals.session || !locals.user) {
-		redirect.to_route(ROUTES.LOGIN)
-	}
-
-	return {
-		auth_user: locals.user,
+	if (locals.session) {
+		redirect.to_route(ROUTES.HOME)
 	}
 }
 
