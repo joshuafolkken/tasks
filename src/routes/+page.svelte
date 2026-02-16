@@ -1,26 +1,23 @@
 <script lang="ts">
-	import { resolve } from '$app/paths'
-	import CenteredPageLayout from '$lib/components/CenteredPageLayout.svelte'
-	import PageHeader from '$lib/components/PageHeader.svelte'
+	import AuthNavButton from '$lib/components/AuthNavButton.svelte'
+	import CenteredPageWithHeader from '$lib/components/CenteredPageWithHeader.svelte'
+	import { common_app_title, home_description, home_migration_note } from '$lib/paraglide/messages'
+	import type { PageProps } from './$types'
+
+	const { data }: PageProps = $props()
+
+	const app_title = $derived(common_app_title())
 </script>
 
-<svelte:head>
-	<title>Task Manager</title>
-</svelte:head>
-
-<CenteredPageLayout>
-	<PageHeader title="Task Manager" description="Welcome to Task Manager" />
-
+<CenteredPageWithHeader
+	title={app_title}
+	page_title={app_title}
+	description={home_description({ app_title })}
+>
 	<div class="space-y-4">
 		<p class="text-gray-600 dark:text-gray-400">
-			Authentication demos and features will be migrated to Better Auth with Cloudflare D1.
+			{home_migration_note()}
 		</p>
-		<ul class="space-y-2">
-			<li>
-				<a href={resolve('/demo')} class="text-blue-600 hover:underline dark:text-blue-400">
-					Demos
-				</a>
-			</li>
-		</ul>
+		<AuthNavButton is_logged_in={data.is_logged_in} />
 	</div>
-</CenteredPageLayout>
+</CenteredPageWithHeader>

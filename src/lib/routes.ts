@@ -1,7 +1,8 @@
 export const ROUTES = {
 	HOME: '/',
 	ACCOUNT: '/account',
-	AUTH_LOGIN: '/auth/login',
-	AUTH_CALLBACK: '/auth/callback',
-	AUTH_ERROR: '/auth/error',
+	LOGIN: '/login',
 } as const
+
+/** ログイン・サインアウト後のリダイレクト先（現状はホーム） */
+export const POST_AUTH_REDIRECT = ROUTES.HOME
