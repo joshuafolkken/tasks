@@ -3,7 +3,6 @@ import { sequence } from '@sveltejs/kit/hooks'
 import { building } from '$app/environment'
 import { get_auth } from '$lib/auth'
 import { paraglideMiddleware } from '$lib/paraglide/server'
-import { handle_supabase } from '$lib/server/supabase-handle'
 import { svelteKitHandler } from 'better-auth/svelte-kit'
 
 const handle_paraglide: Handle = async ({ event, resolve }) =>
@@ -32,4 +31,4 @@ const handle_better_auth: Handle = async ({ event, resolve }) => {
 }
 
 // eslint-disable-next-line no-restricted-syntax
-export const handle: Handle = sequence(handle_better_auth, handle_paraglide, handle_supabase)
+export const handle: Handle = sequence(handle_better_auth, handle_paraglide)

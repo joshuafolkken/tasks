@@ -17,16 +17,8 @@
 		</p>
 		<ul class="space-y-2">
 			<li>
-				<a
-					href={resolve('/demo/supabase')}
-					class="text-blue-600 hover:underline dark:text-blue-400"
-				>
-					Supabase Auth Demo (SNS login)
-				</a>
-			</li>
-			<li>
 				<a href={resolve('/demo')} class="text-blue-600 hover:underline dark:text-blue-400">
-					Other demos
+					Demos
 				</a>
 			</li>
 		</ul>

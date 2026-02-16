@@ -1,5 +1,4 @@
-import type { SupabaseClient, Session as SupabaseSession } from '@supabase/supabase-js'
-import type { Session as BetterAuthSession, User as BetterAuthUser } from 'better-auth'
+import type { Session, User } from 'better-auth'
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
@@ -13,18 +12,13 @@ declare global {
 		}
 
 		interface Locals {
-			supabase: SupabaseClient
-			safe_get_session: () => Promise<{
-				session: SupabaseSession | null
-				user?: SupabaseSession['user'] | null
-			}>
-			session?: BetterAuthSession
-			user?: BetterAuthUser
+			session?: Session
+			user?: User
 		}
 
 		interface PageData {
-			session: SupabaseSession | null
-			user?: SupabaseSession['user'] | null
+			session?: Session | null
+			user?: User | null
 		}
 
 		// interface Error {}
