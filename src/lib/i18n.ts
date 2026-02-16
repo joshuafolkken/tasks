@@ -1,21 +1,23 @@
+import { goto as svelte_goto } from '$app/navigation'
 import { getLocale, localizeUrl } from '$lib/paraglide/runtime'
-import { ROUTES } from '$lib/routes'
+
+/** 相対 path を URL にするためのベース（pathname 結果には影響しない） */
+const URL_BASE = 'https://localhost'
 
 /**
- * Returns the localized pathname for a given path on the given origin.
- * Use in server-side code (load, actions, API routes) for redirects and links
- * so that the target URL includes the current locale prefix when applicable.
+ * 現在のロケールでローカライズした pathname を返す。サーバー・クライアント両方で利用可。
+ * リダイレクト、リンク、goto、callbackURL などにそのまま渡せる。
  */
-function localized_path(url: URL, path: string): string {
-	return localizeUrl(new URL(path, url.origin), { locale: getLocale() }).pathname
+function path(route: string): string {
+	return localizeUrl(new URL(route, URL_BASE), { locale: getLocale() }).pathname
 }
 
 /**
- * Returns the localized path to the home page.
- * Use for redirects when the user is not signed in (e.g. after sign-out or from protected load).
+ * 現在のロケールでローカライズした path へクライアント遷移する。
  */
-function home_path(url: URL): string {
-	return localized_path(url, ROUTES.HOME)
+function goto(route: string): void {
+	// eslint-disable-next-line svelte/no-navigation-without-resolve -- 現在ロケールでパスを生成
+	void svelte_goto(path(route))
 }
 
 /**
@@ -33,4 +35,8 @@ function is_locale_active(
 }
 
 /** i18n helpers for server and client. Prefer importing named functions when possible. */
-export const i18n = { localized_path, home_path, is_locale_active }
+export const i18n = {
+	path,
+	goto,
+	is_locale_active,
+}
