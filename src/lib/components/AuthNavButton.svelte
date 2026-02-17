@@ -1,6 +1,6 @@
 <script lang="ts">
 	import LoadingButton from '$lib/components/LoadingButton.svelte'
-	import { i18n } from '$lib/i18n'
+	import { i18n } from '$lib/locale/i18n'
 	import { common_loading, home_account, home_sign_in } from '$lib/paraglide/messages'
 	import { ROUTES } from '$lib/routes'
 

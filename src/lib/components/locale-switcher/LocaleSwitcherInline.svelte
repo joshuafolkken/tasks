@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state'
 	import { click_outside } from '$lib/actions/click-outside'
-	import { locale_names } from '$lib/components/locale-switcher/locale-names'
 	import Spinner from '$lib/components/Spinner.svelte'
-	import { i18n } from '$lib/i18n'
-	import { locales, setLocale } from '$lib/paraglide/runtime'
+	import { i18n } from '$lib/locale/i18n'
+	import { locale_names } from '$lib/locale/locale-names'
+	import { locales } from '$lib/paraglide/runtime'
 
 	type Locale = (typeof locales)[number]
 
@@ -19,7 +19,7 @@
 		if (switching_locale) return
 		is_open = false
 		switching_locale = locale
-		await setLocale(locale)
+		await i18n.switch_locale(locale)
 		// eslint-disable-next-line require-atomic-updates -- loading state reset after async
 		switching_locale = undefined
 	}
@@ -56,7 +56,7 @@
 
 	{#if is_open}
 		<div
-			class="absolute top-full right-0 z-50 mt-0.5 min-w-[6rem] rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+			class="absolute top-full right-0 z-50 mt-0.5 min-w-24 rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
 			role="menu"
 		>
 			{#each locales as locale (locale)}

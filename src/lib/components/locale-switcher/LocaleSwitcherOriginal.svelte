@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state'
 	import Spinner from '$lib/components/Spinner.svelte'
-	import { i18n } from '$lib/i18n'
-	import { locales, setLocale } from '$lib/paraglide/runtime'
+	import { i18n } from '$lib/locale/i18n'
+	import { locales } from '$lib/paraglide/runtime'
 
 	let switching_locale = $state<string | undefined>()
 </script>
@@ -19,7 +19,7 @@
 				onclick={async () => {
 					if (switching_locale) return
 					switching_locale = locale
-					await setLocale(locale)
+					await i18n.switch_locale(locale)
 				}}
 				disabled={switching_locale !== undefined}
 				class="rounded-full px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-all disabled:cursor-wait {is_active

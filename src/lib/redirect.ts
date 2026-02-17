@@ -1,6 +1,6 @@
 import { redirect as svelte_redirect } from '@sveltejs/kit'
 import { HTTP_STATUS } from '$lib/http'
-import { i18n } from '$lib/i18n'
+import { i18n } from '$lib/locale/i18n'
 
 /**
  * Redirects to the given route with current locale. Use in load functions.
