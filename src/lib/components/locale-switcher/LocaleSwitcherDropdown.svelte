@@ -2,10 +2,10 @@
 	import { page } from '$app/state'
 	import { click_outside } from '$lib/actions/click-outside'
 	import ChevronDownIcon from '$lib/components/icons/ChevronDownIcon.svelte'
-	import { locale_names } from '$lib/components/locale-switcher/locale-names'
 	import Spinner from '$lib/components/Spinner.svelte'
-	import { i18n } from '$lib/i18n'
-	import { locales, setLocale } from '$lib/paraglide/runtime'
+	import { i18n } from '$lib/locale/i18n'
+	import { locale_names } from '$lib/locale/locale-names'
+	import { locales } from '$lib/paraglide/runtime'
 	import { onMount } from 'svelte'
 
 	type Locale = (typeof locales)[number]
@@ -39,7 +39,7 @@
 		if (switching_locale) return
 		is_open = false
 		switching_locale = locale
-		await setLocale(locale)
+		await i18n.switch_locale(locale)
 		// eslint-disable-next-line require-atomic-updates -- loading state reset after async
 		switching_locale = undefined
 	}

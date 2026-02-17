@@ -4,7 +4,7 @@
 	import CenteredPageWithHeader from '$lib/components/CenteredPageWithHeader.svelte'
 	import FormInput from '$lib/components/FormInput.svelte'
 	import LoadingButton from '$lib/components/LoadingButton.svelte'
-	import { i18n } from '$lib/i18n'
+	import { i18n } from '$lib/locale/i18n'
 	import {
 		account_email,
 		account_full_name,

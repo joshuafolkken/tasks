@@ -7,7 +7,7 @@
 	import GoogleIcon from '$lib/components/icons/GoogleIcon.svelte'
 	import LoadingButton from '$lib/components/LoadingButton.svelte'
 	import SocialProviderIcon from '$lib/components/SocialProviderIcon.svelte'
-	import { i18n } from '$lib/i18n'
+	import { i18n } from '$lib/locale/i18n'
 	import {
 		login_connecting,
 		login_please_sign_in,
@@ -46,11 +46,10 @@
 	const is_disabled = $derived(loading_provider !== undefined)
 
 	/* Paraglide-generated message types; IDE reports unsafe-call/assignment here. */
-	/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
+
 	const page_title_text = $derived(login_title())
 	const page_header_title = $derived(login_welcome_back())
 	const page_description = $derived(login_please_sign_in())
-	/* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
 
 	async function handle_sign_in(provider: 'google' | 'github'): Promise<void> {
 		loading_provider = provider

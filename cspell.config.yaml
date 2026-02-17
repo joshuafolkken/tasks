@@ -30,7 +30,7 @@ ignorePaths:
   - 'messages/km.json'
   - 'messages/uz.json'
   - 'src/lib/paraglide/messages/**'
-  - 'src/lib/components/locale-switcher/locale-names.ts'
+  - 'src/lib/locale/locale-names.ts'
   - 'drizzle/migrations/**'
   - 'test-results/**'
   - 'src/lib/paraglide/**'
