@@ -11,7 +11,7 @@ export default defineConfig({
 		'import.meta.env.APP_VERSION': JSON.stringify(package_json.version),
 	},
 	server: {
-		allowedHosts: true,
+		allowedHosts: ['.trycloudflare.com'],
 	},
 	plugins: [
 		tailwindcss(),
