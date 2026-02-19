@@ -91,3 +91,6 @@ words:
   - Kysely
   - Typesafe
   - supabase
+  - GHsas
+  - GHSA
+  - trycloudflare

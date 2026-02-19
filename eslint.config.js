@@ -87,6 +87,7 @@ export default defineConfig(
 	importPlugin.flatConfigs.recommended,
 	{
 		settings: {
+			'import/ignore': ['src/lib/paraglide'],
 			'import/resolver': {
 				typescript: {
 					alwaysTryTypes: true,

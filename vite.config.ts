@@ -10,6 +10,9 @@ export default defineConfig({
 	define: {
 		'import.meta.env.APP_VERSION': JSON.stringify(package_json.version),
 	},
+	server: {
+		allowedHosts: ['.trycloudflare.com'],
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit(),
