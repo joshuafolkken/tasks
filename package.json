@@ -1,7 +1,7 @@
 {
 	"name": "tasks",
 	"private": true,
-	"version": "0.26.0",
+	"version": "0.27.0",
 	"type": "module",
 	"packageManager": "pnpm@10.29.3+sha512.498e1fb4cca5aa06c1dcf2611e6fafc50972ffe7189998c409e90de74566444298ffe43e6cd2acdc775ba1aa7cc5e092a8b7054c811ba8c5770f84693d33d2dc",
 	"scripts": {
@@ -49,18 +49,18 @@
 		"@eslint/compat": "^2.0.2",
 		"@eslint/js": "^9.32.2",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@inlang/paraglide-js": "^2.11.0",
+		"@inlang/paraglide-js": "^2.12.0",
 		"@libsql/client": "^0.17.0",
 		"@playwright/test": "^1.58.2",
-		"@storybook/addon-a11y": "^10.2.8",
-		"@storybook/addon-docs": "^10.2.8",
+		"@storybook/addon-a11y": "^10.2.9",
+		"@storybook/addon-docs": "^10.2.9",
 		"@storybook/addon-svelte-csf": "^5.0.11",
-		"@storybook/addon-vitest": "^10.2.8",
-		"@storybook/sveltekit": "^10.2.8",
+		"@storybook/addon-vitest": "^10.2.9",
+		"@storybook/sveltekit": "^10.2.9",
 		"@stylistic/eslint-plugin": "^5.8.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.7",
 		"@sveltejs/adapter-node": "^5.5.3",
-		"@sveltejs/kit": "^2.51.0",
+		"@sveltejs/kit": "^2.52.0",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/forms": "^0.5.11",
 		"@tailwindcss/typography": "^0.5.19",
@@ -77,7 +77,7 @@
 		"eslint-plugin-import": "^2.32.0",
 		"eslint-plugin-promise": "^7.2.1",
 		"eslint-plugin-sonarjs": "^3.0.7",
-		"eslint-plugin-storybook": "^10.2.8",
+		"eslint-plugin-storybook": "^10.2.9",
 		"eslint-plugin-svelte": "^3.15.0",
 		"eslint-plugin-unicorn": "^63.0.0",
 		"globals": "^17.3.0",
@@ -88,13 +88,13 @@
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.4.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
-		"storybook": "^10.2.8",
-		"svelte": "^5.51.0",
+		"storybook": "^10.2.9",
+		"svelte": "^5.51.2",
 		"svelte-check": "^4.4.0",
 		"tailwindcss": "^4.1.18",
 		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.55.0",
+		"typescript-eslint": "^8.56.0",
 		"vite": "^7.3.1",
 		"vite-plugin-devtools-json": "^1.0.0",
 		"vitest": "^4.0.18",
@@ -108,6 +108,12 @@
 		"sharp": "^0.34.5"
 	},
 	"pnpm": {
+		"auditConfig": {
+			"ignoreGhsas": [
+				"GHSA-3ppc-4f35-3m26",
+				"GHSA-2g4f-4pwh-qvx6"
+			]
+		},
 		"updateConfig": {
 			"ignoreDependencies": [
 				"eslint",
