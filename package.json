@@ -44,7 +44,7 @@
 		"preview:normal": "vite preview",
 		"preview:stop": "kill-port 4173 || true",
 		"check": "pnpm paraglide:compile && svelte-kit sync && svelte-fast-check --incremental",
-		"check:ci": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:ci": "pnpm paraglide:compile && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "svelte-kit sync && pnpm lint:prettier && pnpm lint:eslint",
 		"lint:prettier": "prettier --check .",

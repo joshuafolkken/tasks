@@ -38,7 +38,7 @@ pre-push:
   commands:
     type-check:
       glob: '*.{svelte,ts,js,mjs,cjs}'
-      run: pnpm run check
+      run: pnpm run check:ci
 
     test-unit:
       # glob: '*.{svelte,ts,js,css}'

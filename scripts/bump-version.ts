@@ -16,10 +16,10 @@ if (!['major', 'minor', 'patch'].includes(bump)) {
 
 const package_path = path.join(process.cwd(), 'package.json')
 const package_json = JSON.parse(readFileSync(package_path, 'utf8')) as { version: string }
-const match = /^(\d+)\.(\d+)\.(\d+)/u.exec(package_json.version)
+const match = /^(\d+)\.(\d+)\.(\d+)$/u.exec(package_json.version)
 
 if (!match) {
-	console.error('Invalid version format:', package_json.version)
+	console.error('Invalid or pre-release version format (not supported):', package_json.version)
 	process.exit(1)
 }
 
