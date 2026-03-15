@@ -12,8 +12,6 @@
 		"strict": true,
 		"moduleResolution": "bundler",
 
-		"types": ["./worker-configuration.d.ts"],
-
 		// Strictness
 		"noUncheckedIndexedAccess": true,
 		"noImplicitOverride": true,

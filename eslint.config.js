@@ -3,7 +3,7 @@ import { includeIgnoreFile } from '@eslint/compat'
 import js from '@eslint/js'
 import stylistic from '@stylistic/eslint-plugin'
 import prettier from 'eslint-config-prettier'
-import importPlugin from 'eslint-plugin-import'
+import importPlugin from 'eslint-plugin-import-x'
 import promise from 'eslint-plugin-promise'
 import sonarjs from 'eslint-plugin-sonarjs'
 import svelte from 'eslint-plugin-svelte'
@@ -53,15 +53,13 @@ export default defineConfig(
 	{
 		// tsconfig に含まれないファイルを明示的に除外
 		ignores: [
-			'env.d.ts', // Cloudflare Env 型の拡張。Cloudflare の命名規則に従うためプロジェクトルールを適用しない
+			'node_modules/**',
 			'src/app.d.ts',
 			'*.config.{ts,js,cjs,mjs}',
-			'src/routes/**/+layout.svelte',
-			'src/routes/**/+layout.ts',
-
+			'env.d.ts',
+			'src/service-worker.ts',
 			'.storybook/**',
 			'src/routes/demo/**',
-			'src/hooks.ts',
 			'src/lib/server/db/**',
 			'src/lib/paraglide/**',
 			'src/stories/**',
@@ -86,6 +84,9 @@ export default defineConfig(
 	},
 	importPlugin.flatConfigs.recommended,
 	{
+		plugins: {
+			import: importPlugin,
+		},
 		settings: {
 			'import/ignore': ['src/lib/paraglide'],
 			'import/resolver': {
@@ -94,6 +95,8 @@ export default defineConfig(
 				},
 				node: true,
 			},
+			// node_modules 内の Svelte 5 の非標準構文を含むファイルのパースエラーを回避
+			'import-x/ignore': ['node_modules'],
 		},
 	},
 	{

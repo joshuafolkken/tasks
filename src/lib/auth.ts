@@ -8,9 +8,10 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { sveltekitCookies } from 'better-auth/svelte-kit'
 
 // eslint-disable-next-line init-declarations
-let _auth: ReturnType<typeof betterAuth> | undefined
+let _auth: ReturnType<typeof create_auth> | undefined
 
-function create_auth(platform_environment: Env): ReturnType<typeof betterAuth> {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- Auth generic is inferred from betterAuth options
+function create_auth(platform_environment: Env) {
 	const database = get_db(platform_environment.tasks_db)
 
 	return betterAuth({
@@ -35,7 +36,7 @@ function create_auth(platform_environment: Env): ReturnType<typeof betterAuth> {
 }
 
 // eslint-disable-next-line no-restricted-syntax
-export function get_auth(platform_environment: Env): ReturnType<typeof betterAuth> {
+export function get_auth(platform_environment: Env): ReturnType<typeof create_auth> {
 	_auth ??= create_auth(platform_environment)
 
 	return _auth

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment'
 	import { page } from '$app/state'
+	import type { Snippet } from 'svelte'
 	import './layout.css'
 	import favicon from '$lib/assets/favicon.svg'
 	import LocaleSwitcher from '$lib/locale/components/LocaleSwitcher.svelte'
@@ -9,7 +10,7 @@
 	import { extractLocaleFromUrl, overwriteGetLocale } from '$lib/paraglide/runtime'
 	import ThemeSwitcher from '$lib/theme/components/ThemeSwitcher.svelte'
 
-	let { children } = $props()
+	const { children }: { children: Snippet } = $props()
 
 	if (browser) {
 		overwriteGetLocale(() => {
