@@ -41,3 +41,6 @@ storybook-static
 
 # Playwright
 playwright-report
+
+# svelte-fast-check cache
+.fast-check
