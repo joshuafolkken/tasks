@@ -20,7 +20,7 @@ async function exec_gh_command(command: string): Promise<string> {
 
 		return stdout.trimEnd()
 	} catch (error) {
-		throw new Error(build_error_message(error))
+		throw new Error(build_error_message(error), { cause: error })
 	}
 }
 
@@ -72,7 +72,7 @@ async function pr_checks(branch_name: string): Promise<string> {
 		const exec_error = error as { stderr?: string; stdout?: string }
 
 		if (exec_error.stderr !== undefined && exec_error.stderr.length > 0) {
-			throw new Error(exec_error.stderr)
+			throw new Error(exec_error.stderr, { cause: error })
 		}
 
 		throw error
