@@ -1,6 +1,7 @@
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
 	"name": "tasks",
+	"account_id": "3937bba04d5b3ca8aa992e084cae4a4f",
 	"compatibility_date": "2026-02-01",
 	"compatibility_flags": ["nodejs_compat"],
 	"main": ".svelte-kit/cloudflare/_worker.js",
