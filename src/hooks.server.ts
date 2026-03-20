@@ -1,9 +1,24 @@
-import type { Handle } from '@sveltejs/kit'
+import type { Handle, RequestEvent } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 import { building } from '$app/environment'
-import { get_auth } from '$lib/auth'
 import { paraglideMiddleware } from '$lib/paraglide/server'
+import { auth } from '$lib/server/auth'
 import { svelteKitHandler } from 'better-auth/svelte-kit'
+
+type AuthSessionPayload = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>
+
+function assign_session_to_locals(
+	event: RequestEvent,
+	session_payload: AuthSessionPayload | null,
+): void {
+	if (!session_payload) return
+
+	event.locals = {
+		...event.locals,
+		session: session_payload.session,
+		user: session_payload.user,
+	}
+}
 
 const handle_paraglide: Handle = async ({ event, resolve }) =>
 	await paraglideMiddleware(event.request, async ({ request, locale }) => {
@@ -15,17 +30,9 @@ const handle_paraglide: Handle = async ({ event, resolve }) =>
 	})
 
 const handle_better_auth: Handle = async ({ event, resolve }) => {
-	const platform = event.platform as { env: Env }
-	const auth = get_auth(platform.env)
-	const { headers } = event.request
-	const session = await auth.api.getSession({ headers })
+	const session = await auth.api.getSession({ headers: event.request.headers })
 
-	if (session) {
-		// eslint-disable-next-line require-atomic-updates
-		event.locals.session = session.session
-		// eslint-disable-next-line require-atomic-updates
-		event.locals.user = session.user
-	}
+	assign_session_to_locals(event, session)
 
 	return await svelteKitHandler({ event, resolve, auth, building })
 }

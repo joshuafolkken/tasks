@@ -37,6 +37,7 @@ ignorePaths:
   - '.wrangler/**'
   - 'wrangler.jsonc'
   - '.fast-check/**'
+  - src/lib/server/db/auth.schema.ts
 words:
   - aboutads
   - aikidosec
