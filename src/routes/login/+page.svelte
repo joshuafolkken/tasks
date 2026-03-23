@@ -3,11 +3,10 @@
 	import Card from '$lib/components/Card.svelte'
 	import CenteredPageWithHeader from '$lib/components/CenteredPageWithHeader.svelte'
 	import DividerWithLabel from '$lib/components/DividerWithLabel.svelte'
-	import GitHubIcon from '$lib/components/icons/GitHubIcon.svelte'
-	import GoogleIcon from '$lib/components/icons/GoogleIcon.svelte'
 	import LoadingButton from '$lib/components/LoadingButton.svelte'
 	import SocialProviderIcon from '$lib/components/SocialProviderIcon.svelte'
 	import { i18n } from '$lib/locale/i18n'
+	import { social_providers } from '$lib/login/social-providers'
 	import {
 		login_connecting,
 		login_please_sign_in,
@@ -18,29 +17,8 @@
 		login_welcome_back,
 	} from '$lib/paraglide/messages'
 	import { POST_AUTH_REDIRECT } from '$lib/routes'
-	import type { Component } from 'svelte'
 
-	interface SocialProvider {
-		id: 'google' | 'github'
-		label: string
-		variant: 'social-white' | 'social-dark'
-		icon_component: Component
-	}
-
-	const social_providers = $derived<Array<SocialProvider>>([
-		{
-			id: 'google',
-			label: login_sign_in_with({ provider: 'Google' }),
-			variant: 'social-white',
-			icon_component: GoogleIcon,
-		},
-		{
-			id: 'github',
-			label: login_sign_in_with({ provider: 'GitHub' }),
-			variant: 'social-dark',
-			icon_component: GitHubIcon,
-		},
-	])
+	const provider_buttons = $derived(social_providers.list(login_sign_in_with))
 
 	let loading_provider = $state<string | undefined>()
 	const is_disabled = $derived(loading_provider !== undefined)
@@ -68,7 +46,7 @@
 >
 	<Card class="space-y-8">
 		<div class="space-y-4">
-			{#each social_providers as { id, label, variant, icon_component } (id)}
+			{#each provider_buttons as { id, label, variant, icon_component } (id)}
 				<LoadingButton
 					{label}
 					loading_label={login_connecting()}

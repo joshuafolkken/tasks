@@ -1,7 +1,7 @@
 {
 	"name": "tasks",
 	"private": true,
-	"version": "0.29.0",
+	"version": "0.30.0",
 	"type": "module",
 	"packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be",
 	"engines": {
@@ -14,21 +14,15 @@
 		}
 	},
 	"pnpm": {
-		"overrides": {
-			"esbuild": "^0.25.0",
-			"cookie": "^0.7.0",
-			"undici": "^7.18.2",
-			"lodash": ">=4.17.23",
-			"minimatch": ">=3.1.4",
-			"flatted": ">=3.4.0",
-			"kysely": ">=0.28.12"
-		},
 		"onlyBuiltDependencies": [
-			"esbuild",
-			"lefthook",
-			"unrs-resolver",
-			"workerd"
-		]
+			"better-sqlite3",
+			"esbuild"
+		],
+		"overrides": {
+			"esbuild@<=0.24.2": ">=0.25.0",
+			"cookie@<0.7.0": ">=0.7.0",
+			"lodash@>=4.0.0 <=4.17.22": ">=4.17.23"
+		}
 	},
 	"scripts": {
 		"preinstall": "pnpm dlx @aikidosec/safe-chain setup-ci",
@@ -39,11 +33,11 @@
 		"build": "vite build",
 		"deploy": "pnpm build && wrangler deploy",
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
-		"preview:ci": "wrangler d1 execute tasks-db --local --file=./drizzle/migrations/0000_nervous_thor_girl_ci.sql && wrangler dev --local .svelte-kit/cloudflare/_worker.js --port 4173",
+		"preview:ci": "wrangler d1 execute tasks-db --local --file=./drizzle/ci-bootstrap.sql && wrangler dev --local .svelte-kit/cloudflare/_worker.js --port 4173",
 		"preview:normal": "vite preview",
 		"preview:stop": "kill-port 4173 || true",
-		"check": "pnpm paraglide:compile && svelte-kit sync && svelte-fast-check --incremental",
-		"check:ci": "pnpm paraglide:compile && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check": "svelte-kit sync && svelte-fast-check --incremental",
+		"check:ci": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "svelte-kit sync && pnpm lint:prettier && pnpm lint:eslint",
 		"lint:prettier": "prettier --check .",
@@ -69,28 +63,31 @@
 		"version:patch": "tsx scripts/bump-version.ts patch",
 		"lefthook:commit": "lefthook run pre-commit",
 		"lefthook:push": "lefthook run pre-push",
-		"db:push": "drizzle-kit push",
-		"db:generate": "drizzle-kit generate",
-		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build",
 		"main:sync": "git checkout main && git pull",
-		"main:merge": "git pull origin main"
+		"main:merge": "git pull origin main",
+		"db:push": "drizzle-kit push",
+		"db:migrate": "drizzle-kit migrate",
+		"db:studio": "drizzle-kit studio",
+		"auth:schema": "better-auth generate --config src/lib/server/auth.better-auth-cli.ts --output src/lib/server/db/auth.schema.ts --yes",
+		"db:generate": "drizzle-kit generate",
+		"db:apply:local": "wrangler d1 migrations apply tasks-db --local"
 	},
 	"devDependencies": {
-		"@chromatic-com/storybook": "^5.0.1",
+		"@better-auth/cli": "~1.4.21",
+		"@chromatic-com/storybook": "^5.0.2",
 		"@eslint/compat": "^2.0.3",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@inlang/paraglide-js": "^2.15.0",
-		"@libsql/client": "^0.17.0",
+		"@inlang/paraglide-js": "^2.15.1",
+		"@libsql/client": "^0.17.2",
 		"@playwright/test": "^1.58.2",
-		"@storybook/addon-a11y": "^10.3.0",
-		"@storybook/addon-docs": "^10.3.0",
+		"@storybook/addon-a11y": "^10.3.1",
+		"@storybook/addon-docs": "^10.3.1",
 		"@storybook/addon-svelte-csf": "^5.0.12",
-		"@storybook/addon-vitest": "^10.3.0",
-		"@storybook/sveltekit": "^10.3.0",
+		"@storybook/addon-vitest": "^10.3.1",
+		"@storybook/sveltekit": "^10.3.1",
 		"@stylistic/eslint-plugin": "^5.10.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.8",
 		"@sveltejs/kit": "^2.55.0",
@@ -101,15 +98,17 @@
 		"@types/node": "^25.5.0",
 		"@vitest/browser-playwright": "^4.1.0",
 		"@vitest/coverage-v8": "^4.1.0",
+		"better-auth": "~1.5.5",
 		"cspell": "^9.7.0",
 		"drizzle-kit": "^0.31.10",
-		"eslint": "^10.0.3",
+		"drizzle-orm": "^0.45.1",
+		"eslint": "^10.1.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-import-x": "^4.16.2",
 		"eslint-plugin-promise": "^7.2.1",
 		"eslint-plugin-sonarjs": "^4.0.2",
-		"eslint-plugin-storybook": "^10.3.0",
-		"eslint-plugin-svelte": "^3.15.2",
+		"eslint-plugin-storybook": "^10.3.1",
+		"eslint-plugin-svelte": "^3.16.0",
 		"eslint-plugin-unicorn": "^63.0.0",
 		"globals": "^17.4.0",
 		"kill-port": "^2.0.1",
@@ -119,8 +118,8 @@
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.5.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
-		"storybook": "^10.3.0",
-		"svelte": "^5.54.0",
+		"storybook": "^10.3.1",
+		"svelte": "^5.54.1",
 		"svelte-check": "^4.4.5",
 		"svelte-fast-check": "^0.4.5",
 		"tailwindcss": "^4.2.2",
@@ -131,10 +130,6 @@
 		"vite-plugin-devtools-json": "^1.0.0",
 		"vitest": "^4.1.0",
 		"vitest-browser-svelte": "^2.1.0",
-		"wrangler": "^4.75.0"
-	},
-	"dependencies": {
-		"better-auth": "^1.5.5",
-		"drizzle-orm": "^0.45.1"
+		"wrangler": "^4.76.0"
 	}
 }

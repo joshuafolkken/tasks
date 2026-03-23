@@ -3,6 +3,16 @@ import type { Session, User } from 'better-auth'
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {
+	// Module-scoped `declare namespace Cloudflare` does not merge with Wrangler's global
+	// `Cloudflare.Env` (e.g. CI `wrangler types` omits secrets not in wrangler.jsonc `vars`).
+	namespace Cloudflare {
+		interface Env {
+			BETTER_AUTH_SECRET: string
+			GOOGLE_CLIENT_SECRET: string
+			AUTH_GITHUB_CLIENT_SECRET: string
+		}
+	}
+
 	namespace App {
 		interface Platform {
 			env: Env
@@ -17,15 +27,13 @@ declare global {
 		}
 
 		interface PageData {
-			session?: Session | null
-			user?: User | null
+			session?: Session
+			user?: User
 		}
 
 		// interface Error {}
-		// interface Locals {}
 		// interface PageData {}
 		// interface PageState {}
-		// interface Platform {}
 	}
 }
 

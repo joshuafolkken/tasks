@@ -15,6 +15,16 @@
 		is_navigating = true
 		i18n.goto(route)
 	}
+
+	function handle_nav_click(): void {
+		if (is_logged_in) {
+			go_to(ROUTES.ACCOUNT)
+
+			return
+		}
+
+		go_to(ROUTES.LOGIN)
+	}
 </script>
 
 <div class="flex justify-center">
@@ -24,13 +34,7 @@
 			loading_label={common_loading()}
 			is_loading={is_navigating}
 			variant="primary"
-			on_click={is_logged_in
-				? () => {
-						go_to(ROUTES.ACCOUNT)
-					}
-				: () => {
-						go_to(ROUTES.LOGIN)
-					}}
+			on_click={handle_nav_click}
 		/>
 	</div>
 </div>
