@@ -63,6 +63,8 @@ export default defineConfig(
 			'src/lib/server/db/**',
 			'src/lib/paraglide/**',
 			'src/stories/**',
+			'src/lib/server/db/**',
+			'src/lib/server/auth.ts',
 		],
 	},
 	js.configs.recommended,
