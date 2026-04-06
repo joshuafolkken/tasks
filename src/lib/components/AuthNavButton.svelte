@@ -1,7 +1,7 @@
 <script lang="ts">
 	import LoadingButton from '$lib/components/LoadingButton.svelte'
 	import { i18n } from '$lib/locale/i18n'
-	import { common_loading, home_account, home_sign_in } from '$lib/paraglide/messages'
+	import { m } from '$lib/paraglide/messages'
 	import { ROUTES } from '$lib/routes'
 
 	interface Props {
@@ -30,8 +30,8 @@
 <div class="flex justify-center">
 	<div class="min-w-48">
 		<LoadingButton
-			label={is_logged_in ? home_account() : home_sign_in()}
-			loading_label={common_loading()}
+			label={is_logged_in ? m.home_account() : m.home_sign_in()}
+			loading_label={m.common_loading()}
 			is_loading={is_navigating}
 			variant="primary"
 			on_click={handle_nav_click}

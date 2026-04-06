@@ -7,27 +7,19 @@
 	import SocialProviderIcon from '$lib/components/SocialProviderIcon.svelte'
 	import { i18n } from '$lib/locale/i18n'
 	import { social_providers } from '$lib/login/social-providers'
-	import {
-		login_connecting,
-		login_please_sign_in,
-		login_secure_authentication,
-		login_sign_in_with,
-		login_terms_privacy,
-		login_title,
-		login_welcome_back,
-	} from '$lib/paraglide/messages'
+	import { m } from '$lib/paraglide/messages'
 	import { POST_AUTH_REDIRECT } from '$lib/routes'
 
-	const provider_buttons = $derived(social_providers.list(login_sign_in_with))
+	const provider_buttons = $derived(social_providers.list(m.login_sign_in_with))
 
 	let loading_provider = $state<string | undefined>()
 	const is_disabled = $derived(loading_provider !== undefined)
 
 	/* Paraglide-generated message types; IDE reports unsafe-call/assignment here. */
 
-	const page_title_text = $derived(login_title())
-	const page_header_title = $derived(login_welcome_back())
-	const page_description = $derived(login_please_sign_in())
+	const page_title_text = $derived(m.login_title())
+	const page_header_title = $derived(m.login_welcome_back())
+	const page_description = $derived(m.login_please_sign_in())
 
 	async function handle_sign_in(provider: 'google' | 'github'): Promise<void> {
 		loading_provider = provider
@@ -49,7 +41,7 @@
 			{#each provider_buttons as { id, label, variant, icon_component } (id)}
 				<LoadingButton
 					{label}
-					loading_label={login_connecting()}
+					loading_label={m.login_connecting()}
 					is_loading={loading_provider === id}
 					{is_disabled}
 					{variant}
@@ -64,10 +56,10 @@
 			{/each}
 		</div>
 
-		<DividerWithLabel label={login_secure_authentication()} />
+		<DividerWithLabel label={m.login_secure_authentication()} />
 	</Card>
 
 	<p class="text-center text-xs text-gray-500 dark:text-gray-400">
-		{login_terms_privacy()}
+		{m.login_terms_privacy()}
 	</p>
 </CenteredPageWithHeader>

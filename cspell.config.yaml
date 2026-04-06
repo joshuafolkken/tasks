@@ -38,6 +38,7 @@ ignorePaths:
   - 'wrangler.jsonc'
   - '.fast-check/**'
   - src/lib/server/db/auth.schema.ts
+  - 'e2e/.auth/**'
 words:
   - aboutads
   - aikidosec
@@ -63,6 +64,7 @@ words:
   - libsql
   - Mdsvex
   - mischeck
+  - networkidle
   - noopener
   - noreferrer
   - opencollective
@@ -79,6 +81,8 @@ words:
   - TERE
   - turso
   - zstd
+  - uncomplete
+  - uncompleting
   - unrs
   - esbuild
   - lefthook
@@ -96,3 +100,22 @@ words:
   - GHsas
   - GHSA
   - trycloudflare
+  - rrule
+  - byday
+  - bymonthday
+  - bysetpos
+  - bymonth
+  - dndzone
+  - onconsider
+  - onfinalize
+  - unixepoch
+  - subsecond
+  - codegen
+  - reassignable
+  - unparsed
+  - ndays
+  - nweeks
+  - nmonths
+  - nyears
+  - EDSC
+  - RROP

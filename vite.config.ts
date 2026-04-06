@@ -13,6 +13,10 @@ export default defineConfig({
 	server: {
 		allowedHosts: ['.trycloudflare.com'],
 	},
+	// rrule は package の `main` が CJS のため、外部のままだと Node 上の SSR 解析で named import が壊れる。Worker バンドル（wrangler）とも整合させる。
+	ssr: {
+		noExternal: ['rrule'],
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit(),
@@ -21,6 +25,7 @@ export default defineConfig({
 			project: './project.inlang',
 			outdir: './src/lib/paraglide',
 			strategy: ['url', 'cookie', 'baseLocale'],
+			emitTsDeclarations: true,
 		}),
 	],
 	test: {

@@ -41,6 +41,8 @@ storybook-static
 
 # Playwright
 playwright-report
+e2e/.auth/user.json
+e2e/.auth/chrome-profile/
 
 # svelte-fast-check cache
 .fast-check
