@@ -148,9 +148,7 @@
 						{uncompleting_task_id}
 						{editing_task_id}
 						{on_start_task_edit}
-						on_cancel_task_edit={() => {
-							if (editing_task_id === task_item.id) on_cancel_task_edit()
-						}}
+						{on_cancel_task_edit}
 						focus_pulse={task_item.id === editing_task_id ? inline_edit_focus_pulse : 0}
 						on_task_saved={async () => {
 							await on_task_saved(task_item.id)

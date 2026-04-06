@@ -3,7 +3,6 @@ import { existsSync } from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
 import {
 	DASH_JA_COMPLETED_ON_PREFIX,
-	DASH_JA_PAGE_HEADING,
 	DASH_JA_RECURRENCE_BUTTON,
 	DASH_JA_TAB_ACTIVE,
 	DASH_JA_TAB_COMPLETED,
@@ -15,28 +14,9 @@ const tid = playwright_dash_ux.testid
 const RELOAD_STABLE_TIMEOUT_MS = 25_000
 const SPA_TAB_URL_WAIT_MS = 25_000
 
-async function reload_ja_dash_for_search_seed(page: Page): Promise<void> {
-	await page.reload({ waitUntil: 'load', timeout: RELOAD_STABLE_TIMEOUT_MS })
-	await expect(page.getByRole('heading', { level: 1, name: DASH_JA_PAGE_HEADING })).toBeVisible({
-		timeout: RELOAD_STABLE_TIMEOUT_MS,
-	})
-	await expect(page.getByTestId(tid.add_task)).toBeVisible({ timeout: RELOAD_STABLE_TIMEOUT_MS })
-}
-
 async function seed_two_tasks_for_search_test(page: Page, run_id: string): Promise<void> {
-	await playwright_dash_ux.reset_dash_search_ui(page)
-	await playwright_dash_ux.save_new_task(page, `${run_id} AppleOnly`)
-	await reload_ja_dash_for_search_seed(page)
-	await playwright_dash_ux.reset_dash_search_ui(page)
-	await playwright_dash_ux.open_new_task_editor(page)
-	await page.getByTestId(tid.inline_title).fill(`${run_id} BananaOnly`)
-	await playwright_dash_ux.blur_inline_editor(page)
-	await expect(page.getByRole('button', { name: `${run_id} AppleOnly` })).toBeVisible({
-		timeout: RELOAD_STABLE_TIMEOUT_MS,
-	})
-	await expect(page.getByRole('button', { name: `${run_id} BananaOnly` })).toBeVisible({
-		timeout: RELOAD_STABLE_TIMEOUT_MS,
-	})
+	await playwright_dash_ux.seed_tasks(page, [`${run_id} AppleOnly`, `${run_id} BananaOnly`])
+	await playwright_dash_ux.clear_dash_filters(page)
 }
 
 async function cycle_search_filter_to_or(page: Page): Promise<void> {
@@ -74,11 +54,13 @@ async function expect_and_or_search_rows(page: Page, run_id: string): Promise<vo
 test.describe('/ja/dash authenticated UX (issue #18)', () => {
 	test.describe.configure({ mode: 'serial', timeout: 90_000 })
 
-	test.beforeEach(() => {
+	test.beforeEach(async ({ page }) => {
 		test.skip(
 			!existsSync(playwright_dash_ux.auth_storage_path),
 			`Missing auth storage at ${playwright_dash_ux.auth_storage_path}. Create it with pnpm test:e2e:save-auth (or equivalent).`,
 		)
+		await playwright_dash_ux.goto_dash(page)
+		await playwright_dash_ux.clear_dash_filters(page)
 	})
 	/* Auth: `storageState` on the `e2e-main` Playwright project (saved cookies) — no UI login per test. */
 
@@ -87,7 +69,6 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 			const run_id = `E2E_ADD_${String(Date.now())}`
 
 			await playwright_dash_ux.run_authed(page, async () => {
-				await playwright_dash_ux.goto_dash(page)
 				await playwright_dash_ux.open_new_task_editor(page)
 				await expect(page.getByTestId(tid.inline_title)).toBeFocused()
 				await page.getByTestId(tid.inline_title).fill(run_id)
@@ -98,7 +79,6 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 
 		test('Focusing away from an empty new row discards it', async ({ page }) => {
 			await playwright_dash_ux.run_authed(page, async () => {
-				await playwright_dash_ux.goto_dash(page)
 				await playwright_dash_ux.open_new_task_editor(page)
 				await playwright_dash_ux.blur_inline_editor(page)
 				await expect(page.getByTestId(tid.inline_title)).toHaveCount(0)
@@ -109,7 +89,6 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 			page,
 		}) => {
 			await playwright_dash_ux.run_authed(page, async () => {
-				await playwright_dash_ux.goto_dash(page)
 				await page.getByTestId(tid.add_task).click()
 				await expect(page.getByTestId(tid.inline_title)).toBeVisible()
 				await page.getByTestId(tid.add_task).click()
@@ -152,8 +131,7 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 			const run_id = `E2E_SW_${String(Date.now())}`
 
 			await playwright_dash_ux.run_authed(page, async () => {
-				await playwright_dash_ux.save_new_task(page, `${run_id} A`)
-				await playwright_dash_ux.save_new_task(page, `${run_id} B`)
+				await playwright_dash_ux.seed_tasks(page, [`${run_id} A`, `${run_id} B`])
 				await playwright_dash_ux.inline_title_via_button(page, `${run_id} A`, `${run_id} A`)
 				await playwright_dash_ux.inline_title_via_button(page, `${run_id} B`, `${run_id} B`)
 			}, [`${run_id} A`, `${run_id} B`])
@@ -178,7 +156,9 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 			await playwright_dash_ux.run_authed(page, async () => {
 				await playwright_dash_ux.save_new_task(page, run_id)
 				await playwright_dash_ux.complete_task_by_text(page, run_id)
-				await expect(page.getByRole('button', { name: run_id })).toHaveCount(0)
+				await expect(page.getByRole('button', { name: run_id })).toHaveCount(0, {
+					timeout: RELOAD_STABLE_TIMEOUT_MS,
+				})
 				await Promise.all([
 					page.waitForURL(/[?&]done=1/u, { timeout: SPA_TAB_URL_WAIT_MS }),
 					page.getByRole('link', { name: DASH_JA_TAB_COMPLETED }).click(),
@@ -199,6 +179,9 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 			await playwright_dash_ux.run_authed(page, async () => {
 				await playwright_dash_ux.save_new_task(page, run_id)
 				await playwright_dash_ux.complete_task_by_text(page, run_id)
+				await expect(page.getByRole('button', { name: run_id })).toHaveCount(0, {
+					timeout: RELOAD_STABLE_TIMEOUT_MS,
+				})
 				await Promise.all([
 					page.waitForURL(/[?&]done=1/u, { timeout: SPA_TAB_URL_WAIT_MS }),
 					page.getByRole('link', { name: DASH_JA_TAB_COMPLETED }).click(),
@@ -225,13 +208,19 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 			await playwright_dash_ux.run_authed(page, async () => {
 				await playwright_dash_ux.save_new_task(page, run_id)
 				await playwright_dash_ux.complete_task_by_text(page, run_id)
-				await playwright_dash_ux.goto_done_tab_ja(page)
+				await expect(page.getByRole('button', { name: run_id })).toHaveCount(0, {
+					timeout: RELOAD_STABLE_TIMEOUT_MS,
+				})
+				await Promise.all([
+					page.waitForURL(/[?&]done=1/u, { timeout: SPA_TAB_URL_WAIT_MS }),
+					page.getByRole('link', { name: DASH_JA_TAB_COMPLETED }).click(),
+				])
 				await expect(
 					page
 						.getByTestId(tid.task_row)
 						.filter({ hasText: run_id })
 						.getByText(DASH_JA_COMPLETED_ON_PREFIX, { exact: false }),
-				).toBeVisible()
+				).toBeVisible({ timeout: RELOAD_STABLE_TIMEOUT_MS })
 			}, [run_id])
 		})
 	})
@@ -241,7 +230,6 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 			const run_id = `E2E_ESC_${String(Date.now())}`
 
 			await playwright_dash_ux.run_authed(page, async () => {
-				await playwright_dash_ux.goto_dash(page)
 				await playwright_dash_ux.open_new_task_editor(page)
 				await page.getByTestId(tid.inline_title).fill(run_id)
 				await page.keyboard.press('Escape')
@@ -252,7 +240,6 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 
 		test('Recurrence dialog opens from the inline editor', async ({ page }) => {
 			await playwright_dash_ux.run_authed(page, async () => {
-				await playwright_dash_ux.goto_dash(page)
 				await playwright_dash_ux.open_new_task_editor(page)
 				await page.getByRole('button', { name: DASH_JA_RECURRENCE_BUTTON }).click()
 				await expect(page.getByTestId(tid.recurrence_dialog)).toBeVisible()

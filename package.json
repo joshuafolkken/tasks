@@ -48,6 +48,8 @@
 		"test:unit": "vitest",
 		"test": "pnpm test:unit --run && pnpm test:e2e",
 		"test:e2e": "playwright test",
+		"test:e2e:smoke": "playwright test e2e/dash.test.ts e2e/demo.test.ts e2e/dash-guest.test.ts",
+		"test:e2e:dash-core": "playwright test e2e/dash-ux.test.ts e2e/dash-inline-editor.test.ts e2e/dash.test.ts",
 		"test:e2e:save-auth": "tsx scripts/save-playwright-auth-storage.ts",
 		"test:e2e:save-auth:codegen": "playwright codegen --channel=chrome --user-data-dir=e2e/.auth/chrome-profile --save-storage=e2e/.auth/user.json http://localhost:5173",
 		"gen": "pnpm gen:pre && wrangler types",

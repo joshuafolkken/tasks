@@ -360,10 +360,14 @@
 		return Number.isFinite(until) && globalThis.performance.now() < until
 	}
 
-	function is_dialog_open(): boolean {
-		if (recurrence_dialog_element?.open === true) return true
+	function is_live_open_dialog(host: HTMLDialogElement | undefined): boolean {
+		return Boolean(host?.isConnected && host.open)
+	}
 
-		return read_rr_dialog_from_dom()?.open === true
+	function is_dialog_open(): boolean {
+		if (is_live_open_dialog(recurrence_dialog_element)) return true
+
+		return is_live_open_dialog(read_rr_dialog_from_dom())
 	}
 
 	function is_focus_still_inside_form(related: Node | null): boolean {
@@ -653,7 +657,9 @@
 	}
 
 	function is_escape_suppressed_by_modal(): boolean {
-		return is_dialog_open() || is_rr_dialog_session
+		/* Blur still uses `is_rr_dialog_session`; Escape must work as soon as the dialog is gone
+		 * (post-close focus runs async and would otherwise swallow Escape until session ends). */
+		return is_dialog_open()
 	}
 
 	function should_discard_on_escape(): boolean {
@@ -679,7 +685,6 @@
 
 	function handle_document_keydown(key_event: KeyboardEvent): void {
 		if (key_event.key !== 'Escape' || key_event.isComposing) return
-		/* Dialog may already be closed when this bubbles; `open` is false but RR close is still in flight. */
 		if (is_escape_suppressed_by_modal()) return
 
 		key_event.preventDefault()
@@ -831,6 +836,9 @@
 		reset_blur_defer_flags()
 		await update({ reset: false })
 		reset_blur_defer_flags()
+		/* Same task id skips the seed $effect; align with load data so normalized fields (e.g. rrule) are not left dirty. */
+		await tick()
+		sync_form_from_task_item()
 		await run_after_successful_update(reason, is_saved_via_blur_commit)
 		reset_blur_defer_flags()
 

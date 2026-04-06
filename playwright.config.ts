@@ -38,6 +38,7 @@ const getWebServerConfig = () => {
 			url: BASE_URL,
 			timeout: CI_TIMEOUT,
 			reuseExistingServer: false,
+			env: { E2E_CLEANUP_ENABLED: '1' },
 		}
 	}
 	// 将来的に staging 環境を追加する場合
@@ -47,10 +48,12 @@ const getWebServerConfig = () => {
 		url: BASE_URL,
 		timeout: LOCAL_TIMEOUT,
 		reuseExistingServer: true,
+		env: { E2E_CLEANUP_ENABLED: '1' },
 	}
 }
 
 export default defineConfig({
+	globalTeardown: './e2e/global-teardown',
 	webServer: getWebServerConfig(),
 	testDir: 'e2e',
 	fullyParallel: true,

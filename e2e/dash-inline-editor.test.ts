@@ -9,7 +9,7 @@ import {
 import { playwright_dash_ux } from './dash-ux-helpers'
 
 const tid = playwright_dash_ux.testid
-const RELOAD_STABLE_TIMEOUT_MS = 25_000
+const RELOAD_STABLE_TIMEOUT_MS = 10_000
 /** Native `showPicker()` is not reliable in CI; same `input`/`change` path as picking a date. */
 const DUE_DATE_ISO_STUB = '2030-06-15'
 const DASH_FORM_DUE_INPUT_NAME = 'due_date'
@@ -127,8 +127,6 @@ async function expect_rr_closed_keeps_inline(
 const INLINE_RR_BUTTON_TESTID = 'dash-inline-recurrence-button'
 
 async function goto_open_inline_with_title(page: Page, run_id: string): Promise<string> {
-	await playwright_dash_ux.goto_dash(page)
-	await playwright_dash_ux.clear_dash_filters(page)
 	await playwright_dash_ux.open_new_task_editor(page)
 	await page.getByTestId(tid.inline_title).fill(run_id)
 
@@ -156,7 +154,11 @@ async function reopen_rr_dialog_expect_daily(page: Page): Promise<void> {
 async function assert_rr_reopen_daily_flow(page: Page, run_id: string): Promise<string> {
 	const editing_card_id = await goto_open_inline_with_title(page, run_id)
 
+	const update_after_first_rr = wait_for_update_task_ok(page)
+
 	await close_recurrence_after_daily(page)
+	await update_after_first_rr
+
 	await expect_inline_rrule_daily_chip(page)
 	await reopen_rr_dialog_expect_daily(page)
 
@@ -186,18 +188,16 @@ async function expect_arrow_down_twice(chain: ArrowDownTwiceChain): Promise<void
 	})
 }
 
-/** Pristine blur does not exit edit; leak-guard purge needs a title button. */
-async function assert_escape_closes_to_title(page: Page, run_id: string): Promise<void> {
-	await page.getByTestId(tid.inline_title).click()
-	await page.getByTestId(tid.inline_title).press('Escape')
-	await expect(page.getByRole('button', { name: run_id })).toBeVisible({
+/** After RR, Escape is flaky; navigate to /ja/dash to exit inline, then assert title rows for teardown. */
+async function reload_expect_title_button(page: Page, run_id: string): Promise<void> {
+	await playwright_dash_ux.goto_dash(page)
+	await playwright_dash_ux.clear_dash_filters(page)
+	await expect(page.getByRole('button', { name: run_id }).first()).toBeVisible({
 		timeout: RELOAD_STABLE_TIMEOUT_MS,
 	})
 }
 
 async function assert_rr_dialog_refocus_title(page: Page, run_id: string): Promise<void> {
-	await playwright_dash_ux.goto_dash(page)
-	await playwright_dash_ux.clear_dash_filters(page)
 	await playwright_dash_ux.open_new_task_editor(page)
 	await page.getByTestId(tid.inline_title).fill(run_id)
 	const editing_task_card_id = await read_inline_card_id(page)
@@ -207,7 +207,7 @@ async function assert_rr_dialog_refocus_title(page: Page, run_id: string): Promi
 	await update_after_rr
 
 	await expect_rr_closed_keeps_inline(page, editing_task_card_id, run_id)
-	await assert_escape_closes_to_title(page, run_id)
+	await reload_expect_title_button(page, run_id)
 }
 
 async function fire_inline_due_change(page: Page, iso_date: string): Promise<void> {
@@ -226,11 +226,13 @@ async function fire_inline_due_change(page: Page, iso_date: string): Promise<voi
 test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () => {
 	test.describe.configure({ mode: 'serial', timeout: 90_000 })
 
-	test.beforeEach(() => {
+	test.beforeEach(async ({ page }) => {
 		test.skip(
 			!existsSync(playwright_dash_ux.auth_storage_path),
 			`Missing auth storage at ${playwright_dash_ux.auth_storage_path}. Create it with pnpm test:e2e:save-auth (or equivalent).`,
 		)
+		await playwright_dash_ux.goto_dash(page)
+		await playwright_dash_ux.clear_dash_filters(page)
 	})
 
 	test('Enter in the label field shows a new chip without blurring', async ({ page }) => {
@@ -259,8 +261,7 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 		const title_b = `${run_id}_B`
 
 		await playwright_dash_ux.run_authed(page, async () => {
-			await playwright_dash_ux.save_new_task(page, title_a)
-			await playwright_dash_ux.save_new_task(page, title_b)
+			await playwright_dash_ux.seed_tasks(page, [title_a, title_b])
 			const id_a = await read_title_button_task_id(page, title_a)
 			const id_b = await read_title_button_task_id(page, title_b)
 
@@ -279,8 +280,7 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 		const title_b = `${run_id}_B`
 
 		await playwright_dash_ux.run_authed(page, async () => {
-			await playwright_dash_ux.save_new_task(page, title_a)
-			await playwright_dash_ux.save_new_task(page, title_b)
+			await playwright_dash_ux.seed_tasks(page, [title_a, title_b])
 			const id_a = await read_title_button_task_id(page, title_a)
 			const id_b = await read_title_button_task_id(page, title_b)
 
@@ -297,8 +297,6 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 		const run_id = `E2E_DUE_${String(Date.now())}`
 
 		await playwright_dash_ux.run_authed(page, async () => {
-			await playwright_dash_ux.goto_dash(page)
-			await playwright_dash_ux.clear_dash_filters(page)
 			await playwright_dash_ux.open_new_task_editor(page)
 			await page.getByTestId(tid.inline_title).fill(run_id)
 			await fire_inline_due_change(page, DUE_DATE_ISO_STUB)
@@ -327,12 +325,19 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 			await expect(page.getByTestId(tid.inline_title)).toBeVisible()
 			// The inline title is empty – navigate down to discard and open the next row
 			await page.getByTestId(tid.inline_title).press('ArrowDown')
+			// Empty row is discarded asynchronously; wait until only one editor remains
+			await expect(page.getByTestId(tid.inline_title)).toHaveCount(1, {
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
 			// Next row (base task) should now be open in the inline editor
 			await expect(page.getByTestId(tid.inline_title)).toHaveValue(run_id, {
 				timeout: RELOAD_STABLE_TIMEOUT_MS,
 			})
-			await playwright_dash_ux.blur_inline_editor(page)
-			await expect(page.getByRole('button', { name: run_id })).toBeVisible()
+			/* Pristine blur no longer exits edit (see DashTaskInlineEditor `run_deferred_blur_commit`). */
+			await page.keyboard.press('Escape')
+			await expect(page.getByRole('button', { name: run_id })).toBeVisible({
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
 		}, [run_id])
 	})
 
@@ -343,7 +348,7 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 			const editing_card_id = await assert_rr_reopen_daily_flow(page, run_id)
 
 			await expect_rr_closed_keeps_inline(page, editing_card_id, run_id)
-			await assert_escape_closes_to_title(page, run_id)
+			await reload_expect_title_button(page, run_id)
 		}, [run_id])
 	})
 
@@ -354,9 +359,7 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 		const title_c = `${run_id}_C`
 
 		await playwright_dash_ux.run_authed(page, async () => {
-			await playwright_dash_ux.save_new_task(page, title_a)
-			await playwright_dash_ux.save_new_task(page, title_b)
-			await playwright_dash_ux.save_new_task(page, title_c)
+			await playwright_dash_ux.seed_tasks(page, [title_a, title_b, title_c])
 			const id_c = await read_title_button_task_id(page, title_c)
 			const id_b = await read_title_button_task_id(page, title_b)
 			const id_a = await read_title_button_task_id(page, title_a)

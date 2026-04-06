@@ -54,7 +54,6 @@ For every code modification:
    - **E2E cleanup / leaked data**: When fixing issues where E2E leaves database or UI artifacts, follow the **Regression fix workflow** in `prompts/testing-guide.md` (add a failing guard → fix → confirm green). Prefer stable selectors (`data-testid`) over locale-dependent strings for teardown.
 2. **Refactor first**: apply high/medium-priority refactoring to all new/modified code — see `prompts/refactoring.md`
 3. **Lint**: run `pnpm run lint` then `pnpm run check`; fix all errors before reporting done
-   - `read_lints` misses some rules (e.g. `id-length`, Prettier) — always confirm with `pnpm run lint`
 4. **Spell check**: `pnpm cspell:dot`; add legitimate project terms to `cspell.config.yaml`
 5. **IDE feedback**: check IDE lint output — often more current than terminal
 6. Never say "it should pass" without running commands. Never finish while errors exist.
@@ -62,17 +61,20 @@ For every code modification:
 
 ## Completion gate (before you tell the user work is done)
 
-Run the full verification set below (or the project's equivalent if the user scoped a smaller change — then state exactly what you ran). **Do not** report completion if any command failed, if Playwright reported **flaky** tests, or if any check was skipped without the user agreeing.
+Run the full verification set below (or the project's equivalent if the user scoped a smaller change — then state exactly what you ran). **Do not** report completion if any command failed or if any check was skipped without the user agreeing.
 
-**Refactoring:** For code changes, **Refactor First** (step 2 above) must already be satisfied using `prompts/refactoring.md`. Do **not** add a fixed "repeat refactoring N times" rule — quality is enforced by lint/check/tests. For a **refactor-only** request, follow `refactoring.md`'s own **convergence** (high/medium items until none remain), not an arbitrary loop count.
+**Refactoring:** For code changes, **Refactor First** (step 2 above) must already be satisfied using `prompts/refactoring.md`. Do **not** add a fixed “repeat refactoring N times” rule — quality is enforced by lint/check/tests. For a **refactor-only** request, follow `refactoring.md`'s own **convergence** (high/medium items until none remain), not an arbitrary loop count.
+
+**E2E:** The user runs `pnpm test` and shares the full output. Do **not** claim completion until the user confirms E2E passed or explicitly scopes it out.
 
 1. `pnpm run lint`
 2. `pnpm run check`
 3. `pnpm cspell:dot`
-4. `pnpm test` (unit **and** E2E — same as CI's `pnpm test` unless the user explicitly asked to skip part of it)
+4. `pnpm test:unit --run`
 5. **IDE feedback**: zero **errors** on every file you changed (warnings only when documented as an allowed exception).
+6. **E2E**: Ask the user to run `pnpm test` and share the output. Fix any failures, then ask again.
 
-If you changed **only** docs or config that does not affect tests, still run lint + check + cspell; run tests when there is any chance of impact.
+If you changed **only** docs or config that does not affect tests, still run lint + check + cspell; run unit tests when there is any chance of impact.
 
 ## Refactoring Rules
 

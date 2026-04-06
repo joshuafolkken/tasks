@@ -175,6 +175,22 @@ async function apply_task_title_lines_update(
 	return { ok: true, focus_task_id }
 }
 
+async function seed_open_tasks_at_top(user_id: string, titles: Array<string>): Promise<void> {
+	for (const title of titles) {
+		const parsed: ParsedCreateTask = {
+			title,
+			detail: undefined,
+			due_date: undefined,
+			recurrence_rule: undefined,
+			label_names: [],
+			insert_after_task_id: undefined,
+			insert_at_top: true,
+		}
+
+		await create_task_row(user_id, parsed)
+	}
+}
+
 function compute_reorder_sort_order(
 	previous_sort_order: string,
 	next_sort_order: string,
@@ -193,6 +209,7 @@ function compute_reorder_sort_order(
 
 const dash_server_actions = {
 	create_task_row,
+	seed_open_tasks_at_top,
 	update_open_task_row,
 	apply_task_title_lines_update,
 	apply_task_complete,
