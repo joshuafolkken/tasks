@@ -5,6 +5,10 @@ import type { Session, User } from 'better-auth'
 declare global {
 	// Module-scoped `declare namespace Cloudflare` does not merge with Wrangler's global
 	// `Cloudflare.Env` (e.g. CI `wrangler types` omits secrets not in wrangler.jsonc `vars`).
+	interface ImportMetaEnv {
+		readonly E2E_CLEANUP_ENABLED: boolean
+	}
+
 	namespace Cloudflare {
 		interface Env {
 			BETTER_AUTH_SECRET: string

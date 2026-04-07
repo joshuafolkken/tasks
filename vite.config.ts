@@ -9,6 +9,7 @@ const package_json = JSON.parse(readFileSync('./package.json', 'utf-8'))
 export default defineConfig({
 	define: {
 		'import.meta.env.APP_VERSION': JSON.stringify(package_json.version),
+		'import.meta.env.E2E_CLEANUP_ENABLED': process.env['E2E_CLEANUP_ENABLED'] === '1',
 	},
 	server: {
 		allowedHosts: ['.trycloudflare.com'],
