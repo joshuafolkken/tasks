@@ -1,4 +1,4 @@
-version: '0.2'
+version: "0.2"
 language: en
 files:
   - src/**/*
@@ -10,112 +10,113 @@ ignorePaths:
   - build/**
   - .svelte-kit/**
   - dist/**
-  - '**/*.d.ts'
-  - '**/*.map'
-  - '**/*.min.js'
+  - "**/*.d.ts"
+  - "**/*.map"
+  - "**/*.min.js"
   - .git/**/*
   - .gitignore
-  - '**/*.svg'
-  - 'pnpm-lock.yaml'
-  - '.env*'
+  - "**/*.svg"
+  - pnpm-lock.yaml
+  - .env*
   - src/lib/posts/*.md
-  - 'prompts/blog-drafts/**/*.md'
-  - 'prompts/antigravity-blog-writer.md'
-  - 'playwright-report/**'
-  - '.pnpm-store/**'
-  - 'project.inlang/cache/**'
-  - 'src/lib/paraglide/server.js'
-  - 'src/lib/paraglide/runtime.js'
-  - 'src/stories/**'
-  - 'messages/km.json'
-  - 'messages/uz.json'
-  - 'src/lib/paraglide/messages/**'
-  - 'src/lib/locale/locale-names.ts'
-  - 'drizzle/migrations/**'
-  - 'test-results/**'
-  - 'src/lib/paraglide/**'
-  - '.wrangler/**'
-  - 'wrangler.jsonc'
-  - '.fast-check/**'
+  - prompts/blog-drafts/**/*.md
+  - prompts/antigravity-blog-writer.md
+  - playwright-report/**
+  - .pnpm-store/**
+  - project.inlang/cache/**
+  - src/lib/paraglide/server.js
+  - src/lib/paraglide/runtime.js
+  - src/stories/**
+  - messages/km.json
+  - messages/uz.json
+  - src/lib/paraglide/messages/**
+  - src/lib/locale/locale-names.ts
+  - drizzle/migrations/**
+  - test-results/**
+  - src/lib/paraglide/**
+  - .wrangler/**
+  - wrangler.jsonc
+  - .fast-check/**
   - src/lib/server/db/auth.schema.ts
-  - 'e2e/.auth/**'
+  - e2e/.auth/**
 words:
   - aboutads
   - aikidosec
   - appleboy
   - autorestart
   - bttf
+  - byday
+  - bymonth
+  - bymonthday
+  - bysetpos
   - Caddyfile
   - CCPA
+  - codegen
+  - cooldown
   - Csvg
   - darkmode
+  - dndzone
   - EDITMSG
+  - EDSC
   - elif
+  - esbuild
+  - eslintcache
   - fastcgi
   - Folkken
   - Frontmatter
+  - GHSA
+  - GHsas
   - gsub
   - Hotspots
   - ianvs
+  - inlang
   - joshuafolkken
   - joshuastudio
   - Kaku
   - KAWAII
+  - Kysely
+  - lefthook
   - libsql
   - Mdsvex
+  - miniflare
   - mischeck
+  - ndays
   - networkidle
+  - nmonths
   - noopener
   - noreferrer
+  - nweeks
+  - nyears
+  - octocat
+  - onconsider
+  - onfinalize
   - opencollective
+  - paraglide
   - phpstorm
   - Platformer
   - Platformers
   - Qube
+  - reassignable
   - redir
+  - RROP
+  - rrule
   - Shippori
   - sonarcloud
   - sonarjs
   - sonarqube
   - Stylesheet
+  - subsecond
+  - supabase
   - TERE
+  - trycloudflare
   - turso
-  - zstd
+  - Typesafe
   - uncomplete
   - uncompleting
-  - unrs
-  - esbuild
-  - lefthook
-  - cooldown
-  - eslintcache
-  - octocat
-  - workerd
-  - webp
-  - vite
-  - inlang
-  - paraglide
-  - Kysely
-  - Typesafe
-  - supabase
-  - GHsas
-  - GHSA
-  - trycloudflare
-  - rrule
-  - byday
-  - bymonthday
-  - bysetpos
-  - bymonth
-  - dndzone
-  - onconsider
-  - onfinalize
   - unixepoch
-  - subsecond
-  - codegen
-  - reassignable
   - unparsed
-  - ndays
-  - nweeks
-  - nmonths
-  - nyears
-  - EDSC
-  - RROP
+  - unrs
+  - vite
+  - webp
+  - workerd
+  - zstd
