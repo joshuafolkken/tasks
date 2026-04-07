@@ -4,6 +4,7 @@ import { SAVED_AUTH_STORAGE } from './e2e/saved-auth-storage-path'
 
 // 環境判定と設定値の定数化
 const isCI = Boolean(process.env['CI'])
+const isPR = process.env['GITHUB_EVENT_NAME'] === 'pull_request'
 // const isStaging = Boolean(process.env['STAGING']) // 将来の拡張用
 
 const DEV_PORT = 5173
@@ -57,8 +58,9 @@ export default defineConfig({
 	webServer: getWebServerConfig(),
 	testDir: 'e2e',
 	fullyParallel: true,
-	// Shared `e2e/.auth/user.json`: parallel workers mutate the same account and flake (dash races).
-	workers: 1,
+	// Two workers: dash-ux.test.ts and dash-inline-editor.test.ts run in parallel.
+	// Safe because cleanup is now title-specific (no cross-worker interference).
+	workers: 2,
 	// リトライ設定（CI でのみ有効、ローカルでは即座に失敗を確認）
 	retries: isCI ? 2 : 0,
 	// タイムアウト設定を最適化
@@ -77,7 +79,7 @@ export default defineConfig({
 		},
 		{
 			name: 'e2e-main',
-			timeout: 120_000,
+			timeout: 60_000,
 			dependencies: ['e2e-guest'],
 			testIgnore: /dash-leak-check\.test\.ts|dash-guest\.test\.ts|demo\.test\.ts/u,
 			use: {
@@ -85,16 +87,21 @@ export default defineConfig({
 				...(authed_storage_state ? { storageState: authed_storage_state } : {}),
 			},
 		},
-		{
-			name: 'e2e-leak-check',
-			testMatch: /dash-leak-check\.test\.ts/u,
-			timeout: 180_000,
-			dependencies: ['e2e-main'],
-			use: {
-				...chrome_desktop_use,
-				...(authed_storage_state ? { storageState: authed_storage_state } : {}),
-			},
-		},
+		// leak-check は PR では実行しない（main へのプッシュ時のみ）
+		...(isPR
+			? []
+			: [
+					{
+						name: 'e2e-leak-check',
+						testMatch: /dash-leak-check\.test\.ts/u,
+						timeout: 180_000,
+						dependencies: ['e2e-main'],
+						use: {
+							...chrome_desktop_use,
+							...(authed_storage_state ? { storageState: authed_storage_state } : {}),
+						},
+					},
+				]),
 	],
 	// レポート設定
 	reporter: isCI ? [['html'], ['github']] : [['html'], ['list']],

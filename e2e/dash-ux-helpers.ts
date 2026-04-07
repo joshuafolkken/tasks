@@ -220,9 +220,9 @@ async function ui_cleanup_dash_created_tasks(
 	await discard_empty_inline_if_open(page)
 }
 
-async function try_api_cleanup(page: Page): Promise<boolean> {
+async function try_api_cleanup(page: Page, titles: Array<string>): Promise<boolean> {
 	try {
-		const response = await page.request.post(CLEANUP_API_PATH)
+		const response = await page.request.post(CLEANUP_API_PATH, { data: { titles } })
 
 		return response.ok()
 	} catch {
@@ -231,8 +231,11 @@ async function try_api_cleanup(page: Page): Promise<boolean> {
 }
 
 async function cleanup_dash_created_tasks(page: Page, purge_titles: Array<string>): Promise<void> {
-	const is_api_ok = await try_api_cleanup(page)
-	if (is_api_ok) return
+	// Skip API cleanup when no titles: avoids global teardown that would delete other workers' tasks.
+	if (purge_titles.length > 0) {
+		const is_api_ok = await try_api_cleanup(page, purge_titles)
+		if (is_api_ok) return
+	}
 
 	await ui_cleanup_dash_created_tasks(page, purge_titles)
 }
