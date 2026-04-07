@@ -33,7 +33,7 @@
 		"build": "vite build",
 		"deploy": "pnpm build && wrangler deploy",
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
-		"preview:ci": "wrangler d1 execute tasks-db --local --file=./drizzle/ci-bootstrap.sql && wrangler dev --local .svelte-kit/cloudflare/_worker.js --port 4173 --var E2E_CLEANUP_ENABLED:1",
+		"preview:ci": "echo 'E2E_CLEANUP_ENABLED=1' > .dev.vars && wrangler d1 execute tasks-db --local --file=./drizzle/ci-bootstrap.sql && wrangler dev --local .svelte-kit/cloudflare/_worker.js --port 4173",
 		"preview:normal": "vite preview",
 		"preview:stop": "kill-port 4173 || true",
 		"check": "svelte-kit sync && svelte-fast-check --incremental",
