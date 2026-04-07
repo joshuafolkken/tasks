@@ -57,7 +57,10 @@ words:
   - darkmode
   - dndzone
   - EDITMSG
+  - CTRLN
+  - CTRLU
   - EDSC
+  - EFOC
   - elif
   - esbuild
   - eslintcache

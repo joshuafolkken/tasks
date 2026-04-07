@@ -1,4 +1,4 @@
-/* eslint-disable max-lines, max-lines-per-function -- Playwright: nested describes share helpers */
+/* eslint-disable max-lines, max-lines-per-function, max-statements -- Playwright: nested describes share helpers */
 import { existsSync } from 'node:fs'
 import { expect, test, type Locator, type Page, type Response } from '@playwright/test'
 import {
@@ -375,5 +375,77 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 				end_title: title_a,
 			})
 		}, [title_a, title_b, title_c])
+	})
+
+	test('ArrowDown from an empty new row focuses the title of the destination row', async ({
+		page,
+	}) => {
+		const run_id = `E2E_EFOC_${String(Date.now())}`
+
+		await playwright_dash_ux.run_authed(page, async () => {
+			await playwright_dash_ux.save_new_task(page, run_id)
+			await playwright_dash_ux.open_new_task_editor(page)
+			await expect(page.getByTestId(tid.inline_title)).toBeVisible()
+			await page.getByTestId(tid.inline_title).press('ArrowDown')
+			await expect(page.getByTestId(tid.inline_title)).toHaveCount(1, {
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
+			await expect_dom_focus_on(page.getByTestId(tid.inline_title))
+		}, [run_id])
+	})
+
+	test('Ctrl+N on the title navigates down to the next row', async ({ page }) => {
+		const run_id = `E2E_CTRLN_${String(Date.now())}`
+		const title_a = `${run_id}_A`
+		const title_b = `${run_id}_B`
+
+		await playwright_dash_ux.run_authed(page, async () => {
+			await playwright_dash_ux.seed_tasks(page, [title_a, title_b])
+			const id_b = await read_title_button_task_id(page, title_b)
+			const id_a = await read_title_button_task_id(page, title_a)
+
+			await page.getByRole('button', { name: title_b }).click()
+			await expect(title_input_in_task_card(page, id_b)).toHaveValue(title_b)
+			await title_input_in_task_card(page, id_b).press('Control+n')
+			await expect(title_input_in_task_card(page, id_a)).toHaveValue(title_a, {
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
+			await expect_dom_focus_on(title_input_in_task_card(page, id_a))
+		}, [title_a, title_b])
+	})
+
+	test('Ctrl+U on the title navigates up to the previous row', async ({ page }) => {
+		const run_id = `E2E_CTRLU_${String(Date.now())}`
+		const title_a = `${run_id}_A`
+		const title_b = `${run_id}_B`
+
+		await playwright_dash_ux.run_authed(page, async () => {
+			await playwright_dash_ux.seed_tasks(page, [title_a, title_b])
+			const id_a = await read_title_button_task_id(page, title_a)
+			const id_b = await read_title_button_task_id(page, title_b)
+
+			await page.getByRole('button', { name: title_a }).click()
+			await expect(title_input_in_task_card(page, id_a)).toHaveValue(title_a)
+			await title_input_in_task_card(page, id_a).press('Control+u')
+			await expect(title_input_in_task_card(page, id_b)).toHaveValue(title_b, {
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
+			await expect_dom_focus_on(title_input_in_task_card(page, id_b))
+		}, [title_a, title_b])
+	})
+
+	test('Cmd+K shortcut focuses the search input', async ({ page }) => {
+		await page.keyboard.press('Meta+k')
+		await expect_dom_focus_on(page.getByTestId(tid.search))
+	})
+
+	test('Cmd+Shift+O shortcut opens a new task editor at the top', async ({ page }) => {
+		await playwright_dash_ux.run_authed(page, async () => {
+			await page.keyboard.press('Meta+Shift+O')
+			await expect(page.getByTestId(tid.inline_title)).toBeVisible({
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
+			await expect_dom_focus_on(page.getByTestId(tid.inline_title))
+		})
 	})
 })

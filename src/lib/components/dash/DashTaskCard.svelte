@@ -76,7 +76,7 @@
 	const lead_col = 'flex h-9 w-9 shrink-0 items-center justify-center'
 
 	const row_shell =
-		'flex gap-2 rounded-xl bg-white px-2 py-1.5 shadow-sm ring-1 ring-gray-900/5 dark:bg-gray-800 dark:ring-gray-700/50'
+		'flex gap-2 rounded-xl bg-white px-2 py-1.5 shadow-sm ring-1 ring-gray-900/5 transition-colors hover:bg-gray-50 dark:bg-gray-800 dark:ring-gray-700/50 dark:hover:bg-gray-700/60'
 
 	const dnd_task_mime = 'text/plain'
 </script>

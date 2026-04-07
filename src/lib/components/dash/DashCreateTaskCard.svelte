@@ -29,7 +29,7 @@
 	let last_seen_pulse = $state(0)
 
 	const shell_class =
-		'rounded-xl bg-white px-2 py-1.5 shadow-sm ring-1 ring-gray-900/5 dark:bg-gray-800 dark:ring-gray-700/50'
+		'rounded-xl bg-white px-2 py-1.5 shadow-sm ring-1 ring-gray-900/5 transition-colors hover:bg-gray-50 dark:bg-gray-800 dark:ring-gray-700/50 dark:hover:bg-gray-700/60'
 
 	const lead_col = 'flex h-9 w-9 shrink-0 items-center justify-center'
 
@@ -51,7 +51,7 @@
 				onclick={() => {
 					void on_quick_add_at_top?.()
 				}}
-				class="{lead_col} text-gray-400 transition-colors hover:text-blue-600 dark:hover:text-blue-400"
+				class="{lead_col} text-blue-600 dark:text-blue-400"
 				aria-label={m.dash_list_add_task()}
 			>
 				<PlusIcon class="h-5 w-5" />
@@ -62,7 +62,7 @@
 				onclick={() => {
 					void on_quick_add_at_top?.()
 				}}
-				class="min-w-0 flex-1 py-0 text-left text-sm text-gray-400 transition-colors hover:text-blue-600 dark:hover:text-blue-400"
+				class="min-w-0 flex-1 py-0 text-left text-sm text-blue-600 dark:text-blue-400"
 			>
 				{m.dash_list_add_task()}
 			</button>

@@ -68,6 +68,8 @@
 		}),
 	)
 
+	let search_input_element = $state<HTMLInputElement | undefined>()
+
 	let completing_task_id = $state<string | undefined>()
 	let deleting_task_id = $state<string | undefined>()
 	let uncompleting_task_id = $state<string | undefined>()
@@ -129,6 +131,35 @@
 		/* Svelte sync assign; snapshot above already guarded duplicate add. */
 		/* eslint-disable-next-line require-atomic-updates -- single writer after await */
 		if (new_task_id !== undefined) editing_task_id = new_task_id
+	}
+
+	function is_modifier_key_pressed(key_event: KeyboardEvent): boolean {
+		return key_event.metaKey || key_event.ctrlKey
+	}
+
+	function handle_search_focus_shortcut(key_event: KeyboardEvent): boolean {
+		if (!is_modifier_key_pressed(key_event) || key_event.shiftKey) return false
+		if (key_event.key !== 'k') return false
+
+		key_event.preventDefault()
+		search_input_element?.focus()
+
+		return true
+	}
+
+	function handle_add_task_shortcut(key_event: KeyboardEvent): void {
+		if (!is_modifier_key_pressed(key_event) || !key_event.shiftKey) return
+		if (key_event.key.toLowerCase() !== 'o') return
+
+		key_event.preventDefault()
+		void begin_add_at_top()
+	}
+
+	function handle_global_keydown(key_event: KeyboardEvent): void {
+		if (key_event.isComposing) return
+		if (handle_search_focus_shortcut(key_event)) return
+
+		handle_add_task_shortcut(key_event)
 	}
 
 	async function handle_blur_commit_saved(saved_task_id: string): Promise<void> {
@@ -265,6 +296,8 @@
 	}
 </script>
 
+<svelte:window onkeydown={handle_global_keydown} />
+
 <CenteredPageWithHeader
 	title={m.dash_title()}
 	page_title={m.dash_page_title()}
@@ -277,6 +310,7 @@
 		bind:search_query
 		bind:selected_label_ids
 		bind:filter_mode
+		bind:search_input_element
 		input_class={DASH_PAGE_UI.SEARCH_INPUT_CLASS}
 	/>
 

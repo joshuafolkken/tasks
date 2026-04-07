@@ -12,6 +12,7 @@
 		selected_label_ids?: Array<string>
 		filter_mode?: 'one' | 'and' | 'or'
 		input_class: string
+		search_input_element?: HTMLInputElement | undefined
 	}
 
 	let {
@@ -21,6 +22,7 @@
 		selected_label_ids = $bindable([]),
 		filter_mode = $bindable('one'),
 		input_class,
+		search_input_element = $bindable(),
 	}: Props = $props()
 
 	function toggle_label_filter(label_id: string): void {
@@ -78,6 +80,7 @@
 			<input
 				type="search"
 				data-testid="dash-search-input"
+				bind:this={search_input_element}
 				bind:value={search_query}
 				placeholder={m.dash_search_placeholder()}
 				class="{input_class} min-w-0 flex-1"

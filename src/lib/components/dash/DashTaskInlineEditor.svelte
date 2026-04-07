@@ -96,6 +96,8 @@
 	let is_rr_dialog_session = false
 	/** `HTMLDialogElement.open` can stay true for one frame after `close()`; still submit from `onclose`. */
 	let is_rr_post_close_submit = false
+	/** Prevents the focusout path from triggering a second discard when arrow navigation already handled it. */
+	let is_arrow_nav_discard_active = false
 
 	function clear_blur_discard_timer(): void {
 		if (blur_discard_timer === undefined) return
@@ -571,6 +573,7 @@
 
 	async function apply_empty_blur_outcome(): Promise<void> {
 		if (is_node_inside_add_task_region(document.activeElement)) return
+		if (is_arrow_nav_discard_active) return
 
 		await run_discard_empty_animated()
 	}
@@ -707,18 +710,30 @@
 		return key_event.key === 'Enter' && !key_event.shiftKey && !key_event.isComposing
 	}
 
+	function read_ctrl_nav_direction(key_event: KeyboardEvent): 'up' | 'down' | undefined {
+		if (!key_event.ctrlKey) return undefined
+		if (key_event.key === 'u') return 'up'
+		if (key_event.key === 'n') return 'down'
+
+		return undefined
+	}
+
 	function read_vertical_arrow_direction(key_event: KeyboardEvent): 'up' | 'down' | undefined {
 		if (key_event.key === 'ArrowUp') return 'up'
 		if (key_event.key === 'ArrowDown') return 'down'
 
-		return undefined
+		return read_ctrl_nav_direction(key_event)
 	}
 
 	function handle_arrow_without_title(direction: 'up' | 'down'): void {
 		if (!is_never_titled_row()) revert_to_task_item()
 
 		on_navigate_arrow?.(direction)
-		if (is_never_titled_row()) void on_try_discard_empty?.()
+
+		if (is_never_titled_row()) {
+			is_arrow_nav_discard_active = true
+			void on_try_discard_empty?.()
+		}
 	}
 
 	function handle_arrow_with_title(direction: 'up' | 'down'): void {
@@ -757,9 +772,7 @@
 	}
 
 	function handle_title_keydown(key_event: KeyboardEvent): void {
-		const is_arrow = key_event.key === 'ArrowUp' || key_event.key === 'ArrowDown'
-
-		if (is_arrow) {
+		if (read_vertical_arrow_direction(key_event) !== undefined) {
 			handle_arrow_navigation(key_event)
 
 			return
