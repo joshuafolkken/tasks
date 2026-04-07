@@ -15,6 +15,7 @@ import { SAVED_AUTH_STORAGE } from './saved-auth-storage-path'
 const TASK_CARD_ATTR = 'data-dash-task-card'
 const INLINE_EDITOR_OPEN_TIMEOUT_MS = 30_000
 const CREATE_RESPONSE_WAIT_MS = 12_000
+const COMPLETE_RESPONSE_WAIT_MS = 12_000
 const CLEANUP_API_PATH = '/api/test/cleanup-tasks'
 const empty_title_purge_max_passes = 15
 
@@ -124,11 +125,20 @@ async function seed_tasks(page: Page, titles: Array<string>): Promise<void> {
 }
 
 async function complete_task_by_text(page: Page, run_id: string): Promise<void> {
+	const complete_response = page.waitForResponse(
+		(response) =>
+			response.request().method() === 'POST' &&
+			response.url().includes('?/complete') &&
+			response.ok(),
+		{ timeout: COMPLETE_RESPONSE_WAIT_MS },
+	)
+
 	await page
 		.getByTestId(testid.task_row)
 		.filter({ hasText: run_id })
 		.getByTestId(testid.complete)
 		.click()
+	await complete_response
 }
 
 async function inline_title_via_button(
@@ -234,6 +244,7 @@ async function cleanup_dash_created_tasks(page: Page, purge_titles: Array<string
 	// Skip API cleanup when no titles: avoids global teardown that would delete other workers' tasks.
 	if (purge_titles.length > 0) {
 		const is_api_ok = await try_api_cleanup(page, purge_titles)
+
 		if (is_api_ok) return
 	}
 

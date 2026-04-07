@@ -119,41 +119,39 @@
 				</a>
 			</div>
 		</div>
-		{#if data.labels.length > 0}
-			<div class="flex flex-wrap items-center gap-1.5">
+		<div class="flex flex-wrap items-center gap-1.5">
+			<button
+				type="button"
+				data-testid="dash-filter-mode-toggle"
+				onclick={cycle_filter_mode}
+				class="rounded-md border border-gray-300 px-2 py-0.5 font-mono text-xs font-medium text-gray-600 transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-gray-600 dark:text-gray-400"
+			>
+				{filter_mode_label()}
+			</button>
+			{#each data.labels as label_row (label_row.id)}
 				<button
 					type="button"
-					data-testid="dash-filter-mode-toggle"
-					onclick={cycle_filter_mode}
-					class="rounded-md border border-gray-300 px-2 py-0.5 font-mono text-xs font-medium text-gray-600 transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-gray-600 dark:text-gray-400"
+					onclick={() => {
+						toggle_label_filter(label_row.id)
+					}}
+					class={dash_display.label_chip_filter_class(
+						label_row.name,
+						selected_label_ids.includes(label_row.id),
+					)}
 				>
-					{filter_mode_label()}
+					{label_row.name}
 				</button>
-				{#each data.labels as label_row (label_row.id)}
-					<button
-						type="button"
-						onclick={() => {
-							toggle_label_filter(label_row.id)
-						}}
-						class={dash_display.label_chip_filter_class(
-							label_row.name,
-							selected_label_ids.includes(label_row.id),
-						)}
-					>
-						{label_row.name}
-					</button>
-				{/each}
-				{#if selected_label_ids.length > 0}
-					<button
-						type="button"
-						data-testid="dash-filter-clear-labels"
-						onclick={() => (selected_label_ids = [])}
-						class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-					>
-						{m.dash_filter_clear()}
-					</button>
-				{/if}
-			</div>
-		{/if}
+			{/each}
+			{#if selected_label_ids.length > 0}
+				<button
+					type="button"
+					data-testid="dash-filter-clear-labels"
+					onclick={() => (selected_label_ids = [])}
+					class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+				>
+					{m.dash_filter_clear()}
+				</button>
+			{/if}
+		</div>
 	</div>
 </div>

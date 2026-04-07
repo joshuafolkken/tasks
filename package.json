@@ -47,7 +47,7 @@
 		"format:eslint": "eslint . --fix --cache --cache-strategy content",
 		"test:unit": "vitest",
 		"test": "pnpm test:unit --run && pnpm test:e2e",
-		"test:e2e": "playwright test",
+		"test:e2e": "kill-port 5173 4173 || true && playwright test",
 		"test:e2e:smoke": "playwright test e2e/dash.test.ts e2e/demo.test.ts e2e/dash-guest.test.ts",
 		"test:e2e:dash-core": "playwright test e2e/dash-ux.test.ts e2e/dash-inline-editor.test.ts e2e/dash.test.ts",
 		"test:e2e:save-auth": "tsx scripts/save-playwright-auth-storage.ts",

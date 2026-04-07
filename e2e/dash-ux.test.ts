@@ -1,14 +1,13 @@
 /* eslint-disable max-lines-per-function -- Playwright: nested describes share helpers; splitting obscures flow */
 import { existsSync } from 'node:fs'
-import { expect, test, type Page } from '@playwright/test'
 import {
 	DASH_JA_COMPLETED_ON_PREFIX,
 	DASH_JA_RECURRENCE_BUTTON,
 	DASH_JA_TAB_ACTIVE,
-	DASH_JA_TAB_COMPLETED,
 	DASH_JA_UNCOMPLETE_TASK_ARIA,
 } from './dash-ja-strings'
 import { playwright_dash_ux } from './dash-ux-helpers'
+import { expect, test, type Page } from './worker-fixtures'
 
 const tid = playwright_dash_ux.testid
 const RELOAD_STABLE_TIMEOUT_MS = 25_000
@@ -51,18 +50,25 @@ async function expect_and_or_search_rows(page: Page, run_id: string): Promise<vo
 	})
 }
 
-test.describe('/ja/dash authenticated UX (issue #18)', () => {
-	test.describe.configure({ mode: 'serial', timeout: 90_000 })
+async function open_done_tab_with_task(page: Page, run_id: string): Promise<void> {
+	await playwright_dash_ux.goto_done_tab_ja(page)
+	await expect(page.getByTestId(tid.task_row).filter({ hasText: run_id })).toBeVisible({
+		timeout: RELOAD_STABLE_TIMEOUT_MS,
+	})
+}
 
+test.describe('/ja/dash authenticated UX (issue #18)', () => {
 	test.beforeEach(async ({ page }) => {
-		test.skip(
-			!existsSync(playwright_dash_ux.auth_storage_path),
-			`Missing auth storage at ${playwright_dash_ux.auth_storage_path}. Create it with pnpm test:e2e:save-auth (or equivalent).`,
-		)
+		const worker_index = test.info().workerIndex
+		const { worker_auth_path } = await import('./e2e-constants')
+		const has_auth =
+			existsSync(worker_auth_path(worker_index)) || existsSync(playwright_dash_ux.auth_storage_path)
+
+		test.skip(!has_auth, 'Missing auth storage. Start server with E2E_CLEANUP_ENABLED=1.')
 		await playwright_dash_ux.goto_dash(page)
 		await playwright_dash_ux.clear_dash_filters(page)
 	})
-	/* Auth: `storageState` on the `e2e-main` Playwright project (saved cookies) — no UI login per test. */
+	/* Auth: worker-fixtures.ts injects per-worker storageState — no UI login per test. */
 
 	test.describe('Add task row', () => {
 		test('Add a task opens the editor at the top and focuses the title field', async ({ page }) => {
@@ -159,17 +165,12 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 				await expect(page.getByRole('button', { name: run_id })).toHaveCount(0, {
 					timeout: RELOAD_STABLE_TIMEOUT_MS,
 				})
-				await Promise.all([
-					page.waitForURL(/[?&]done=1/u, { timeout: SPA_TAB_URL_WAIT_MS }),
-					page.getByRole('link', { name: DASH_JA_TAB_COMPLETED }).click(),
-				])
-				await expect(page.getByText(run_id)).toBeVisible()
-				await Promise.all([
-					page.waitForURL((url) => !/[?&]done=1/u.test(url.href), {
-						timeout: SPA_TAB_URL_WAIT_MS,
-					}),
-					page.getByRole('link', { name: DASH_JA_TAB_ACTIVE }).click(),
-				])
+				await playwright_dash_ux.goto_done_tab_ja(page)
+				await expect(
+					page.getByTestId(tid.task_row).getByLabel(DASH_JA_UNCOMPLETE_TASK_ARIA).first(),
+				).toBeVisible({ timeout: RELOAD_STABLE_TIMEOUT_MS })
+				await playwright_dash_ux.goto_dash(page)
+				await expect(page).not.toHaveURL(/[?&]done=1/u, { timeout: SPA_TAB_URL_WAIT_MS })
 			}, [run_id])
 		})
 
@@ -182,22 +183,15 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 				await expect(page.getByRole('button', { name: run_id })).toHaveCount(0, {
 					timeout: RELOAD_STABLE_TIMEOUT_MS,
 				})
-				await Promise.all([
-					page.waitForURL(/[?&]done=1/u, { timeout: SPA_TAB_URL_WAIT_MS }),
-					page.getByRole('link', { name: DASH_JA_TAB_COMPLETED }).click(),
-				])
+				await open_done_tab_with_task(page, run_id)
 				await page
 					.getByTestId(tid.task_row)
 					.filter({ hasText: run_id })
 					.getByLabel(DASH_JA_UNCOMPLETE_TASK_ARIA)
 					.click()
 				await expect(page.getByTestId(tid.task_row).filter({ hasText: run_id })).toHaveCount(0)
-				await Promise.all([
-					page.waitForURL((url) => !/[?&]done=1/u.test(url.href), {
-						timeout: SPA_TAB_URL_WAIT_MS,
-					}),
-					page.getByRole('link', { name: DASH_JA_TAB_ACTIVE }).click(),
-				])
+				await page.getByRole('link', { name: DASH_JA_TAB_ACTIVE }).click()
+				await expect(page).not.toHaveURL(/[?&]done=1/u, { timeout: SPA_TAB_URL_WAIT_MS })
 				await expect(page.getByRole('button', { name: run_id })).toBeVisible()
 			}, [run_id])
 		})
@@ -211,10 +205,7 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 				await expect(page.getByRole('button', { name: run_id })).toHaveCount(0, {
 					timeout: RELOAD_STABLE_TIMEOUT_MS,
 				})
-				await Promise.all([
-					page.waitForURL(/[?&]done=1/u, { timeout: SPA_TAB_URL_WAIT_MS }),
-					page.getByRole('link', { name: DASH_JA_TAB_COMPLETED }).click(),
-				])
+				await open_done_tab_with_task(page, run_id)
 				await expect(
 					page
 						.getByTestId(tid.task_row)

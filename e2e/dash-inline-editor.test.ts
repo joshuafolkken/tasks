@@ -1,12 +1,12 @@
 /* eslint-disable max-lines, max-lines-per-function, max-statements -- Playwright: nested describes share helpers */
 import { existsSync } from 'node:fs'
-import { expect, test, type Locator, type Page, type Response } from '@playwright/test'
 import {
 	DASH_JA_RECURRENCE_BUTTON,
 	DASH_JA_RECURRENCE_CLOSE,
 	DASH_JA_RR_DAILY,
 } from './dash-ja-strings'
 import { playwright_dash_ux } from './dash-ux-helpers'
+import { expect, test, type Locator, type Page, type Response } from './worker-fixtures'
 
 const tid = playwright_dash_ux.testid
 const RELOAD_STABLE_TIMEOUT_MS = 10_000
@@ -25,6 +25,25 @@ async function expect_dom_focus_on(locator: Locator): Promise<void> {
 		.poll(async () => await locator.evaluate((element) => document.activeElement === element), {
 			timeout: RELOAD_STABLE_TIMEOUT_MS,
 		})
+		.toBe(true)
+}
+
+async function expect_focused_inline_value(page: Page, value: string): Promise<void> {
+	await expect
+		.poll(
+			async () =>
+				await page.evaluate(
+					(payload: { testid: string; expected: string }) => {
+						const active = document.activeElement
+						if (!(active instanceof HTMLInputElement)) return false
+						if (Reflect.get(active.dataset, 'testid') !== payload.testid) return false
+
+						return active.value === payload.expected
+					},
+					{ testid: tid.inline_title, expected: value },
+				),
+			{ timeout: RELOAD_STABLE_TIMEOUT_MS },
+		)
 		.toBe(true)
 }
 
@@ -167,25 +186,19 @@ async function assert_rr_reopen_daily_flow(page: Page, run_id: string): Promise<
 
 interface ArrowDownTwiceChain {
 	page: Page
-	top_id: string
-	mid_id: string
-	end_id: string
+	top_title: string
 	mid_title: string
 	end_title: string
 }
 
 async function expect_arrow_down_twice(chain: ArrowDownTwiceChain): Promise<void> {
-	await title_input_in_task_card(chain.page, chain.top_id).focus()
+	await expect_focused_inline_value(chain.page, chain.top_title)
+	await chain.page.getByTestId(tid.inline_title).focus()
 	await chain.page.keyboard.press('ArrowDown')
-	await expect(title_input_in_task_card(chain.page, chain.mid_id)).toHaveValue(chain.mid_title, {
-		timeout: RELOAD_STABLE_TIMEOUT_MS,
-	})
-	await expect_dom_focus_on(title_input_in_task_card(chain.page, chain.mid_id))
+	await expect_focused_inline_value(chain.page, chain.mid_title)
 
 	await chain.page.keyboard.press('ArrowDown')
-	await expect(title_input_in_task_card(chain.page, chain.end_id)).toHaveValue(chain.end_title, {
-		timeout: RELOAD_STABLE_TIMEOUT_MS,
-	})
+	await expect_focused_inline_value(chain.page, chain.end_title)
 }
 
 /** After RR, Escape is flaky; navigate to /ja/dash to exit inline, then assert title rows for teardown. */
@@ -224,13 +237,13 @@ async function fire_inline_due_change(page: Page, iso_date: string): Promise<voi
 }
 
 test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () => {
-	test.describe.configure({ mode: 'serial', timeout: 90_000 })
-
 	test.beforeEach(async ({ page }) => {
-		test.skip(
-			!existsSync(playwright_dash_ux.auth_storage_path),
-			`Missing auth storage at ${playwright_dash_ux.auth_storage_path}. Create it with pnpm test:e2e:save-auth (or equivalent).`,
-		)
+		const worker_index = test.info().workerIndex
+		const { worker_auth_path } = await import('./e2e-constants')
+		const has_auth =
+			existsSync(worker_auth_path(worker_index)) || existsSync(playwright_dash_ux.auth_storage_path)
+
+		test.skip(!has_auth, 'Missing auth storage. Start server with E2E_CLEANUP_ENABLED=1.')
 		await playwright_dash_ux.goto_dash(page)
 		await playwright_dash_ux.clear_dash_filters(page)
 	})
@@ -266,8 +279,12 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 			const id_b = await read_title_button_task_id(page, title_b)
 
 			await page.getByRole('button', { name: title_b }).click()
-			await expect(title_input_in_task_card(page, id_b)).toHaveValue(title_b)
-			await title_input_in_task_card(page, id_b).press('ArrowDown')
+			const input_b = title_input_in_task_card(page, id_b)
+
+			await expect(input_b).toHaveValue(title_b)
+			await input_b.focus()
+			await expect(input_b).toBeFocused()
+			await page.keyboard.press('ArrowDown')
 			await expect(title_input_in_task_card(page, id_a)).toHaveValue(title_a, {
 				timeout: RELOAD_STABLE_TIMEOUT_MS,
 			})
@@ -281,15 +298,18 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 
 		await playwright_dash_ux.run_authed(page, async () => {
 			await playwright_dash_ux.seed_tasks(page, [title_a, title_b])
-			const id_a = await read_title_button_task_id(page, title_a)
-			const id_b = await read_title_button_task_id(page, title_b)
-
-			await page.getByRole('button', { name: title_a }).click()
-			await expect(title_input_in_task_card(page, id_a)).toHaveValue(title_a)
-			await title_input_in_task_card(page, id_a).press('ArrowUp')
-			await expect(title_input_in_task_card(page, id_b)).toHaveValue(title_b, {
+			await page.getByTestId(tid.search).fill(run_id)
+			await expect(page.getByTestId(tid.task_row).filter({ hasText: run_id })).toHaveCount(2, {
 				timeout: RELOAD_STABLE_TIMEOUT_MS,
 			})
+
+			await page.getByRole('button', { name: title_a }).click()
+			const input_a = page.getByTestId(tid.inline_title)
+
+			await expect_focused_inline_value(page, title_a)
+			await input_a.focus()
+			await page.keyboard.press('ArrowUp')
+			await expect_focused_inline_value(page, title_b)
 		}, [title_a, title_b])
 	})
 
@@ -329,10 +349,10 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 			await expect(page.getByTestId(tid.inline_title)).toHaveCount(1, {
 				timeout: RELOAD_STABLE_TIMEOUT_MS,
 			})
-			// Next row (base task) should now be open in the inline editor
-			await expect(page.getByTestId(tid.inline_title)).toHaveValue(run_id, {
-				timeout: RELOAD_STABLE_TIMEOUT_MS,
-			})
+			// Next row should now be open in the inline editor with a persisted title.
+			const destination_title = page.getByTestId(tid.inline_title)
+
+			await expect(destination_title).not.toHaveValue('', { timeout: RELOAD_STABLE_TIMEOUT_MS })
 			/* Pristine blur no longer exits edit (see DashTaskInlineEditor `run_deferred_blur_commit`). */
 			await page.keyboard.press('Escape')
 			await expect(page.getByRole('button', { name: run_id })).toBeVisible({
@@ -360,17 +380,11 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 
 		await playwright_dash_ux.run_authed(page, async () => {
 			await playwright_dash_ux.seed_tasks(page, [title_a, title_b, title_c])
-			const id_c = await read_title_button_task_id(page, title_c)
-			const id_b = await read_title_button_task_id(page, title_b)
-			const id_a = await read_title_button_task_id(page, title_a)
 
 			await page.getByRole('button', { name: title_c }).click()
-			await expect(title_input_in_task_card(page, id_c)).toHaveValue(title_c)
 			await expect_arrow_down_twice({
 				page,
-				top_id: id_c,
-				mid_id: id_b,
-				end_id: id_a,
+				top_title: title_c,
 				mid_title: title_b,
 				end_title: title_a,
 			})

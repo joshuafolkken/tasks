@@ -1,6 +1,5 @@
-import { existsSync } from 'node:fs'
 import { defineConfig, devices } from '@playwright/test'
-import { SAVED_AUTH_STORAGE } from './e2e/saved-auth-storage-path'
+import { E2E_WORKER_COUNT } from './e2e/e2e-constants'
 
 // 環境判定と設定値の定数化
 const isCI = Boolean(process.env['CI'])
@@ -18,10 +17,6 @@ const TEST_TIMEOUT = 10_000
 const EXPECT_TIMEOUT = 5_000
 const ACTION_TIMEOUT = 5_000
 const NAVIGATION_TIMEOUT = 10_000
-
-const authed_storage_state = existsSync(SAVED_AUTH_STORAGE.FILE_PATH)
-	? SAVED_AUTH_STORAGE.FILE_PATH
-	: undefined
 
 const chrome_desktop_use = {
 	...devices['Desktop Chrome'],
@@ -44,23 +39,25 @@ const getWebServerConfig = () => {
 	}
 	// 将来的に staging 環境を追加する場合
 	// if (isStaging) { ... }
+	// kill-port in test:e2e script frees the port before this runs
 	return {
 		command: 'pnpm run dev',
 		url: BASE_URL,
 		timeout: LOCAL_TIMEOUT,
-		reuseExistingServer: true,
+		reuseExistingServer: false,
 		env: { E2E_CLEANUP_ENABLED: '1' },
 	}
 }
 
 export default defineConfig({
+	globalSetup: './e2e/global-setup',
 	globalTeardown: './e2e/global-teardown',
 	webServer: getWebServerConfig(),
 	testDir: 'e2e',
+	// Per-worker auth isolation lets every test run independently.
 	fullyParallel: true,
-	// Two workers: dash-ux.test.ts and dash-inline-editor.test.ts run in parallel.
-	// Safe because cleanup is now title-specific (no cross-worker interference).
-	workers: 2,
+	// Per-worker test users provide full DB isolation — each worker runs against its own account.
+	workers: E2E_WORKER_COUNT,
 	// リトライ設定（CI でのみ有効、ローカルでは即座に失敗を確認）
 	retries: isCI ? 2 : 0,
 	// タイムアウト設定を最適化
@@ -69,7 +66,7 @@ export default defineConfig({
 		timeout: EXPECT_TIMEOUT,
 	},
 	// `e2e-guest`: 未認証のまま `page` を使うテスト（`storageState` なし）
-	// `e2e-main` / `e2e-leak-check`: 保存済み `e2e/.auth/user.json` を `storageState` で注入（UI ログインはしない）
+	// `e2e-main` / `e2e-leak-check`: worker-fixtures.ts が worker ごとの storageState を注入
 	projects: [
 		{
 			name: 'e2e-guest',
@@ -82,10 +79,7 @@ export default defineConfig({
 			timeout: 60_000,
 			dependencies: ['e2e-guest'],
 			testIgnore: /dash-leak-check\.test\.ts|dash-guest\.test\.ts|demo\.test\.ts/u,
-			use: {
-				...chrome_desktop_use,
-				...(authed_storage_state ? { storageState: authed_storage_state } : {}),
-			},
+			use: chrome_desktop_use,
 		},
 		// leak-check は PR では実行しない（main へのプッシュ時のみ）
 		...(isPR
@@ -96,10 +90,7 @@ export default defineConfig({
 						testMatch: /dash-leak-check\.test\.ts/u,
 						timeout: 180_000,
 						dependencies: ['e2e-main'],
-						use: {
-							...chrome_desktop_use,
-							...(authed_storage_state ? { storageState: authed_storage_state } : {}),
-						},
+						use: chrome_desktop_use,
 					},
 				]),
 	],

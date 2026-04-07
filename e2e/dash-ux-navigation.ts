@@ -3,7 +3,12 @@ import { DASH_JA_PAGE_HEADING } from './dash-ja-strings'
 
 const DASH_GOTO_TIMEOUT_MS = 25_000
 const DASH_READY_TIMEOUT_MS = 15_000
-const NET_IDLE_GRACE_MS = 2000
+// Vite dev server rarely reaches networkidle; keep timeout short so it fails fast.
+// CI uses a preview server where networkidle is reliably reached, so a longer grace is fine.
+const NET_IDLE_GRACE_DEV_MS = 1000
+const NET_IDLE_GRACE_CI_MS = 2000
+const is_ci = Boolean(process.env['CI'])
+const NET_IDLE_GRACE_MS = is_ci ? NET_IDLE_GRACE_CI_MS : NET_IDLE_GRACE_DEV_MS
 const DASH_JA_ROUTE = '/ja/dash'
 
 const testid = {
@@ -41,12 +46,9 @@ async function goto_done_tab_ja(page: Page): Promise<void> {
 	await expect(page.getByTestId(testid.search)).toBeVisible({ timeout: DASH_READY_TIMEOUT_MS })
 }
 
-async function clear_dash_filters(page: Page): Promise<void> {
-	const clear_button = page.getByTestId(testid.filter_clear_labels)
-	if (await clear_button.isVisible()) await clear_button.click()
+async function reset_filter_mode(page: Page): Promise<void> {
 	const mode_toggle = page.getByTestId(testid.filter_mode)
-	const mode_raw = await mode_toggle.textContent()
-	const mode_label = (mode_raw ?? '').trim()
+	const mode_label = ((await mode_toggle.textContent()) ?? '').trim()
 
 	if (mode_label === 'OR') await mode_toggle.click()
 
@@ -54,7 +56,14 @@ async function clear_dash_filters(page: Page): Promise<void> {
 		await mode_toggle.click()
 		await mode_toggle.click()
 	}
+}
 
+async function clear_dash_filters(page: Page): Promise<void> {
+	const clear_button = page.getByTestId(testid.filter_clear_labels)
+
+	if (await clear_button.isVisible()) await clear_button.click()
+
+	await reset_filter_mode(page)
 	await page.getByTestId(testid.search).fill('')
 }
 
