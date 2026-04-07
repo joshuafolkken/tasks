@@ -7,10 +7,16 @@
  * Vite がコンパイル時定数として置換するため、本番ビルド後に wrangler が
  * バンドルする際に `if (false)` ブランチ全体が dead code elimination で削除され、
  * `wrangler` / `miniflare` (~17 MiB) がバンドルに含まれなくなる。
- * `$app/environment` の `building` は wrangler の esbuild がコンパイル時定数として
- * 認識しないため、使用すると wrangler/miniflare がバンドルされて 3 MiB 制限を超える。
- * `vite build` でサーバーモジュールは実行されない（プリレンダリングなし）ため問題なし。
+ * `building` を `import.meta.env.DEV` の代わりに使うと wrangler の esbuild が
+ * コンパイル時定数として認識せず wrangler/miniflare がバンドルされる。
+ * そのため `building` は `cloudflare:workers` ガードにのみ使用し、
+ * wrangler proxy ガードは引き続き `import.meta.env.DEV` を使う。
+ *
+ * Vite 8 では SSR ビルド中にサーバーモジュールが同期評価されるようになったため、
+ * `building` で `cloudflare:workers` import を回避する必要がある。
  */
+import { building } from '$app/environment'
+
 async function load_bindings_wrangler_proxy(): Promise<Env> {
 	const { getPlatformProxy: get_platform_proxy } = await import('wrangler')
 	const { env: worker_bindings } = await get_platform_proxy({
@@ -23,9 +29,8 @@ async function load_bindings_wrangler_proxy(): Promise<Env> {
 }
 
 async function load_worker_environment(): Promise<Env> {
-	if (import.meta.env.DEV) {
-		return await load_bindings_wrangler_proxy()
-	}
+	if (building) return {} as unknown as Env
+	if (import.meta.env.DEV) return await load_bindings_wrangler_proxy()
 
 	const { env: worker_bindings } = await import(/* @vite-ignore */ 'cloudflare:workers')
 
