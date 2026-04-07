@@ -10,9 +10,12 @@ import { drizzle } from 'drizzle-orm/d1'
 const { environment } = worker_environment
 const database = drizzle(environment.DB, { schema })
 
+function is_e2e_cleanup_enabled(): boolean {
+	return environment.E2E_CLEANUP_ENABLED === '1' || process.env['E2E_CLEANUP_ENABLED'] === '1'
+}
+
 // Email/password auth is enabled only for development and automated test runs.
-const is_e2e_env =
-	import.meta.env.DEV || process.env['E2E_CLEANUP_ENABLED'] === '1' || Boolean(process.env['CI'])
+const is_e2e_env = import.meta.env.DEV || is_e2e_cleanup_enabled() || Boolean(process.env['CI'])
 
 // eslint-disable-next-line no-restricted-syntax
 export const auth = betterAuth({

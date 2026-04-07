@@ -10,6 +10,7 @@ declare global {
 			BETTER_AUTH_SECRET: string
 			GOOGLE_CLIENT_SECRET: string
 			AUTH_GITHUB_CLIENT_SECRET: string
+			E2E_CLEANUP_ENABLED?: string
 		}
 	}
 
