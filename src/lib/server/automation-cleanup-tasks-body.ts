@@ -19,12 +19,18 @@ function validate_raw_array(raw: unknown): raw is Array<unknown> {
 	return Array.isArray(raw) && raw.length > 0 && raw.length <= MAX_CLEANUP_TITLES
 }
 
+function has_titles_key(value: Record<string, unknown>): value is { titles: unknown } {
+	return 'titles' in value
+}
+
 function extract_titles(body: unknown): ParsedCleanupBody {
 	if (!is_plain_object(body)) return { ok: false }
-	if (!validate_raw_array(body.titles)) return { ok: false }
-	if (!is_non_empty_string_array(body.titles)) return { ok: false }
+	if (!has_titles_key(body)) return { ok: false }
+	const { titles } = body
+	if (!validate_raw_array(titles)) return { ok: false }
+	if (!is_non_empty_string_array(titles)) return { ok: false }
 
-	return { ok: true, titles: body.titles }
+	return { ok: true, titles }
 }
 
 export { extract_titles, MAX_CLEANUP_TITLES, MAX_TITLE_CHARS }

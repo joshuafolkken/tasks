@@ -10,8 +10,9 @@ import { drizzle } from 'drizzle-orm/d1'
 const { environment } = worker_environment
 const database = drizzle(environment.DB, { schema })
 
-// Email/password auth is enabled only when E2E test APIs are active (local dev + CI E2E runs).
-const is_e2e_env = process.env['E2E_CLEANUP_ENABLED'] === '1'
+// Email/password auth is enabled only for development and automated test runs.
+const is_e2e_env =
+	import.meta.env.DEV || process.env['E2E_CLEANUP_ENABLED'] === '1' || Boolean(process.env['CI'])
 
 // eslint-disable-next-line no-restricted-syntax
 export const auth = betterAuth({
