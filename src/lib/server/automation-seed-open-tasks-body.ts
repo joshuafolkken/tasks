@@ -57,7 +57,8 @@ function collect_titles_from_array(raw_titles: unknown): ParsedSeedBody {
 function parse_seed_open_tasks_json(body: unknown): ParsedSeedBody {
 	if (!is_plain_record(body)) return { ok: false, error: ERROR_INVALID }
 
-	return collect_titles_from_array(body.titles)
+	/* eslint-disable-next-line dot-notation -- svelte-check: index signature requires bracket access */
+	return collect_titles_from_array(body['titles'])
 }
 
 export {

@@ -2,7 +2,7 @@ import type { ActionResult } from '@sveltejs/kit'
 import { describe, expect, it } from 'vitest'
 import { dash_action_result } from './dash-action-result'
 
-const FAILURE_RESULT: ActionResult = { type: 'failure', status: 400, data: undefined }
+const FAILURE_RESULT: ActionResult = { type: 'failure', status: 400 }
 
 describe('dash_action_result.read_focus_task_id_from_action', () => {
 	it('returns undefined when the action did not succeed', () => {

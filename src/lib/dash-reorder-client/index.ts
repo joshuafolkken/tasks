@@ -56,6 +56,8 @@ function reorder_with_insert_before(
 
 	const copy = [...list]
 	const [removed] = copy.splice(dragged_index, 1)
+	if (removed === undefined) return [...list]
+
 	const insert_at = copy.findIndex((row) => row.id === insert_before_id)
 
 	copy.splice(insert_at, 0, removed)
@@ -71,6 +73,7 @@ function move_task_to_end(list: ReadonlyArray<TaskItem>, dragged_id: string): Ar
 
 	const copy = [...list]
 	const [removed] = copy.splice(dragged_index, 1)
+	if (removed === undefined) return [...list]
 
 	copy.push(removed)
 
