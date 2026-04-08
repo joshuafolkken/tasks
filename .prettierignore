@@ -14,3 +14,4 @@ cspell.config.yaml
 /project.inlang/
 **/paraglide/
 .fast-check/
+e2e/.auth/

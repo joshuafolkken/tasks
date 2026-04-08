@@ -1,12 +1,17 @@
 import { redirect as svelte_redirect } from '@sveltejs/kit'
 import { HTTP_STATUS } from '$lib/http'
-import { i18n } from '$lib/locale/i18n'
+import { extractLocaleFromRequest, localizeUrl } from '$lib/paraglide/runtime'
+
+const url_base_for_localize = 'https://localhost'
 
 /**
- * Redirects to the given route with current locale. Use in load functions.
+ * Redirects using locale derived from the request (Paraglide `getLocale()` relies on ALS, which is not always available here).
  */
-function to_route(route: string): never {
-	svelte_redirect(HTTP_STATUS.SEE_OTHER, i18n.path(route))
+function to_route(route: string, request: Request): never {
+	const locale = extractLocaleFromRequest(request)
+	const { pathname } = localizeUrl(new URL(route, url_base_for_localize), { locale })
+
+	svelte_redirect(HTTP_STATUS.SEE_OTHER, pathname)
 }
 
 const redirect = { to_route }

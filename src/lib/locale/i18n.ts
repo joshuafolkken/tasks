@@ -12,7 +12,10 @@ type Locale = (typeof locales)[number]
  * リダイレクト、リンク、goto、callbackURL などにそのまま渡せる。
  */
 function path(route: string): string {
-	return localizeUrl(new URL(route, URL_BASE), { locale: getLocale() }).pathname
+	const parsed = new URL(route, URL_BASE)
+	const localized = localizeUrl(parsed, { locale: getLocale() })
+
+	return `${localized.pathname}${localized.search}${localized.hash}`
 }
 
 /**

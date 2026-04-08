@@ -5,15 +5,7 @@
 	import FormInput from '$lib/components/FormInput.svelte'
 	import LoadingButton from '$lib/components/LoadingButton.svelte'
 	import { i18n } from '$lib/locale/i18n'
-	import {
-		account_email,
-		account_full_name,
-		account_profile,
-		account_sign_out,
-		account_title,
-		account_update_description,
-		common_loading,
-	} from '$lib/paraglide/messages'
+	import { m } from '$lib/paraglide/messages'
 	import { POST_AUTH_REDIRECT } from '$lib/routes'
 	import type { PageProps } from './$types'
 
@@ -40,22 +32,22 @@
 </script>
 
 <CenteredPageWithHeader
-	title={account_title()}
-	page_title={account_profile()}
-	description={account_update_description()}
+	title={m.account_title()}
+	page_title={m.account_profile()}
+	description={m.account_update_description()}
 >
 	<Card class="space-y-6">
 		<div class="space-y-4">
-			<FormInput id="email" label={account_email()} value={auth_user?.email} is_disabled />
+			<FormInput id="email" label={m.account_email()} value={auth_user?.email} is_disabled />
 
-			<FormInput id="name" label={account_full_name()} value={auth_user?.name} is_disabled />
+			<FormInput id="name" label={m.account_full_name()} value={auth_user?.name} is_disabled />
 		</div>
 
 		<div class="border-t border-gray-100 dark:border-gray-700"></div>
 
 		<LoadingButton
-			label={account_sign_out()}
-			loading_label={common_loading()}
+			label={m.account_sign_out()}
+			loading_label={m.common_loading()}
 			is_loading={is_signing_out}
 			variant="outline"
 			on_click={async () => {
