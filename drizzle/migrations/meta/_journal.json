@@ -15,6 +15,13 @@
       "when": 1774004045485,
       "tag": "0001_certain_clea",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1743760000000,
+      "tag": "0002_task_label_schema",
+      "breakpoints": true
     }
   ]
 }

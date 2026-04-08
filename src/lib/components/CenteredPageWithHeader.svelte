@@ -9,17 +9,24 @@
 		title: string
 		page_title: string
 		description: string
+		content_vertical_align?: 'center' | 'start'
 		children: Snippet
 	}
 
-	const { title, page_title: header_title, description, children }: Props = $props()
+	const {
+		title,
+		page_title: header_title,
+		description,
+		content_vertical_align = 'center',
+		children,
+	}: Props = $props()
 </script>
 
 <svelte:head>
 	<title>{page_title.title(title)}</title>
 </svelte:head>
 
-<CenteredPageLayout>
+<CenteredPageLayout {content_vertical_align}>
 	<PageHeader title={header_title} {description} />
 	{@render children()}
 </CenteredPageLayout>

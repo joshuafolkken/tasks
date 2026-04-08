@@ -6,7 +6,7 @@
 	import favicon from '$lib/assets/favicon.svg'
 	import LocaleSwitcher from '$lib/locale/components/LocaleSwitcher.svelte'
 	import { locale_store } from '$lib/locale/LocaleStore.svelte'
-	import { common_app_title } from '$lib/paraglide/messages'
+	import { m } from '$lib/paraglide/messages'
 	import { extractLocaleFromUrl, overwriteGetLocale } from '$lib/paraglide/runtime'
 	import ThemeSwitcher from '$lib/theme/components/ThemeSwitcher.svelte'
 
@@ -21,7 +21,7 @@
 </script>
 
 <svelte:head>
-	<title>{common_app_title()}</title>
+	<title>{m.common_app_title()}</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
