@@ -15,6 +15,16 @@ const DEV_PORT = 5173
 const PREVIEW_PORT = 4173
 const SETUP_BASE_URL = `http://localhost:${String(is_ci ? PREVIEW_PORT : DEV_PORT)}`
 
+/** Same-origin API calls so better-auth CSRF / Fetch Metadata checks accept the Origin header. */
+/* eslint-disable @typescript-eslint/naming-convention -- standard `Sec-Fetch-*` header field names */
+const SETUP_REQUEST_HEADERS = {
+	origin: SETUP_BASE_URL,
+	'Sec-Fetch-Dest': 'empty',
+	'Sec-Fetch-Mode': 'cors',
+	'Sec-Fetch-Site': 'same-origin',
+} as const
+/* eslint-enable @typescript-eslint/naming-convention */
+
 async function try_sign_up(context: APIRequestContext, email: string): Promise<void> {
 	// Ignore response — user may already exist from a prior run
 	await context.post(SIGN_UP_PATH, {
@@ -41,7 +51,7 @@ async function setup_worker_auth(worker_index: number): Promise<void> {
 	const auth_path = worker_auth_path(worker_index)
 	const context = await request.newContext({
 		baseURL: SETUP_BASE_URL,
-		extraHTTPHeaders: { origin: SETUP_BASE_URL },
+		extraHTTPHeaders: { ...SETUP_REQUEST_HEADERS },
 	})
 
 	try {

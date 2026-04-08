@@ -389,7 +389,7 @@
 
 	{#if is_form_saving}
 		<div
-			class="absolute end-0 top-0 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400"
+			class="absolute inset-e-0 top-0 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400"
 		>
 			<Spinner size="sm" variant="dark" />
 			{m.dash_create_saving()}

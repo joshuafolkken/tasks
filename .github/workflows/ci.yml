@@ -104,10 +104,10 @@ jobs:
         with:
           path: |
             .svelte-kit
-          key: ${{ runner.os }}-build-cache-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('svelte.config.js', 'vite.config.ts', 'tsconfig.json') }}
+          key: ${{ runner.os }}-build-cache-e2e-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('svelte.config.js', 'vite.config.ts', 'tsconfig.json', 'src/lib/server/auth.ts') }}
           restore-keys: |
-            ${{ runner.os }}-build-cache-${{ hashFiles('pnpm-lock.yaml') }}-
-            ${{ runner.os }}-build-cache-
+            ${{ runner.os }}-build-cache-e2e-${{ hashFiles('pnpm-lock.yaml') }}-
+            ${{ runner.os }}-build-cache-e2e-
 
       - name: Setup Playwright cache
         uses: actions/cache@v4

@@ -21,8 +21,12 @@
 		"overrides": {
 			"esbuild@<=0.24.2": ">=0.25.0",
 			"cookie@<0.7.0": ">=0.7.0",
-			"lodash@>=4.0.0 <=4.17.22": ">=4.17.23"
-		}
+			"lodash@>=4.0.0 <=4.17.22": ">=4.17.23",
+			"drizzle-orm@<0.45.2": ">=0.45.2"
+		},
+		"ignoredBuiltDependencies": [
+			"lefthook"
+		]
 	},
 	"scripts": {
 		"preinstall": "pnpm dlx @aikidosec/safe-chain setup-ci",
@@ -33,7 +37,7 @@
 		"build": "vite build",
 		"deploy": "pnpm build && wrangler deploy",
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
-		"preview:ci": "wrangler d1 execute tasks-db --local --file=./drizzle/ci-bootstrap.sql && wrangler dev --local .svelte-kit/cloudflare/_worker.js --port 4173",
+		"preview:ci": "wrangler d1 execute tasks-db --local --file=./drizzle/ci-bootstrap.sql && wrangler dev --local .svelte-kit/cloudflare/_worker.js --port 4173 --var E2E_CLEANUP_ENABLED:1",
 		"preview:normal": "vite preview",
 		"preview:stop": "kill-port 4173 || true",
 		"check": "svelte-kit sync && svelte-fast-check --incremental",
@@ -84,7 +88,7 @@
 		"@eslint/compat": "^2.0.4",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@inlang/paraglide-js": "^2.15.1",
+		"@inlang/paraglide-js": "^2.15.2",
 		"@libsql/client": "^0.17.2",
 		"@playwright/test": "^1.59.1",
 		"@storybook/addon-a11y": "^10.3.4",
@@ -102,8 +106,8 @@
 		"@types/node": "^25.5.2",
 		"@vitest/browser-playwright": "^4.1.2",
 		"@vitest/coverage-v8": "^4.1.2",
-		"better-auth": "~1.5.6",
-		"cspell": "^9.7.0",
+		"better-auth": "~1.6.0",
+		"cspell": "^10.0.0",
 		"drizzle-kit": "^0.31.10",
 		"drizzle-orm": "^0.45.2",
 		"eslint": "^10.2.0",
@@ -116,7 +120,7 @@
 		"eslint-plugin-unicorn": "^64.0.0",
 		"globals": "^17.4.0",
 		"kill-port": "^2.0.1",
-		"lefthook": "^2.1.4",
+		"lefthook": "^2.1.5",
 		"mdsvex": "^0.12.7",
 		"playwright": "^1.59.1",
 		"prettier": "^3.8.1",
