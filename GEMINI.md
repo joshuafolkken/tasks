@@ -48,11 +48,11 @@ Stack: TypeScript · pnpm · SvelteKit · Vitest · Playwright · TailwindCSS ·
 
 ## Code Change Rules
 
-For every code modification:
+For every code modification, follow this order exactly:
 
-1. **Tests**: add/update unit tests (Vitest) + E2E tests (Playwright) for all behavior changes — see `prompts/testing-guide.md`
+1. **Refactor first** _(mandatory before lint or tests)_: apply high/medium-priority refactoring to all new/modified code — see `prompts/refactoring.md`. Do not proceed until no high/medium items remain.
+2. **Tests**: add/update unit tests (Vitest) + E2E tests (Playwright) for all behavior changes — see `prompts/testing-guide.md`
    - **E2E cleanup / leaked data**: When fixing issues where E2E leaves database or UI artifacts, follow the **Regression fix workflow** in `prompts/testing-guide.md` (add a failing guard → fix → confirm green). Prefer stable selectors (`data-testid`) over locale-dependent strings for teardown.
-2. **Refactor first**: apply high/medium-priority refactoring to all new/modified code — see `prompts/refactoring.md`
 3. **Lint**: run `pnpm run lint` then `pnpm run check`; fix all errors before reporting done
 4. **Spell check**: `pnpm cspell:dot`; add legitimate project terms to `cspell.config.yaml`
 5. **IDE feedback**: check IDE lint output — often more current than terminal
@@ -61,18 +61,19 @@ For every code modification:
 
 ## Completion gate (before you tell the user work is done)
 
-Run the full verification set below (or the project's equivalent if the user scoped a smaller change — then state exactly what you ran). **Do not** report completion if any command failed or if any check was skipped without the user agreeing.
+Run the full verification set **in order**. **Do not** skip or reorder steps. **Do not** report completion if any step failed or was skipped without the user agreeing.
 
-**Refactoring:** For code changes, **Refactor First** (step 2 above) must already be satisfied using `prompts/refactoring.md`. Do **not** add a fixed “repeat refactoring N times” rule — quality is enforced by lint/check/tests. For a **refactor-only** request, follow `refactoring.md`'s own **convergence** (high/medium items until none remain), not an arbitrary loop count.
+**STOP — Refactor before lint.** For any code change, you MUST complete refactoring (`prompts/refactoring.md`) **before** running lint or check. Do not run step 2 or later until refactoring is done. For a **refactor-only** request, follow `refactoring.md`'s own **convergence** (high/medium items until none remain).
 
 **E2E:** The user runs `pnpm test` and shares the full output. Do **not** claim completion until the user confirms E2E passed or explicitly scopes it out.
 
-1. `pnpm run lint`
-2. `pnpm run check`
-3. `pnpm cspell:dot`
-4. `pnpm test:unit --run`
-5. **IDE feedback**: zero **errors** on every file you changed (warnings only when documented as an allowed exception).
-6. **E2E**: Ask the user to run `pnpm test` and share the output. Fix any failures, then ask again.
+1. **Refactor** — read and execute `prompts/refactoring.md` on all changed files. Converge until no high/medium items remain. **Do not proceed to step 2 until complete.**
+2. `pnpm run lint`
+3. `pnpm run check`
+4. `pnpm cspell:dot`
+5. `pnpm test:unit --run`
+6. **IDE feedback**: zero **errors** on every file you changed (warnings only when documented as an allowed exception).
+7. **E2E**: Ask the user to run `pnpm test` and share the output. Fix any failures, then ask again.
 
 If you changed **only** docs or config that does not affect tests, still run lint + check + cspell; run unit tests when there is any chance of impact.
 

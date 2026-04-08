@@ -85,6 +85,11 @@ jobs:
     name: E2E
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Playwright preview は localhost:4173。ワークフロー共通の BETTER_AUTH_URL（本番）を
+    # 引き継ぐと Better Auth が origin を拒否する（CI E2E では本番 URL は使わない）。
+    # ホスト/ポートは e2e/e2e-constants.ts の E2E_PREVIEW_PORT（4173）と一致させること。
+    env:
+      BETTER_AUTH_URL: http://localhost:4173
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

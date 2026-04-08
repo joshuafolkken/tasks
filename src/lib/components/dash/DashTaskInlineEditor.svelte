@@ -6,6 +6,7 @@
 	import RecurrenceInput from '$lib/components/RecurrenceInput.svelte'
 	import Spinner from '$lib/components/Spinner.svelte'
 	import { dash_display } from '$lib/dash-display'
+	import { dash_inline_editor_keyboard } from '$lib/dash-inline-editor-keyboard'
 	import type { ActionData, PageData, TaskItem } from '$lib/dash-page-types'
 	import { m } from '$lib/paraglide/messages'
 	import { rrule_summary } from '$lib/rrule-summary'
@@ -710,21 +711,6 @@
 		return key_event.key === 'Enter' && !key_event.shiftKey && !key_event.isComposing
 	}
 
-	function read_ctrl_nav_direction(key_event: KeyboardEvent): 'up' | 'down' | undefined {
-		if (!key_event.ctrlKey) return undefined
-		if (key_event.key === 'u') return 'up'
-		if (key_event.key === 'n') return 'down'
-
-		return undefined
-	}
-
-	function read_vertical_arrow_direction(key_event: KeyboardEvent): 'up' | 'down' | undefined {
-		if (key_event.key === 'ArrowUp') return 'up'
-		if (key_event.key === 'ArrowDown') return 'down'
-
-		return read_ctrl_nav_direction(key_event)
-	}
-
 	function handle_arrow_without_title(direction: 'up' | 'down'): void {
 		if (!is_never_titled_row()) revert_to_task_item()
 
@@ -745,7 +731,7 @@
 	function handle_arrow_navigation(key_event: KeyboardEvent): void {
 		if (key_event.isComposing) return
 
-		const direction = read_vertical_arrow_direction(key_event)
+		const direction = dash_inline_editor_keyboard.read_vertical_arrow_direction(key_event)
 		if (direction === undefined) return
 
 		key_event.preventDefault()
@@ -772,7 +758,7 @@
 	}
 
 	function handle_title_keydown(key_event: KeyboardEvent): void {
-		if (read_vertical_arrow_direction(key_event) !== undefined) {
+		if (dash_inline_editor_keyboard.read_vertical_arrow_direction(key_event) !== undefined) {
 			handle_arrow_navigation(key_event)
 
 			return

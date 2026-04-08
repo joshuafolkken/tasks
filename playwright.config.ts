@@ -1,14 +1,12 @@
 import { defineConfig, devices } from '@playwright/test'
-import { E2E_WORKER_COUNT } from './e2e/e2e-constants'
+import { E2E_DEV_PORT, E2E_PREVIEW_PORT, E2E_WORKER_COUNT } from './e2e/e2e-constants'
 
 // 環境判定と設定値の定数化
 const isCI = Boolean(process.env['CI'])
 const isPR = process.env['GITHUB_EVENT_NAME'] === 'pull_request'
 // const isStaging = Boolean(process.env['STAGING']) // 将来の拡張用
 
-const DEV_PORT = 5173
-const PREVIEW_PORT = 4173
-const APP_PORT = isCI ? PREVIEW_PORT : DEV_PORT
+const APP_PORT = isCI ? E2E_PREVIEW_PORT : E2E_DEV_PORT
 // `pnpm dev` の既定と揃える（127.0.0.1 だと環境によっては接続/待機がずれる）
 const BASE_URL = `http://localhost:${String(APP_PORT)}`
 const CI_TIMEOUT = 15_000

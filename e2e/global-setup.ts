@@ -4,16 +4,14 @@ import {
 	E2E_AUTH_DIR,
 	E2E_TEST_PASSWORD,
 	E2E_WORKER_COUNT,
+	resolve_local_web_base_url,
 	worker_auth_path,
 	worker_email,
 } from './e2e-constants'
 
 const SIGN_UP_PATH = '/api/auth/sign-up/email'
 const SIGN_IN_PATH = '/api/auth/sign-in/email'
-const is_ci = Boolean(process.env['CI'])
-const DEV_PORT = 5173
-const PREVIEW_PORT = 4173
-const SETUP_BASE_URL = `http://localhost:${String(is_ci ? PREVIEW_PORT : DEV_PORT)}`
+const SETUP_BASE_URL = resolve_local_web_base_url()
 
 /** Same-origin API calls so better-auth CSRF / Fetch Metadata checks accept the Origin header. */
 /* eslint-disable @typescript-eslint/naming-convention -- standard `Sec-Fetch-*` header field names */

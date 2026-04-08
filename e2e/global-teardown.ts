@@ -1,14 +1,11 @@
 import { existsSync } from 'node:fs'
 import { request, type FullConfig } from '@playwright/test'
-import { E2E_WORKER_COUNT, worker_auth_path } from './e2e-constants'
+import { E2E_WORKER_COUNT, resolve_local_web_base_url, worker_auth_path } from './e2e-constants'
 import { SAVED_AUTH_STORAGE } from './saved-auth-storage-path'
 
 const CLEANUP_TIMEOUT_MS = 30_000
 const CLEANUP_PATH = '/api/test/cleanup-tasks'
-const is_ci = Boolean(process.env['CI'])
-const DEV_PORT = 5173
-const PREVIEW_PORT = 4173
-const TEARDOWN_BASE_URL = `http://localhost:${String(is_ci ? PREVIEW_PORT : DEV_PORT)}`
+const TEARDOWN_BASE_URL = resolve_local_web_base_url()
 
 async function run_cleanup(base_url: string, auth_path: string): Promise<void> {
 	const api_context = await request.newContext({

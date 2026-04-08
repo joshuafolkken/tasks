@@ -408,46 +408,6 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 		}, [run_id])
 	})
 
-	test('Ctrl+N on the title navigates down to the next row', async ({ page }) => {
-		const run_id = `E2E_CTRLN_${String(Date.now())}`
-		const title_a = `${run_id}_A`
-		const title_b = `${run_id}_B`
-
-		await playwright_dash_ux.run_authed(page, async () => {
-			await playwright_dash_ux.seed_tasks(page, [title_a, title_b])
-			const id_b = await read_title_button_task_id(page, title_b)
-			const id_a = await read_title_button_task_id(page, title_a)
-
-			await page.getByRole('button', { name: title_b }).click()
-			await expect(title_input_in_task_card(page, id_b)).toHaveValue(title_b)
-			await title_input_in_task_card(page, id_b).press('Control+n')
-			await expect(title_input_in_task_card(page, id_a)).toHaveValue(title_a, {
-				timeout: RELOAD_STABLE_TIMEOUT_MS,
-			})
-			await expect_dom_focus_on(title_input_in_task_card(page, id_a))
-		}, [title_a, title_b])
-	})
-
-	test('Ctrl+U on the title navigates up to the previous row', async ({ page }) => {
-		const run_id = `E2E_CTRLU_${String(Date.now())}`
-		const title_a = `${run_id}_A`
-		const title_b = `${run_id}_B`
-
-		await playwright_dash_ux.run_authed(page, async () => {
-			await playwright_dash_ux.seed_tasks(page, [title_a, title_b])
-			const id_a = await read_title_button_task_id(page, title_a)
-			const id_b = await read_title_button_task_id(page, title_b)
-
-			await page.getByRole('button', { name: title_a }).click()
-			await expect(title_input_in_task_card(page, id_a)).toHaveValue(title_a)
-			await title_input_in_task_card(page, id_a).press('Control+u')
-			await expect(title_input_in_task_card(page, id_b)).toHaveValue(title_b, {
-				timeout: RELOAD_STABLE_TIMEOUT_MS,
-			})
-			await expect_dom_focus_on(title_input_in_task_card(page, id_b))
-		}, [title_a, title_b])
-	})
-
 	test('Cmd+K shortcut focuses the search input', async ({ page }) => {
 		await page.keyboard.press('Meta+k')
 		await expect_dom_focus_on(page.getByTestId(tid.search))

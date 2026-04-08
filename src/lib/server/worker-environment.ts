@@ -17,11 +17,16 @@
  */
 import { building } from '$app/environment'
 
+function is_vitest_run(): boolean {
+	return Boolean(process.env['VITEST'])
+}
+
 async function load_bindings_wrangler_proxy(): Promise<Env> {
 	const { getPlatformProxy: get_platform_proxy } = await import('wrangler')
+	// Vitest parallel workers must not share one wrangler persist SQLite (SQLITE_BUSY).
 	const { env: worker_bindings } = await get_platform_proxy({
 		configPath: 'wrangler.jsonc',
-		persist: true,
+		persist: !is_vitest_run(),
 		remoteBindings: false,
 	})
 
