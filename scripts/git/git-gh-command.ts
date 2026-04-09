@@ -152,6 +152,13 @@ function parse_pr_state_string(result: string): string | undefined {
 	return without_quotes.length > 0 ? without_quotes : undefined
 }
 
+function parse_number_output(result: string): number | undefined {
+	const parsed = Number(result.trim())
+	if (!Number.isFinite(parsed)) return undefined
+
+	return parsed
+}
+
 async function pr_get_state(branch_name: string): Promise<string | undefined> {
 	try {
 		const result: string = await exec_gh_command(`pr view ${branch_name} --json state --jq .state`)
@@ -162,6 +169,62 @@ async function pr_get_state(branch_name: string): Promise<string | undefined> {
 	}
 }
 
+async function pr_get_number(branch_name: string): Promise<number | undefined> {
+	try {
+		const result: string = await exec_gh_command(
+			`pr view ${branch_name} --json number --jq .number`,
+		)
+
+		return parse_number_output(result)
+	} catch {
+		return undefined
+	}
+}
+
+async function pr_get_status_rollup(branch_name: string): Promise<string> {
+	try {
+		return await exec_gh_command(`pr view ${branch_name} --json statusCheckRollup --jq .`)
+	} catch {
+		return ''
+	}
+}
+
+async function repo_get_name_with_owner(): Promise<string | undefined> {
+	try {
+		const result: string = await exec_gh_command(
+			'repo view --json nameWithOwner --jq .nameWithOwner',
+		)
+
+		return parse_pr_state_string(result)
+	} catch {
+		return undefined
+	}
+}
+
+async function pr_get_review_comments(branch_name: string): Promise<string> {
+	const repo_name = await repo_get_name_with_owner()
+	const pr_number = await pr_get_number(branch_name)
+	if (repo_name === undefined || pr_number === undefined) return '[]'
+
+	try {
+		return await exec_gh_command(`api repos/${repo_name}/pulls/${String(pr_number)}/comments`)
+	} catch {
+		return '[]'
+	}
+}
+
+async function pr_comment(branch_name: string, body: string): Promise<string> {
+	const safe_body = JSON.stringify(body)
+
+	return await exec_gh_command(`pr comment ${branch_name} --body ${safe_body}`)
+}
+
+async function issue_comment(issue_number: string, body: string): Promise<string> {
+	const safe_body = JSON.stringify(body)
+
+	return await exec_gh_command(`issue comment ${issue_number} --body ${safe_body}`)
+}
+
 const git_gh_command = {
 	pr_create,
 	pr_checks,
@@ -170,6 +233,12 @@ const git_gh_command = {
 	pr_view,
 	pr_get_state,
 	pr_get_url,
+	pr_get_number,
+	pr_get_status_rollup,
+	repo_get_name_with_owner,
+	pr_get_review_comments,
+	pr_comment,
+	issue_comment,
 }
 
 export { git_gh_command }
