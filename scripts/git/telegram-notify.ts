@@ -12,8 +12,8 @@ interface TelegramConfig {
 }
 
 function load_config(): TelegramConfig | undefined {
-	const bot_token = process.env.TELEGRAM_BOT_TOKEN
-	const chat_id = process.env.TELEGRAM_CHAT_ID
+	const bot_token = process.env['TELEGRAM_BOT_TOKEN']
+	const chat_id = process.env['TELEGRAM_CHAT_ID']
 	if (bot_token === undefined || chat_id === undefined) return undefined
 	if (bot_token.trim().length === 0 || chat_id.trim().length === 0) return undefined
 
