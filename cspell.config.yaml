@@ -41,6 +41,7 @@ ignorePaths:
   - e2e/.auth/**
 words:
   - aboutads
+  - languagetool
   - aikidosec
   - appleboy
   - autorestart

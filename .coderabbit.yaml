@@ -1,0 +1,35 @@
+language: en-US
+
+reviews:
+  profile: chill
+  auto_review:
+    enabled: true
+    drafts: false
+
+  path_filters:
+    - '!src/lib/paraglide/**'
+    - '!pnpm-lock.yaml'
+    - '!worker-configuration.d.ts'
+
+  path_instructions:
+    - path: 'src/lib/server/**'
+      instructions: |
+        Focus on security issues, SQL injection, auth bypasses, and data leakage.
+        Check Drizzle query safety and better-auth integration.
+    - path: 'src/routes/**'
+      instructions: |
+        Focus on SvelteKit route conventions, load function correctness, and form action safety.
+        Check that user-visible strings use Paraglide message keys, not hardcoded text.
+    - path: 'e2e/**'
+      instructions: |
+        Focus on test reliability and selector stability (prefer data-testid).
+        Check that tests clean up any data they create.
+    - path: 'src/**/*.test.ts'
+      instructions: |
+        Focus on test coverage completeness and whether mocks accurately reflect real behavior.
+
+tools:
+  github-checks:
+    enabled: false
+  languagetool:
+    enabled: false
