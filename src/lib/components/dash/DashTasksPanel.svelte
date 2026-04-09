@@ -83,6 +83,18 @@
 		return dragged_task_id
 	}
 
+	function is_known_display_task_id(task_id: string): boolean {
+		return display_tasks.some((row) => row.id === task_id)
+	}
+
+	function resolve_known_drop_id(dropped_id: string | undefined): string | undefined {
+		const resolved_task_id = resolve_dropped_task_id(dropped_id)
+		if (resolved_task_id === undefined) return undefined
+		if (!is_known_display_task_id(resolved_task_id)) return undefined
+
+		return resolved_task_id
+	}
+
 	async function handle_row_drop(input: {
 		target_task_id: string
 		dropped_id: string | undefined
@@ -91,7 +103,7 @@
 		row_client_height: number
 	}): Promise<void> {
 		if (on_reorder_commit === undefined) return
-		const dropped_task_id = resolve_dropped_task_id(input.dropped_id)
+		const dropped_task_id = resolve_known_drop_id(input.dropped_id)
 		if (dropped_task_id === undefined) return
 
 		const ordered_ids = display_tasks.map((row) => row.id)
@@ -111,7 +123,7 @@
 
 	async function handle_end_drop(dropped_id: string | undefined): Promise<void> {
 		if (on_reorder_commit === undefined) return
-		const dropped_task_id = resolve_dropped_task_id(dropped_id)
+		const dropped_task_id = resolve_known_drop_id(dropped_id)
 		if (dropped_task_id === undefined) return
 
 		clear_drag_ui()
