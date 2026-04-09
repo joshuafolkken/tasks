@@ -65,11 +65,22 @@
 	let is_drag_over_end = $state(false)
 	let dragged_task_id = $state<string | undefined>()
 	let reorder_indicator_id = $state<string | undefined>()
+	const REORDER_END_INDICATOR_ID = '__end__'
+	const is_show_end_indicator = $derived(
+		(reorder_indicator_id === REORDER_END_INDICATOR_ID || is_drag_over_end) &&
+			dragged_task_id !== undefined,
+	)
 
 	function clear_drag_ui(): void {
 		is_drag_over_end = false
 		dragged_task_id = undefined
 		reorder_indicator_id = undefined
+	}
+
+	function resolve_dropped_task_id(dropped_id: string | undefined): string | undefined {
+		if (dropped_id !== undefined) return dropped_id
+
+		return dragged_task_id
 	}
 
 	async function handle_row_drop(input: {
@@ -79,7 +90,9 @@
 		row_client_top: number
 		row_client_height: number
 	}): Promise<void> {
-		if (input.dropped_id === undefined || on_reorder_commit === undefined) return
+		if (on_reorder_commit === undefined) return
+		const dropped_task_id = resolve_dropped_task_id(input.dropped_id)
+		if (dropped_task_id === undefined) return
 
 		const ordered_ids = display_tasks.map((row) => row.id)
 		const insert_before_id = dash_reorder_client.pick_insert_before_at_drop({
@@ -90,17 +103,19 @@
 			row_client_height: input.row_client_height,
 		})
 
-		if (insert_before_id !== undefined && input.dropped_id === insert_before_id) return
+		if (insert_before_id !== undefined && dropped_task_id === insert_before_id) return
 
 		clear_drag_ui()
-		await on_reorder_commit(input.dropped_id, insert_before_id)
+		await on_reorder_commit(dropped_task_id, insert_before_id)
 	}
 
 	async function handle_end_drop(dropped_id: string | undefined): Promise<void> {
-		if (dropped_id === undefined || on_reorder_commit === undefined) return
+		if (on_reorder_commit === undefined) return
+		const dropped_task_id = resolve_dropped_task_id(dropped_id)
+		if (dropped_task_id === undefined) return
 
 		clear_drag_ui()
-		await on_reorder_commit(dropped_id)
+		await on_reorder_commit(dropped_task_id)
 	}
 
 	function handle_navigate_arrow(direction: 'up' | 'down', current_task_id: string): void {
@@ -181,7 +196,7 @@
 								row_client_height: Number(height),
 							})
 
-							reorder_indicator_id = insert_before ?? '__end__'
+							reorder_indicator_id = insert_before ?? REORDER_END_INDICATOR_ID
 						}}
 						on_reorder_row_drop={(
 							dragged_id: string | undefined,
@@ -229,7 +244,7 @@
 						void handle_end_drop(raw_id === '' ? undefined : raw_id)
 					}}
 				>
-					{#if (reorder_indicator_id === '__end__' || is_drag_over_end) && dragged_task_id !== undefined}
+					{#if is_show_end_indicator}
 						<div
 							class="pointer-events-none absolute -top-[0.5px] right-0 left-0 z-10 h-0.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"
 						></div>

@@ -78,7 +78,19 @@
 	const row_shell =
 		'flex gap-2 rounded-xl bg-white px-2 py-1.5 shadow-sm ring-1 ring-gray-900/5 transition-colors hover:bg-gray-50 dark:bg-gray-800 dark:ring-gray-700/50 dark:hover:bg-gray-700/60'
 
-	const dnd_task_mime = 'text/plain'
+	const DND_TASK_MIME = 'text/plain'
+	const DND_TASK_MIME_FALLBACK = 'application/x-dash-task-id'
+
+	function read_dropped_task_id(transfer: DataTransfer | null): string | undefined {
+		if (transfer === null) return undefined
+		const preferred_id = transfer.getData(DND_TASK_MIME)
+		if (preferred_id !== '') return preferred_id
+
+		const fallback_id = transfer.getData(DND_TASK_MIME_FALLBACK)
+		if (fallback_id === '') return undefined
+
+		return fallback_id
+	}
 </script>
 
 <!-- Row click opens edit (pointer). A11y: title remains a control. -->
@@ -112,20 +124,14 @@
 		if (on_reorder_row_drop === undefined) return
 		drag_event.preventDefault()
 
-		const transfer = drag_event.dataTransfer
-		const raw_id = transfer === null ? '' : transfer.getData(dnd_task_mime)
+		const dropped_task_id = read_dropped_task_id(drag_event.dataTransfer)
 		const row_element = drag_event.currentTarget
 
 		if (!(row_element instanceof HTMLElement)) return
 
 		const bounds = row_element.getBoundingClientRect()
 
-		on_reorder_row_drop(
-			raw_id === '' ? undefined : raw_id,
-			drag_event.clientY,
-			bounds.top,
-			bounds.height,
-		)
+		on_reorder_row_drop(dropped_task_id, drag_event.clientY, bounds.top, bounds.height)
 	}}
 	ondragstart={(drag_event) => {
 		if (!is_reorder_drag_enabled || is_editing) {
@@ -137,7 +143,8 @@
 		const transfer = drag_event.dataTransfer
 		if (transfer === null) return
 
-		transfer.setData(dnd_task_mime, task_item.id)
+		transfer.setData(DND_TASK_MIME, task_item.id)
+		transfer.setData(DND_TASK_MIME_FALLBACK, task_item.id)
 		transfer.effectAllowed = 'move'
 		on_reorder_drag_start?.(task_item.id)
 	}}
