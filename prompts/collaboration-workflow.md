@@ -15,7 +15,7 @@
 
 Issue には次の要素を必ず含める。
 
-- タイトルは簡潔な英語で記載する
+- タイトルは簡潔な英語で記載する（日本語で作成した場合は、AIツールが実装開始前に英語タイトルへ更新すること。GitHub Issue のタイトルも `gh issue edit` で更新する）
 - 目的（何を改善したいか）
 - 現象（現在の不具合や課題）
 - 期待結果（完了時の状態）
@@ -78,6 +78,9 @@ Issue: <issue-url>
 ```bash
 pnpm git "<issue-title> #<issue-number>"
 ```
+
+> **Note**: Issue タイトルが日本語の場合、`pnpm git` を実行する前に英語タイトルへ変換すること。
+> `gh issue edit <number> --title "<english-title>"` で GitHub Issue タイトルも合わせて更新する。
 
 ## Step 4: PR結果確認 + 完了通知（別スクリプト）
 
