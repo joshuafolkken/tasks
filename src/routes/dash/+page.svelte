@@ -75,6 +75,7 @@
 	let uncompleting_task_id = $state<string | undefined>()
 	let editing_task_id = $state<string | undefined>()
 	let inline_edit_focus_pulse = $state(0)
+	let is_begin_add_at_top_running = $state(false)
 
 	function start_task_edit(task_id: string): void {
 		editing_task_id = task_id
@@ -93,6 +94,15 @@
 		return !row.title.trim()
 	}
 
+	function read_first_open_empty_task_id(items: Array<TaskItem>): string | undefined {
+		const row = items.find(
+			(task_row) => task_row.completed_at === null && is_open_task_row_empty(task_row),
+		)
+		if (row === undefined) return undefined
+
+		return row.id
+	}
+
 	async function fetch_create_task_at_top(): Promise<string | undefined> {
 		const form_data = new FormData()
 
@@ -103,34 +113,63 @@
 			headers: json_action_headers,
 			body: form_data,
 		})
+		if (!response.ok) return undefined
 
-		const action_result = deserialize(await response.text())
+		try {
+			const action_result = deserialize(await response.text())
 
-		return dash_action_result.read_task_id_from_action(action_result)
+			return dash_action_result.read_task_id_from_action(action_result)
+		} catch {
+			return undefined
+		}
 	}
 
-	async function begin_add_at_top(): Promise<void> {
-		const editor_snapshot = editing_task_id
-		const first_open = tasks_state.find((task_row) => task_row.completed_at === null)
-
-		if (
-			first_open !== undefined &&
-			editor_snapshot === first_open.id &&
-			is_open_task_row_empty(first_open)
-		) {
-			inline_edit_focus_pulse += 1
-
-			return
-		}
-
+	async function resolve_add_at_top_target_id(): Promise<string | undefined> {
 		const new_task_id = await fetch_create_task_at_top()
 
 		await invalidateAll()
 		await tick()
 
-		/* Svelte sync assign; snapshot above already guarded duplicate add. */
-		/* eslint-disable-next-line require-atomic-updates -- single writer after await */
-		if (new_task_id !== undefined) editing_task_id = new_task_id
+		if (new_task_id !== undefined) return new_task_id
+
+		return read_first_open_empty_task_id(tasks_state)
+	}
+
+	async function resolve_add_top_target(
+		editor_snapshot: string | undefined,
+		items: Array<TaskItem>,
+	): Promise<string | undefined> {
+		const first_open_empty_id = read_first_open_empty_task_id(items)
+
+		if (editor_snapshot !== undefined && editor_snapshot === first_open_empty_id) {
+			inline_edit_focus_pulse += 1
+
+			return undefined
+		}
+
+		return await resolve_add_at_top_target_id()
+	}
+
+	async function begin_add_at_top(): Promise<void> {
+		if (is_begin_add_at_top_running) {
+			inline_edit_focus_pulse += 1
+
+			return
+		}
+
+		is_begin_add_at_top_running = true
+
+		try {
+			const target_id = await resolve_add_top_target(editing_task_id, tasks_state)
+			if (target_id === undefined) return
+
+			/* eslint-disable-next-line require-atomic-updates -- guarded by `is_begin_add_at_top_running` */
+			editing_task_id = target_id
+			inline_edit_focus_pulse += 1
+		} finally {
+			/* eslint-disable-next-line require-atomic-updates -- release lock after awaited work */
+			is_begin_add_at_top_running = false
+		}
 	}
 
 	function is_modifier_key_pressed(key_event: KeyboardEvent): boolean {
