@@ -22,8 +22,12 @@ function load_config(): TelegramConfig | undefined {
 
 function build_text(input: TelegramSendInput): string {
 	const lines = [`✅ ${input.message}`]
-	if (input.issue_number !== undefined) lines.push(`Issue: #${input.issue_number}`)
-	if (input.pr_url !== undefined) lines.push(`PR: ${input.pr_url}`)
+
+	if (input.issue_number !== undefined && input.issue_number.length > 0) {
+		lines.push(`Issue: #${input.issue_number}`)
+	}
+
+	if (input.pr_url !== undefined && input.pr_url.length > 0) lines.push(`PR: ${input.pr_url}`)
 
 	return lines.join('\n')
 }
