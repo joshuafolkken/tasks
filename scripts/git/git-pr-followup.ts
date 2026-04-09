@@ -193,9 +193,9 @@ function read_unresolved_cr_urls(comments: ReadonlyArray<PullComment>): Array<st
 
 function build_ignore_reason_comment(reason: string, urls: ReadonlyArray<string>): string {
 	const lines = [
-		'CodeRabbit 指摘の一部は対応不要と判断しました。',
-		`理由: ${reason.trim()}`,
-		'対象:',
+		'Some CodeRabbit findings were intentionally left unresolved.',
+		`Reason: ${reason.trim()}`,
+		'Affected comments:',
 	]
 
 	for (const url of urls) {

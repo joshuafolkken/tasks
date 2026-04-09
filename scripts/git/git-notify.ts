@@ -6,7 +6,7 @@ interface GitNotifyConfig {
 	mentions: Array<string>
 }
 
-const DEFAULT_NOTIFY_MESSAGE = '実装が完了しました。レビューをお願いします。'
+const DEFAULT_NOTIFY_MESSAGE = 'Implementation is complete. Please review.'
 
 function parse_notify_target(raw_target: string | undefined): NotifyTarget | undefined {
 	if (raw_target === undefined) return undefined
