@@ -86,6 +86,10 @@ If you changed **only** docs or config that does not affect tests, still run lin
 - **No commits** unless explicitly requested by the user
 - For git operations: use `scripts/git-workflow.ts` via `pnpm git`
 
+## Collaboration Workflow
+
+- For issue-driven proposal/plan/execution/notification flow, follow `prompts/collaboration-workflow.md`
+
 ## MCP Tools (Svelte)
 
 You have access to the Svelte MCP server with comprehensive Svelte 5 and SvelteKit documentation.

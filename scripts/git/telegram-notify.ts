@@ -1,0 +1,70 @@
+const TELEGRAM_API_BASE = 'https://api.telegram.org'
+
+interface TelegramSendInput {
+	message: string
+	issue_number: string | undefined
+	pr_url: string | undefined
+}
+
+interface TelegramConfig {
+	bot_token: string
+	chat_id: string
+}
+
+function load_config(): TelegramConfig | undefined {
+	const bot_token = process.env['TELEGRAM_BOT_TOKEN']
+	const chat_id = process.env['TELEGRAM_CHAT_ID']
+	if (bot_token === undefined || chat_id === undefined) return undefined
+	if (bot_token.trim().length === 0 || chat_id.trim().length === 0) return undefined
+
+	return { bot_token: bot_token.trim(), chat_id: chat_id.trim() }
+}
+
+function build_text(input: TelegramSendInput): string {
+	const lines = [`✅ ${input.message}`]
+
+	if (input.issue_number !== undefined && input.issue_number.length > 0) {
+		lines.push(`Issue: #${input.issue_number}`)
+	}
+
+	if (input.pr_url !== undefined && input.pr_url.length > 0) lines.push(`PR: ${input.pr_url}`)
+
+	return lines.join('\n')
+}
+
+async function post_message(config: TelegramConfig, text: string): Promise<void> {
+	const url = `${TELEGRAM_API_BASE}/bot${config.bot_token}/sendMessage`
+	const response = await fetch(url, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ chat_id: config.chat_id, text }),
+	})
+
+	if (!response.ok) {
+		throw new Error(`Telegram API error: ${String(response.status)} ${response.statusText}`)
+	}
+}
+
+async function send(input: TelegramSendInput): Promise<void> {
+	const config = load_config()
+	if (config === undefined) return
+
+	const text = build_text(input)
+
+	try {
+		await post_message(config, text)
+		console.info('📱 Telegram notification sent.')
+	} catch (error) {
+		console.warn(
+			'⚠️  Telegram notification failed:',
+			error instanceof Error ? error.message : error,
+		)
+	}
+}
+
+const telegram_notify = {
+	send,
+}
+
+export { telegram_notify }
+export type { TelegramSendInput }

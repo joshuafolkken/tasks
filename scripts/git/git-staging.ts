@@ -34,6 +34,14 @@ async function confirm_package_json_version(force = false): Promise<void> {
 }
 
 async function check_and_confirm_package_json(force = false): Promise<void> {
+	const is_already_updated = await git_status.check_branch_version()
+
+	if (is_already_updated) {
+		console.info('💡 Version already updated on this branch. Skipping package.json check.')
+
+		return
+	}
+
 	const is_staged = await confirm_package_json_staged(force)
 
 	if (is_staged) {

@@ -39,7 +39,7 @@ commit-msg:
       run: pnpm run check-commit-message {1}
 
 pre-push:
-  parallel: true
+  parallel: false
   commands:
     test-unit:
       # glob: '*.{svelte,ts,js,css}'
