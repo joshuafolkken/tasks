@@ -42,6 +42,7 @@ ignorePaths:
 words:
   - aboutads
   - languagetool
+  - shellcheck
   - aikidosec
   - appleboy
   - autorestart
