@@ -17,6 +17,7 @@ const RECURRENCE_FREQ_SELECT = '#recurrence_freq'
 const RECURRENCE_OPTION_DAILY = 'daily'
 const ATTR_DASH_TASK_CARD = 'data-dash-task-card'
 const TASK_CARD_SELECTOR = `[${ATTR_DASH_TASK_CARD}]`
+const SHORTCUT_ADD_TASK = 'Meta+Shift+O'
 
 /** Playwright `toBeFocused()` treats elements as "inactive" until modal `inert` clears after `</dialog>`. */
 async function expect_dom_focus_on(locator: Locator): Promise<void> {
@@ -432,11 +433,42 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 
 	test('Cmd+Shift+O shortcut opens a new task editor at the top', async ({ page }) => {
 		await playwright_dash_ux.run_authed(page, async () => {
-			await page.keyboard.press('Meta+Shift+O')
+			await page.keyboard.press(SHORTCUT_ADD_TASK)
 			await expect(page.getByTestId(tid.inline_title)).toBeVisible({
 				timeout: RELOAD_STABLE_TIMEOUT_MS,
 			})
 			await expect_dom_focus_on(page.getByTestId(tid.inline_title))
 		})
+	})
+
+	test('Cmd+Shift+O while editing an existing task does not create a new empty task', async ({
+		page,
+	}) => {
+		const run_id = `E2E_SHTO_${String(Date.now())}`
+
+		await playwright_dash_ux.run_authed(page, async () => {
+			await playwright_dash_ux.save_new_task(page, run_id)
+			await page.getByRole('button', { name: run_id }).click()
+			await expect(page.getByTestId(tid.inline_title)).toHaveValue(run_id)
+			await page.keyboard.press(SHORTCUT_ADD_TASK)
+			await expect(page.getByTestId(tid.inline_title)).toHaveCount(1, {
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
+			await expect(page.getByTestId(tid.inline_title)).toHaveValue(run_id)
+		}, [run_id])
+	})
+
+	test('Cmd+Shift+O while editing an existing task refocuses the inline title', async ({
+		page,
+	}) => {
+		const run_id = `E2E_SHTF_${String(Date.now())}`
+
+		await playwright_dash_ux.run_authed(page, async () => {
+			await playwright_dash_ux.save_new_task(page, run_id)
+			await page.getByRole('button', { name: run_id }).click()
+			await expect(page.getByTestId(tid.inline_title)).toHaveValue(run_id)
+			await page.keyboard.press(SHORTCUT_ADD_TASK)
+			await expect_dom_focus_on(page.getByTestId(tid.inline_title))
+		}, [run_id])
 	})
 })
