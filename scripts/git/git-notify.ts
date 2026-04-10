@@ -37,7 +37,7 @@ function parse_notify_mentions(raw_mentions: string | undefined): Array<string> 
 function resolve_notify_message(raw_message: string | undefined): string {
 	if (raw_message === undefined || raw_message.trim().length === 0) return DEFAULT_NOTIFY_MESSAGE
 
-	return raw_message.trim()
+	return raw_message.trim().replaceAll(String.raw`\n`, '\n')
 }
 
 function build_notify_config(input: {

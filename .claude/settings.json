@@ -1,6 +1,7 @@
 {
-	"_comment_defaultMode": "alternative: \"auto\" (auto-decides per action)",
-	"defaultMode": "bypassPermissions",
+	"permissions": {
+		"defaultMode": "bypassPermissions"
+	},
 	"hooks": {
 		"SessionStart": [
 			{
