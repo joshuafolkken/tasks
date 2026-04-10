@@ -10,6 +10,12 @@ reviews:
     enabled: true
     drafts: false
 
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+
   path_filters:
     - '!src/lib/paraglide/**'
     - '!messages/**'
@@ -20,6 +26,9 @@ reviews:
     - '!static/**'
     - '!*.config.*'
 
+knowledge_base:
+  opt_out: true
+
 tools:
   github-checks:
     enabled: false
@@ -28,4 +37,14 @@ tools:
   shellcheck:
     enabled: false
   markdownlint:
+    enabled: false
+  ast-grep:
+    enabled: false
+  biome:
+    enabled: false
+  gitleaks:
+    enabled: false
+  hadolint:
+    enabled: false
+  yamllint:
     enabled: false
