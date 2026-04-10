@@ -265,6 +265,18 @@ async function pr_get_status_rollup(branch_name: string): Promise<string> {
 	}
 }
 
+async function issue_get_title(issue_number: string): Promise<string | undefined> {
+	try {
+		const result: string = await exec_gh_command(
+			`issue view ${issue_number} --json title --jq .title`,
+		)
+
+		return parse_pr_state_string(result)
+	} catch {
+		return undefined
+	}
+}
+
 async function repo_get_name_with_owner(): Promise<string | undefined> {
 	try {
 		const result: string = await exec_gh_command(
@@ -313,6 +325,7 @@ const git_gh_command = {
 	pr_get_url,
 	pr_get_number,
 	pr_get_status_rollup,
+	issue_get_title,
 	repo_get_name_with_owner,
 	pr_get_review_comments,
 	pr_comment,

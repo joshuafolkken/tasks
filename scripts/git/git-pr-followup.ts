@@ -10,6 +10,25 @@ const CODERABBIT_FLAG = '_⚠️ Potential issue_'
 const CODERABBIT_RESOLVED = '✅ Addressed in commit'
 const TELEGRAM_DEFAULT_MESSAGE = 'PR followup completed.'
 const GITHUB_PULL_URL_PATTERN = /^(https:\/\/github\.com\/[^/]+\/[^/]+)\/pull\/\d+$/u
+const REPO_NAME_SEPARATOR = '/'
+
+function parse_repo_name(name_with_owner: string | undefined): string | undefined {
+	if (name_with_owner === undefined) return undefined
+	const parts = name_with_owner.split(REPO_NAME_SEPARATOR)
+
+	return parts.at(-1)
+}
+
+function build_telegram_message(input: {
+	repo_name: string | undefined
+	issue_title: string | undefined
+}): string {
+	if (input.repo_name === undefined || input.issue_title === undefined) {
+		return TELEGRAM_DEFAULT_MESSAGE
+	}
+
+	return `${input.repo_name}\n${input.issue_title}`
+}
 
 function build_issue_url(
 	pr_url: string | undefined,
@@ -161,6 +180,15 @@ async function run_checks(input: { branch_name: string; is_skip_watch: boolean }
 	git_pr_checks.assert_required_checks_passed(checks)
 }
 
+async function fetch_telegram_message(issue_number: string | undefined): Promise<string> {
+	const name_with_owner = await git_gh_command.repo_get_name_with_owner()
+	const repo_name = parse_repo_name(name_with_owner)
+	const issue_title =
+		issue_number === undefined ? undefined : await git_gh_command.issue_get_title(issue_number)
+
+	return build_telegram_message({ repo_name, issue_title })
+}
+
 async function run(input: FollowupInput): Promise<void> {
 	await run_checks({ branch_name: input.branch_name, is_skip_watch: input.is_skip_watch })
 	await handle_coderabbit_findings({
@@ -168,9 +196,10 @@ async function run(input: FollowupInput): Promise<void> {
 		ignore_reason: input.coderabbit_ignore_reason,
 	})
 	const pr_url = await git_gh_command.pr_get_url(input.branch_name)
+	const telegram_message = await fetch_telegram_message(input.issue_number)
 
 	await telegram_notify.send({
-		message: input.notify_config?.message ?? TELEGRAM_DEFAULT_MESSAGE,
+		message: telegram_message,
 		issue_url: build_issue_url(pr_url, input.issue_number),
 		pr_url,
 	})
@@ -186,5 +215,5 @@ const git_pr_followup = {
 	run,
 }
 
-export { git_pr_followup }
+export { git_pr_followup, build_telegram_message, parse_repo_name }
 export type { FollowupInput }
