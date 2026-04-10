@@ -10,6 +10,11 @@ overrides:
   lodash@>=4.0.0 <=4.17.22: '>=4.17.23'
   drizzle-orm@<0.45.2: '>=0.45.2'
 
+patchedDependencies:
+  rrule@2.8.1:
+    hash: 18c11ca5b9829d65187a0c73bbe58315f5dd23001fb3758619de2b631e73c863
+    path: patches/rrule@2.8.1.patch
+
 importers:
 
   .:
@@ -19,7 +24,7 @@ importers:
         version: 3.2.0
       rrule:
         specifier: ^2.8.1
-        version: 2.8.1
+        version: 2.8.1(patch_hash=18c11ca5b9829d65187a0c73bbe58315f5dd23001fb3758619de2b631e73c863)
       svelte-dnd-action:
         specifier: ^0.9.69
         version: 0.9.69(svelte@5.55.1)
@@ -8781,7 +8786,7 @@ snapshots:
 
   rou3@0.7.12: {}
 
-  rrule@2.8.1:
+  rrule@2.8.1(patch_hash=18c11ca5b9829d65187a0c73bbe58315f5dd23001fb3758619de2b631e73c863):
     dependencies:
       tslib: 2.8.1
 
