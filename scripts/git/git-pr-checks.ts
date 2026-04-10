@@ -98,16 +98,18 @@ async function sleep(ms: number): Promise<void> {
 	})
 }
 
-function has_pending_check(checks: ReadonlyArray<RollupCheck>): boolean {
-	return checks.some((check) => check.status === CHECK_STATUS_PENDING)
-}
-
 function has_all_required_checks(checks: ReadonlyArray<RollupCheck>): boolean {
 	return REQUIRED_CHECKS.every((name) => checks.some((check) => check.name === name))
 }
 
+function has_pending_required_check(checks: ReadonlyArray<RollupCheck>): boolean {
+	const required = checks.filter((check) => REQUIRED_CHECKS.includes(check.name))
+
+	return required.some((check) => check.status === CHECK_STATUS_PENDING)
+}
+
 function is_checks_settled(checks: ReadonlyArray<RollupCheck>): boolean {
-	return !has_pending_check(checks) && has_all_required_checks(checks)
+	return !has_pending_required_check(checks) && has_all_required_checks(checks)
 }
 
 async function wait_checks_completed(branch_name: string): Promise<Array<RollupCheck>> {
