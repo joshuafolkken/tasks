@@ -1,4 +1,17 @@
 {
 	"_comment_defaultMode": "alternative: \"auto\" (auto-decides per action)",
-	"defaultMode": "bypassPermissions"
+	"defaultMode": "bypassPermissions",
+	"hooks": {
+		"SessionStart": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash .claude/remote-setup.sh"
+					}
+				]
+			}
+		]
+	}
 }

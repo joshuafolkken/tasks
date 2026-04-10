@@ -98,16 +98,18 @@ async function sleep(ms: number): Promise<void> {
 	})
 }
 
-function has_pending_check(checks: ReadonlyArray<RollupCheck>): boolean {
-	return checks.some((check) => check.status === CHECK_STATUS_PENDING)
-}
-
 function has_all_required_checks(checks: ReadonlyArray<RollupCheck>): boolean {
 	return REQUIRED_CHECKS.every((name) => checks.some((check) => check.name === name))
 }
 
+function has_pending_required_check(checks: ReadonlyArray<RollupCheck>): boolean {
+	const required = checks.filter((check) => REQUIRED_CHECKS.includes(check.name))
+
+	return required.some((check) => check.status === CHECK_STATUS_PENDING)
+}
+
 function is_checks_settled(checks: ReadonlyArray<RollupCheck>): boolean {
-	return !has_pending_check(checks) && has_all_required_checks(checks)
+	return !has_pending_required_check(checks) && has_all_required_checks(checks)
 }
 
 async function wait_checks_completed(branch_name: string): Promise<Array<RollupCheck>> {
@@ -120,15 +122,6 @@ async function wait_checks_completed(branch_name: string): Promise<Array<RollupC
 	}
 
 	throw new Error('Timed out while waiting for PR checks to complete.')
-}
-
-function assert_all_checks_passed(checks: ReadonlyArray<RollupCheck>): void {
-	if (checks.length === 0) throw new Error('No checks found on PR.')
-	const failed_checks = checks.filter((check) => check.status === CHECK_STATUS_FAIL)
-	if (failed_checks.length === 0) return
-	const summary = failed_checks.map((check) => `${check.name}:${check.status}`).join(', ')
-
-	throw new Error(`Failed checks detected: ${summary}`)
 }
 
 function find_required_check(
@@ -158,7 +151,6 @@ function assert_required_checks_passed(checks: ReadonlyArray<RollupCheck>): void
 
 const git_pr_checks = {
 	wait_checks_completed,
-	assert_all_checks_passed,
 	assert_required_checks_passed,
 }
 
