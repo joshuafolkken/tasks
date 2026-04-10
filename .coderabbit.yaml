@@ -39,7 +39,7 @@ tools:
   markdownlint:
     enabled: false
   ast-grep:
-    enabled: false
+    essential_rules: false
   biome:
     enabled: false
   gitleaks:
