@@ -11,27 +11,38 @@ interface TelegramConfig {
 	chat_id: string
 }
 
-function load_config(): TelegramConfig | undefined {
-	const bot_token = process.env['TELEGRAM_BOT_TOKEN']
-	const chat_id = process.env['TELEGRAM_CHAT_ID']
-	if (bot_token === undefined || chat_id === undefined) return undefined
-	if (bot_token.trim().length === 0 || chat_id.trim().length === 0) return undefined
+function get_environment(name: string): string | undefined {
+	return process.env[name]
+}
 
-	return { bot_token: bot_token.trim(), chat_id: chat_id.trim() }
+function load_config(): TelegramConfig | undefined {
+	const bot_token = get_environment('TELEGRAM_BOT_TOKEN')?.trim()
+	const chat_id = get_environment('TELEGRAM_CHAT_ID')?.trim()
+
+	if (!bot_token || !chat_id) return undefined
+
+	return { bot_token, chat_id }
 }
 
 function append_if_present(parts: Array<string>, label: string, value: string | undefined): void {
 	if (value !== undefined && value.length > 0) parts.push(`${label}: ${value}`)
 }
 
-function build_text(input: TelegramSendInput): string {
-	const [raw_title = '', ...bullets] = input.message.split('\n')
-	const parts: Array<string> = [`✅ ${raw_title}`, ...bullets]
+function build_url_parts(input: TelegramSendInput): Array<string> {
+	const parts: Array<string> = []
 
 	append_if_present(parts, 'Issue', input.issue_url)
 	append_if_present(parts, 'PR', input.pr_url)
 
-	return parts.join('\n\n')
+	return parts
+}
+
+function build_text(input: TelegramSendInput): string {
+	const [raw_title = '', ...bullets] = input.message.split('\n')
+	const header = [`✅ ${raw_title}`, ...bullets].join('\n')
+	const url_parts = build_url_parts(input)
+
+	return [header, ...url_parts].join('\n\n')
 }
 
 async function post_message(config: TelegramConfig, text: string): Promise<void> {
@@ -76,5 +87,5 @@ const telegram_notify = {
 	send,
 }
 
-export { telegram_notify }
+export { telegram_notify, build_text }
 export type { TelegramSendInput }
