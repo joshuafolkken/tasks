@@ -102,6 +102,16 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 				await expect(page.getByTestId(tid.inline_title)).toBeFocused()
 			})
 		})
+
+		test('Shows a toast when the server returns an error on Add a task', async ({ page }) => {
+			await playwright_dash_ux.run_authed(page, async () => {
+				await page.route('**/dash?/create', async (route) => {
+					await route.fulfill({ status: 500 })
+				})
+				await page.getByTestId(tid.add_task).click()
+				await expect(page.getByTestId('toast-error')).toBeVisible()
+			})
+		})
 	})
 
 	test.describe('Edit and commit', () => {

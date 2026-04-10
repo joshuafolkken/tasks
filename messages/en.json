@@ -91,5 +91,8 @@
 	"dash_week_pos_1": "1st",
 	"dash_week_pos_2": "2nd",
 	"dash_week_pos_3": "3rd",
-	"dash_week_pos_4": "4th"
+	"dash_week_pos_4": "4th",
+	"toast_network_error": "Failed to connect. Please check your connection and try again.",
+	"toast_region_aria": "Notifications",
+	"toast_dismiss_aria": "Dismiss notification"
 }
