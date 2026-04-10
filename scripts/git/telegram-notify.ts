@@ -11,11 +11,15 @@ interface TelegramConfig {
 	chat_id: string
 }
 
-function load_config(): TelegramConfig | undefined {
-	const bot_token = process.env.TELEGRAM_BOT_TOKEN.trim()
-	const chat_id = process.env.TELEGRAM_CHAT_ID.trim()
+function get_environment(name: string): string | undefined {
+	return process.env[name]
+}
 
-	if (bot_token.length === 0 || chat_id.length === 0) return undefined
+function load_config(): TelegramConfig | undefined {
+	const bot_token = get_environment('TELEGRAM_BOT_TOKEN')?.trim()
+	const chat_id = get_environment('TELEGRAM_CHAT_ID')?.trim()
+
+	if (!bot_token || !chat_id) return undefined
 
 	return { bot_token, chat_id }
 }
