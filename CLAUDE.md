@@ -50,8 +50,22 @@ Stack: TypeScript · pnpm · SvelteKit · Vitest · Playwright · TailwindCSS ·
 
 For every code modification, follow this order exactly:
 
+0. **Test declaration** _(mandatory before writing any implementation code)_: Declare every change and its test. Do not touch implementation files until this list exists.
+
+   ```
+   Change 1: <what changes>
+     → Test: <Unit|E2E> — <file path> — <what behavior it verifies>
+   Change 2: ...
+   ```
+
+   - **Tests are required for ALL code changes** — including bug fixes, timing/animation fixes, and refactors. No exceptions without explicit user approval.
+   - Bug fix → regression test that would have caught the bug
+   - UI / animation / timing fix → E2E test for the observable behavior change
+   - Logic / utility change → unit test
+   - If a test is genuinely infeasible, state the reason explicitly and obtain user approval before proceeding.
+
 1. **Refactor first** _(mandatory before lint or tests)_: apply high/medium-priority refactoring to all new/modified code — see `prompts/refactoring.md`. Do not proceed until no high/medium items remain.
-2. **Tests**: add/update unit tests (Vitest) + E2E tests (Playwright) for all behavior changes — see `prompts/testing-guide.md`
+2. **Tests**: implement the tests declared in Step 0. See `prompts/testing-guide.md`.
    - **E2E cleanup / leaked data**: When fixing issues where E2E leaves database or UI artifacts, follow the **Regression fix workflow** in `prompts/testing-guide.md` (add a failing guard → fix → confirm green). Prefer stable selectors (`data-testid`) over locale-dependent strings for teardown.
 3. **Lint**: run `pnpm run lint` then `pnpm run check`; fix all errors before reporting done
 4. **Spell check**: `pnpm cspell:dot`; add legitimate project terms to `cspell.config.yaml`
@@ -67,6 +81,7 @@ Run the full verification set **in order**. **Do not** skip or reorder steps. **
 
 **E2E:** The user runs `pnpm test` and shares the full output. Do **not** claim completion until the user confirms E2E passed or explicitly scopes it out.
 
+0. **Test gate** — Count (a) code changes made and (b) tests added/updated. If b = 0 and no infeasibility was approved by the user, **stop** — go back to Code Change Rules Step 0 and add tests before continuing.
 1. **Refactor** — read and execute `prompts/refactoring.md` on all changed files. Converge until no high/medium items remain. **Do not proceed to step 2 until complete.**
 2. `pnpm run lint`
 3. `pnpm run check`
