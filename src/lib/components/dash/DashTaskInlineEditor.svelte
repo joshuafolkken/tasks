@@ -840,15 +840,14 @@
 		reset_blur_defer_flags()
 		await update({ reset: false })
 		reset_blur_defer_flags()
+
+		const did_navigate_away = is_navigating_away
+
 		/* Same task id skips the seed $effect; align with load data so normalized fields (e.g. rrule) are not left dirty. */
 		await tick()
 		sync_form_from_task_item()
 		await run_after_successful_update(reason, is_saved_via_blur_commit)
 		reset_blur_defer_flags()
-
-		const did_navigate_away = is_navigating_away
-
-		is_navigating_away = false
 
 		if (!is_blur_commit_exit(reason, is_saved_via_blur_commit) && !did_navigate_away) {
 			await tick()
