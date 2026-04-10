@@ -73,9 +73,10 @@ Issue: <issue-url>
 3. 実装を開始する
 4. 実装後は `AGENTS.md` の検証ゲートを実行する
 
-`pnpm git` の基本実行（`-y` で確認プロンプトをスキップ）:
+`pnpm git` の基本実行（`-y` で確認プロンプトをスキップ）。**初回コミット前に必ず `pnpm version:minor` を実行する。** ただし、同一 PR 内の追加修正コミット（CodeRabbit 指摘対応など）では実行しない。
 
 ```bash
+pnpm version:minor
 pnpm git -y "<issue-title> #<issue-number>"
 ```
 
