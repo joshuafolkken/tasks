@@ -231,6 +231,7 @@
 
 	function sync_form_from_task_item(): void {
 		is_blur_commit_pending = false
+		is_navigating_away = false
 		form_title = task_item.title
 		form_detail = task_item.detail ?? ''
 		form_label_input = ''
