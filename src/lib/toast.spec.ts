@@ -19,8 +19,8 @@ describe('toast store', () => {
 		toast.push_error(MSG_SOMETHING_WRONG)
 
 		expect(toast_store.items).toHaveLength(1)
-		expect(toast_store.items[0].message).toBe(MSG_SOMETHING_WRONG)
-		expect(toast_store.items[0].type).toBe('error')
+		expect(toast_store.items[0]?.message).toBe(MSG_SOMETHING_WRONG)
+		expect(toast_store.items[0]?.type).toBe('error')
 	})
 
 	it('dismiss removes the item by id', () => {
