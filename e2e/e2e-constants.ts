@@ -28,12 +28,18 @@ function parse_e2e_workers_from_env(): number | undefined {
 	return Math.floor(parsed)
 }
 
+/** Max local workers to prevent dev server overload under parallel load. */
+const LOCAL_MAX_WORKERS = 4
+
 function resolve_e2e_worker_count(): number {
 	const from_env = parse_e2e_workers_from_env()
 
 	if (from_env !== undefined) return from_env
 
-	return Math.max(1, os.availableParallelism())
+	const parallelism = Math.max(1, os.availableParallelism())
+	const is_ci = Boolean(process.env['CI'])
+
+	return is_ci ? parallelism : Math.min(parallelism, LOCAL_MAX_WORKERS)
 }
 
 const E2E_WORKER_COUNT = resolve_e2e_worker_count()
