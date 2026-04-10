@@ -491,6 +491,7 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 			await expect(page.getByTestId(tid.inline_title)).toHaveCount(1, {
 				timeout: RELOAD_STABLE_TIMEOUT_MS,
 			})
+			await expect(page.getByTestId(tid.inline_title)).toBeFocused()
 		})
 	})
 

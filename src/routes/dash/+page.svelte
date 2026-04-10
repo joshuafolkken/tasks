@@ -143,9 +143,12 @@
 		cancel_task_edit()
 		is_begin_add_at_top_running = true
 
+		const editing_snapshot = editing_task_id
+
 		try {
 			const target_id = await resolve_add_at_top_target_id()
 			if (target_id === undefined) return
+			if (editing_task_id !== editing_snapshot) return
 
 			editing_task_id = target_id
 			inline_edit_focus_pulse += 1
