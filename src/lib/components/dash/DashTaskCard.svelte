@@ -230,7 +230,9 @@
 				{form}
 				{input_class}
 				focus_request_id={focus_pulse}
-				on_escape={on_cancel_task_edit}
+				on_escape={() => {
+					if (editing_task_id === task_item.id) on_cancel_task_edit()
+				}}
 				on_saved={on_task_saved}
 				{on_blur_commit_saved}
 				on_title_enter_saved={async () => {
