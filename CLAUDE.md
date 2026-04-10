@@ -52,7 +52,7 @@ For every code modification, follow this order exactly:
 
 0. **Test declaration** _(mandatory before writing any implementation code)_: Declare every change and its test. Do not touch implementation files until this list exists.
 
-   ```
+   ```text
    Change 1: <what changes>
      → Test: <Unit|E2E> — <file path> — <what behavior it verifies>
    Change 2: ...
