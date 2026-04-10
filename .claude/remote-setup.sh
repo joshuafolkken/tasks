@@ -16,7 +16,11 @@ else
 fi
 
 echo "==> Fetching .env from Gist..."
-gh gist view e17877eb0ee23f89dbcc160ed594629e --raw > .env || { echo "ERROR: Failed to fetch .env"; exit 1; }
+GIST_ID="${SECRETS_GIST_ID:-e17877eb0ee23f89dbcc160ed594629e}"
+tmp_env="$(mktemp)"
+gh gist view "$GIST_ID" --raw > "$tmp_env" || { echo "ERROR: Failed to fetch .env"; rm -f "$tmp_env"; exit 1; }
+chmod 600 "$tmp_env"
+mv "$tmp_env" .env
 
 echo "==> Applying DB migrations..."
 pnpm db:apply:local

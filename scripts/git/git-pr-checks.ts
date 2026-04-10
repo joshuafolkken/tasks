@@ -124,15 +124,6 @@ async function wait_checks_completed(branch_name: string): Promise<Array<RollupC
 	throw new Error('Timed out while waiting for PR checks to complete.')
 }
 
-function assert_all_checks_passed(checks: ReadonlyArray<RollupCheck>): void {
-	if (checks.length === 0) throw new Error('No checks found on PR.')
-	const failed_checks = checks.filter((check) => check.status === CHECK_STATUS_FAIL)
-	if (failed_checks.length === 0) return
-	const summary = failed_checks.map((check) => `${check.name}:${check.status}`).join(', ')
-
-	throw new Error(`Failed checks detected: ${summary}`)
-}
-
 function find_required_check(
 	checks: ReadonlyArray<RollupCheck>,
 	required_name: string,
@@ -160,7 +151,6 @@ function assert_required_checks_passed(checks: ReadonlyArray<RollupCheck>): void
 
 const git_pr_checks = {
 	wait_checks_completed,
-	assert_all_checks_passed,
 	assert_required_checks_passed,
 }
 
