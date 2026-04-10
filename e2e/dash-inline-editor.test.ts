@@ -471,4 +471,19 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 			await expect_dom_focus_on(page.getByTestId(tid.inline_title))
 		}, [run_id])
 	})
+
+	// Regression #165: discard_empty_inline_task used to call cancel_task_edit() synchronously,
+	// preventing the out:slide animation from starting before unmount. The fix defers via
+	// queueMicrotask. Direct animation testing is infeasible in Playwright; this test verifies
+	// the observable behavior — the editor closes correctly after blur.
+	test('Blurring out of an empty new task row closes the inline editor', async ({ page }) => {
+		await playwright_dash_ux.run_authed(page, async () => {
+			await playwright_dash_ux.open_new_task_editor(page)
+			await expect(page.getByTestId(tid.inline_title)).toBeVisible()
+			await playwright_dash_ux.blur_inline_editor(page)
+			await expect(page.getByTestId(tid.inline_title)).toHaveCount(0, {
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
+		})
+	})
 })

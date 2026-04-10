@@ -84,8 +84,7 @@
 	}
 
 	function arrow_navigate_to_task(task_id: string): void {
-		editing_task_id = task_id
-		inline_edit_focus_pulse += 1
+		start_task_edit(task_id)
 	}
 
 	function cancel_task_edit(): void {
@@ -285,9 +284,10 @@
 		})
 
 		await invalidateAll()
-		// Only cancel the edit if this task is still the active editor — the user may have
-		// already clicked another row, setting editing_task_id to a different task.
-		if (editing_task_id === task_id) cancel_task_edit()
+		// Defer so out:slide starts before unmount; guard in case another row is now active.
+		queueMicrotask(() => {
+			if (editing_task_id === task_id) cancel_task_edit()
+		})
 	}
 
 	async function complete_task(task_id: string): Promise<void> {
