@@ -291,6 +291,33 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 		}, [title_a, title_b])
 	})
 
+	test('ArrowDown after editing title (dirty form) keeps focus on the next row', async ({
+		page,
+	}) => {
+		const run_id = `E2E_AND_${String(Date.now())}`
+		const title_a = `${run_id}_A`
+		const title_b = `${run_id}_B`
+		const title_b_edited = `${title_b}_edit`
+
+		await playwright_dash_ux.run_authed(page, async () => {
+			await playwright_dash_ux.seed_tasks(page, [title_a, title_b])
+			await page.getByTestId(tid.search).fill(run_id)
+			await expect(page.getByTestId(tid.task_row).filter({ hasText: run_id })).toHaveCount(2, {
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
+
+			await page.getByRole('button', { name: title_b }).click()
+			const inline_title = page.getByTestId(tid.inline_title)
+
+			await expect(inline_title).toHaveValue(title_b)
+			await inline_title.fill(title_b_edited)
+			await expect(inline_title).toHaveValue(title_b_edited)
+			await page.keyboard.press('ArrowDown')
+			// After dirty-form arrow navigation, focus must stay on the next task (title_a), not stolen back.
+			await expect_focused_inline_value(page, title_a)
+		}, [title_b_edited, title_a])
+	})
+
 	test('ArrowUp on the title moves edit focus to the previous row', async ({ page }) => {
 		const run_id = `E2E_AUP_${String(Date.now())}`
 		const title_a = `${run_id}_A`
