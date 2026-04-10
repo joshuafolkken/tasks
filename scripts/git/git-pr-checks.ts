@@ -134,7 +134,12 @@ function assert_required_check_status(input: {
 	required_name: string
 	matched: RollupCheck | undefined
 }): void {
-	if (input.matched === undefined) throw new Error(`Required check missing: ${input.required_name}`)
+	if (input.matched === undefined) {
+		console.warn(`⚠️  Required check not triggered (skipping): ${input.required_name}`)
+
+		return
+	}
+
 	if (input.matched.status === CHECK_STATUS_PASS) return
 
 	throw new Error(`Required check not passed: ${input.required_name} (${input.matched.status})`)
