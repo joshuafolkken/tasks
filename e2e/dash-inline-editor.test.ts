@@ -17,7 +17,6 @@ const RECURRENCE_FREQ_SELECT = '#recurrence_freq'
 const RECURRENCE_OPTION_DAILY = 'daily'
 const ATTR_DASH_TASK_CARD = 'data-dash-task-card'
 const TASK_CARD_SELECTOR = `[${ATTR_DASH_TASK_CARD}]`
-const TITLE_BUTTON_TASK_ID_ATTR = 'data-task-id'
 
 /** Playwright `toBeFocused()` treats elements as "inactive" until modal `inert` clears after `</dialog>`. */
 async function expect_dom_focus_on(locator: Locator): Promise<void> {
@@ -45,16 +44,6 @@ async function expect_focused_inline_value(page: Page, value: string): Promise<v
 			{ timeout: RELOAD_STABLE_TIMEOUT_MS },
 		)
 		.toBe(true)
-}
-
-async function read_title_button_task_id(page: Page, title: string): Promise<string> {
-	const raw = await page
-		.getByRole('button', { name: title })
-		.getAttribute(TITLE_BUTTON_TASK_ID_ATTR)
-
-	expect(raw, `missing ${TITLE_BUTTON_TASK_ID_ATTR} on title button`).toBeTruthy()
-
-	return String(raw)
 }
 
 async function read_inline_card_id(page: Page): Promise<string> {
@@ -102,12 +91,6 @@ async function expect_inline_open_in_card(
 			{ timeout: RELOAD_STABLE_TIMEOUT_MS },
 		)
 		.toBe(true)
-}
-
-function title_input_in_task_card(page: Page, task_id: string): Locator {
-	return page
-		.locator(`${TASK_CARD_SELECTOR}[data-dash-task-card="${task_id}"]`)
-		.getByTestId(tid.inline_title)
 }
 
 async function wait_for_update_task_ok(page: Page): Promise<Response> {
@@ -193,7 +176,6 @@ interface ArrowDownTwiceChain {
 
 async function expect_arrow_down_twice(chain: ArrowDownTwiceChain): Promise<void> {
 	await expect_focused_inline_value(chain.page, chain.top_title)
-	await chain.page.getByTestId(tid.inline_title).focus()
 	await chain.page.keyboard.press('ArrowDown')
 	await expect_focused_inline_value(chain.page, chain.mid_title)
 
@@ -275,20 +257,44 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 
 		await playwright_dash_ux.run_authed(page, async () => {
 			await playwright_dash_ux.seed_tasks(page, [title_a, title_b])
-			const id_a = await read_title_button_task_id(page, title_a)
-			const id_b = await read_title_button_task_id(page, title_b)
 
 			await page.getByRole('button', { name: title_b }).click()
-			const input_b = title_input_in_task_card(page, id_b)
+			await expect_focused_inline_value(page, title_b)
 
-			await expect(input_b).toHaveValue(title_b)
-			await input_b.focus()
-			await expect(input_b).toBeFocused()
 			await page.keyboard.press('ArrowDown')
-			await expect(title_input_in_task_card(page, id_a)).toHaveValue(title_a, {
+			await expect_focused_inline_value(page, title_a)
+		}, [title_a, title_b])
+	})
+
+	test('ArrowDown after editing title (dirty form) keeps focus on the next row', async ({
+		page,
+	}) => {
+		const run_id = `E2E_AND_${String(Date.now())}`
+		const title_a = `${run_id}_A`
+		const title_b = `${run_id}_B`
+		const title_b_edited = `${title_b}_edit`
+
+		await playwright_dash_ux.run_authed(page, async () => {
+			await playwright_dash_ux.seed_tasks(page, [title_a, title_b])
+			await page.getByTestId(tid.search).fill(run_id)
+			await expect(page.getByTestId(tid.task_row).filter({ hasText: run_id })).toHaveCount(2, {
 				timeout: RELOAD_STABLE_TIMEOUT_MS,
 			})
-		}, [title_a, title_b])
+
+			await page.getByRole('button', { name: title_b }).click()
+			const inline_title = page.getByTestId(tid.inline_title)
+
+			await expect(inline_title).toHaveValue(title_b)
+			await inline_title.fill(title_b_edited)
+			await expect(inline_title).toHaveValue(title_b_edited)
+			const save_response = wait_for_update_task_ok(page)
+
+			await page.keyboard.press('ArrowDown')
+			// Wait for the dirty-form save to complete before asserting focus so the race is fully resolved.
+			await save_response
+			// After dirty-form arrow navigation, focus must stay on the next task (title_a), not stolen back.
+			await expect_focused_inline_value(page, title_a)
+		}, [title_b_edited, title_a])
 	})
 
 	test('ArrowUp on the title moves edit focus to the previous row', async ({ page }) => {
@@ -304,10 +310,8 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 			})
 
 			await page.getByRole('button', { name: title_a }).click()
-			const input_a = page.getByTestId(tid.inline_title)
-
 			await expect_focused_inline_value(page, title_a)
-			await input_a.focus()
+
 			await page.keyboard.press('ArrowUp')
 			await expect_focused_inline_value(page, title_b)
 		}, [title_a, title_b])

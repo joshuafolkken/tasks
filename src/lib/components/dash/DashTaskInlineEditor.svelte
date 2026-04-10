@@ -99,6 +99,8 @@
 	let is_rr_post_close_submit = false
 	/** Prevents the focusout path from triggering a second discard when arrow navigation already handled it. */
 	let is_arrow_nav_discard_active = false
+	/** Set when arrow navigation is initiated so finalize_success_then_refocus skips stealing focus back. */
+	let is_navigating_away = false
 
 	function clear_blur_discard_timer(): void {
 		if (blur_discard_timer === undefined) return
@@ -607,13 +609,13 @@
 			return
 		}
 
-		if (!is_form_dirty()) {
-			on_escape()
+		if (is_form_dirty()) {
+			apply_dirty_blur_submit()
 
 			return
 		}
 
-		apply_dirty_blur_submit()
+		if (!is_navigating_away) on_escape()
 	}
 
 	function handle_form_focusout(focus_event: FocusEvent): void {
@@ -714,6 +716,7 @@
 	function handle_arrow_without_title(direction: 'up' | 'down'): void {
 		if (!is_never_titled_row()) revert_to_task_item()
 
+		is_navigating_away = true
 		on_navigate_arrow?.(direction)
 
 		if (is_never_titled_row()) {
@@ -725,6 +728,7 @@
 	function handle_arrow_with_title(direction: 'up' | 'down'): void {
 		if (is_form_dirty()) try_submit_form()
 
+		is_navigating_away = true
 		on_navigate_arrow?.(direction)
 	}
 
@@ -841,7 +845,11 @@
 		await run_after_successful_update(reason, is_saved_via_blur_commit)
 		reset_blur_defer_flags()
 
-		if (!is_blur_commit_exit(reason, is_saved_via_blur_commit)) {
+		const did_navigate_away = is_navigating_away
+
+		is_navigating_away = false
+
+		if (!is_blur_commit_exit(reason, is_saved_via_blur_commit) && !did_navigate_away) {
 			await tick()
 			await next_animation_frame()
 			await next_animation_frame()
