@@ -100,17 +100,7 @@ pnpm git -y "<issue-title> #<issue-number>"
 主なオプション:
 
 - `--notify-target`: `issue`（固定。PR への完了報告は行わない）
-- `--notify-message`: 完了コメント本文。以下のフォーマットで記載する:
-
-  ```
-  ✅ <repository-name>
-  <issue title>
-
-  Issue: <issue-url>
-
-  PR: <pr-url>
-  ```
-
+- `--notify-message`: Issue への完了コメント本文。定型文ではなく実装内容のサマリーを英語で記載する（例: `"Implemented X:\n- Added ...\n- Changed ..."`）
 - `--coderabbit-ignore-reason`: 未対応を残す場合の理由コメント
 - `--issue-number`: Issue 番号（または位置引数に `"<title> #<number>"`）
 
@@ -118,24 +108,18 @@ pnpm git -y "<issue-title> #<issue-number>"
 
 ```bash
 pnpm git:followup "<issue-title> #<issue-number>" \
-  --notify-message "✅ <repository-name>
-<issue-title>
-
-Issue: <issue-url>
-
-PR: <pr-url>"
+  --notify-message "Implemented <title>:
+- Added ...
+- Changed ..."
 ```
 
 例2: CodeRabbit 未対応理由あり
 
 ```bash
 pnpm git:followup "<issue-title> #<issue-number>" \
-  --notify-message "✅ <repository-name>
-<issue-title>
-
-Issue: <issue-url>
-
-PR: <pr-url>" \
+  --notify-message "Implemented <title>:
+- Added ...
+- Fixed ..." \
   --coderabbit-ignore-reason "仕様上この指摘は該当しないため"
 ```
 
