@@ -279,8 +279,9 @@
 		if (!(await persist_cleared_inline_task(task_id))) return
 
 		// Optimistic update: start out:slide before the network call, mirroring complete_task pattern.
+		// Guard: skip cancel if arrow navigation already switched editing_task_id to another row.
 		tasks_state = tasks_state.filter((row) => row.id !== task_id)
-		cancel_task_edit()
+		if (editing_task_id === task_id) cancel_task_edit()
 
 		const discard = new FormData()
 
