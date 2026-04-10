@@ -80,6 +80,7 @@
 
 	function start_task_edit(task_id: string): void {
 		editing_task_id = task_id
+		inline_edit_focus_pulse += 1
 	}
 
 	function arrow_navigate_to_task(task_id: string): void {
