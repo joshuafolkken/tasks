@@ -140,11 +140,8 @@
 
 	async function resolve_add_top_target(
 		editor_snapshot: string | undefined,
-		items: Array<TaskItem>,
 	): Promise<string | undefined> {
-		const first_open_empty_id = read_first_open_empty_task_id(items)
-
-		if (editor_snapshot !== undefined && editor_snapshot === first_open_empty_id) {
+		if (editor_snapshot !== undefined) {
 			inline_edit_focus_pulse += 1
 
 			return undefined
@@ -163,7 +160,7 @@
 		is_begin_add_at_top_running = true
 
 		try {
-			const target_id = await resolve_add_top_target(editing_task_id, tasks_state)
+			const target_id = await resolve_add_top_target(editing_task_id)
 			if (target_id === undefined) return
 
 			/* eslint-disable-next-line require-atomic-updates -- guarded by `is_begin_add_at_top_running` */
