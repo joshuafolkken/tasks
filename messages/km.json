@@ -91,5 +91,8 @@
 	"dash_week_pos_1": "ទី១",
 	"dash_week_pos_2": "ទី២",
 	"dash_week_pos_3": "ទី៣",
-	"dash_week_pos_4": "ទី៤"
+	"dash_week_pos_4": "ទី៤",
+	"toast_network_error": "ការភ្ជាប់បានបរាជ័យ។ សូមពិនិត្យការភ្ជាប់ ហើយព្យាយាមម្តងទៀត។",
+	"toast_region_aria": "ការជូនដំណឹង",
+	"toast_dismiss_aria": "បិទការជូនដំណឹង"
 }

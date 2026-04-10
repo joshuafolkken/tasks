@@ -4,6 +4,7 @@
 	import type { Snippet } from 'svelte'
 	import './layout.css'
 	import favicon from '$lib/assets/favicon.svg'
+	import Toast from '$lib/components/Toast.svelte'
 	import LocaleSwitcher from '$lib/locale/components/LocaleSwitcher.svelte'
 	import { locale_store } from '$lib/locale/LocaleStore.svelte'
 	import { m } from '$lib/paraglide/messages'
@@ -34,4 +35,5 @@
 	<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 		{@render children()}
 	</div>
+	<Toast />
 </div>

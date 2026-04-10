@@ -91,5 +91,8 @@
 	"dash_week_pos_1": "1-chi",
 	"dash_week_pos_2": "2-chi",
 	"dash_week_pos_3": "3-chi",
-	"dash_week_pos_4": "4-chi"
+	"dash_week_pos_4": "4-chi",
+	"toast_network_error": "Ulanish muvaffaqiyatsiz. Iltimos, ulanishni tekshiring va qayta urinib ko'ring.",
+	"toast_region_aria": "Bildirishnomalar",
+	"toast_dismiss_aria": "Bildirishnomani yopish"
 }
