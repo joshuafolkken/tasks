@@ -90,6 +90,10 @@ If you changed **only** docs or config that does not affect tests, still run lin
 
 - For issue-driven proposal/plan/execution/notification flow, follow `prompts/collaboration-workflow.md`
 
+### Shorthand Commands
+
+- `fullrun #<N>`: Post the agreed plan as an Issue #N comment → implement → `pnpm git` → `pnpm git:followup` (full run from Step 3 onward in `prompts/collaboration-workflow.md`)
+
 ## MCP Tools (Svelte)
 
 You have access to the Svelte MCP server with comprehensive Svelte 5 and SvelteKit documentation.
