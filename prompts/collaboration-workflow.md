@@ -95,7 +95,7 @@ pnpm git "<issue-title> #<issue-number>"
 主なオプション:
 
 - `--notify-target`: `pr` | `issue` | `both`（未指定時は `issue`）
-- `--notify-message`: 完了コメント本文の先頭メッセージ
+- `--notify-message`: 完了コメント本文。定型文ではなく実装内容のサマリーを英語で記載する（例: `"Implemented X:\n- Added ...\n- Changed ..."`）
 - `--notify-mentions`: カンマ区切りメンション（`user` または `org/team`）
 - `--coderabbit-ignore-reason`: 未対応を残す場合の理由コメント
 - `--issue-number`: Issue 番号（または位置引数に `"<title> #<number>"`）
@@ -105,7 +105,9 @@ pnpm git "<issue-title> #<issue-number>"
 ```bash
 pnpm git:followup "<issue-title> #<issue-number>" \
   --notify-target pr \
-  --notify-message "実装と検証が完了しました。確認をお願いします。" \
+  --notify-message "Implemented <title>:
+- Added ...
+- Changed ..." \
   --notify-mentions "reviewer1,org/team-name"
 ```
 
@@ -114,7 +116,9 @@ pnpm git:followup "<issue-title> #<issue-number>" \
 ```bash
 pnpm git:followup "<issue-title> #<issue-number>" \
   --notify-target both \
-  --notify-message "この Issue の対応は完了です。" \
+  --notify-message "Implemented <title>:
+- Added ...
+- Fixed ..." \
   --notify-mentions "owner" \
   --coderabbit-ignore-reason "仕様上この指摘は該当しないため"
 ```
