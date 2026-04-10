@@ -6,6 +6,7 @@
 	import DashSearchBar from '$lib/components/dash/DashSearchBar.svelte'
 	import DashTasksPanel from '$lib/components/dash/DashTasksPanel.svelte'
 	import { dash_action_result } from '$lib/dash-action-result'
+	import { dash_fetch } from '$lib/dash-fetch'
 	import { dash_reorder_client } from '$lib/dash-reorder-client'
 	import { dash_task_filters } from '$lib/dash-task-filters'
 	import { DASH_PAGE_UI } from '$lib/dash-ui'
@@ -108,12 +109,13 @@
 
 		form_data.set('title', '')
 		form_data.set('insert_at_top', '1')
-		const response = await fetch(`${page.url.pathname}?/create`, {
-			method: 'POST',
-			headers: json_action_headers,
-			body: form_data,
-		})
-		if (!response.ok) return undefined
+
+		const response = await dash_fetch.fetch_with_toast(
+			`${page.url.pathname}?/create`,
+			json_action_headers,
+			form_data,
+		)
+		if (response === undefined) return undefined
 
 		try {
 			const action_result = deserialize(await response.text())
@@ -228,11 +230,13 @@
 
 		form_data.set('title', '')
 		form_data.set('insert_after_task_id', after_task_id)
-		const response = await fetch(`${page.url.pathname}?/create`, {
-			method: 'POST',
-			headers: json_action_headers,
-			body: form_data,
-		})
+
+		const response = await dash_fetch.fetch_with_toast(
+			`${page.url.pathname}?/create`,
+			json_action_headers,
+			form_data,
+		)
+		if (response === undefined) return undefined
 
 		return dash_action_result.read_task_id_from_action(deserialize(await response.text()))
 	}
