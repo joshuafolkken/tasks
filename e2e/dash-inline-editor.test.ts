@@ -441,7 +441,9 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 		})
 	})
 
-	test('Cmd+Shift+O while editing an existing task does not create a new empty task', async ({
+	// Regression #168: #163 incorrectly guarded all editing cases; shortcut while editing an existing
+	// task should open a new empty editor at the top (same as the Add a task button), not refocus.
+	test('Cmd+Shift+O while editing an existing task opens a new task editor at the top', async ({
 		page,
 	}) => {
 		const run_id = `E2E_SHTO_${String(Date.now())}`
@@ -454,22 +456,43 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 			await expect(page.getByTestId(tid.inline_title)).toHaveCount(1, {
 				timeout: RELOAD_STABLE_TIMEOUT_MS,
 			})
-			await expect(page.getByTestId(tid.inline_title)).toHaveValue(run_id)
+			await expect(page.getByTestId(tid.inline_title)).toHaveValue('')
+			await expect_dom_focus_on(page.getByTestId(tid.inline_title))
 		}, [run_id])
 	})
 
-	test('Cmd+Shift+O while editing an existing task refocuses the inline title', async ({
+	test('Add a task button while editing an existing task opens a new task editor at the top', async ({
 		page,
 	}) => {
-		const run_id = `E2E_SHTF_${String(Date.now())}`
+		const run_id = `E2E_BTN_${String(Date.now())}`
 
 		await playwright_dash_ux.run_authed(page, async () => {
 			await playwright_dash_ux.save_new_task(page, run_id)
 			await page.getByRole('button', { name: run_id }).click()
 			await expect(page.getByTestId(tid.inline_title)).toHaveValue(run_id)
-			await page.keyboard.press(SHORTCUT_ADD_TASK)
+			await page.getByTestId(tid.add_task).click()
+			await expect(page.getByTestId(tid.inline_title)).toHaveCount(1, {
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
+			await expect(page.getByTestId(tid.inline_title)).toHaveValue('')
 			await expect_dom_focus_on(page.getByTestId(tid.inline_title))
 		}, [run_id])
+	})
+
+	test('Cmd+Shift+O while editing the new empty task refocuses it without creating a duplicate', async ({
+		page,
+	}) => {
+		await playwright_dash_ux.run_authed(page, async () => {
+			await page.keyboard.press(SHORTCUT_ADD_TASK)
+			await expect(page.getByTestId(tid.inline_title)).toBeVisible({
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
+			await page.keyboard.press(SHORTCUT_ADD_TASK)
+			await expect(page.getByTestId(tid.inline_title)).toHaveCount(1, {
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
+			await expect(page.getByTestId(tid.inline_title)).toBeFocused()
+		})
 	})
 
 	// Regression #165: discard_empty_inline_task used to call cancel_task_edit() synchronously,

@@ -137,16 +137,24 @@
 		return read_first_open_empty_task_id(tasks_state)
 	}
 
-	async function resolve_add_top_target(
-		editor_snapshot: string | undefined,
-	): Promise<string | undefined> {
-		if (editor_snapshot !== undefined) {
+	async function run_add_top_task(): Promise<void> {
+		// Close current editor before network request so its deferred blur
+		// cannot race against the new task's editing state.
+		cancel_task_edit()
+		is_begin_add_at_top_running = true
+
+		const editing_snapshot = editing_task_id
+
+		try {
+			const target_id = await resolve_add_at_top_target_id()
+			if (target_id === undefined) return
+			if (editing_task_id !== editing_snapshot) return
+
+			editing_task_id = target_id
 			inline_edit_focus_pulse += 1
-
-			return undefined
+		} finally {
+			is_begin_add_at_top_running = false
 		}
-
-		return await resolve_add_at_top_target_id()
 	}
 
 	async function begin_add_at_top(): Promise<void> {
@@ -156,19 +164,15 @@
 			return
 		}
 
-		is_begin_add_at_top_running = true
+		const first_open_empty_id = read_first_open_empty_task_id(tasks_state)
 
-		try {
-			const target_id = await resolve_add_top_target(editing_task_id)
-			if (target_id === undefined) return
-
-			/* eslint-disable-next-line require-atomic-updates -- guarded by `is_begin_add_at_top_running` */
-			editing_task_id = target_id
+		if (editing_task_id !== undefined && editing_task_id === first_open_empty_id) {
 			inline_edit_focus_pulse += 1
-		} finally {
-			/* eslint-disable-next-line require-atomic-updates -- release lock after awaited work */
-			is_begin_add_at_top_running = false
+
+			return
 		}
+
+		await run_add_top_task()
 	}
 
 	function is_modifier_key_pressed(key_event: KeyboardEvent): boolean {
