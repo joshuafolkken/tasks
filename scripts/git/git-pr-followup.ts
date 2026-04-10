@@ -158,15 +158,15 @@ async function run(input: FollowupInput): Promise<void> {
 	})
 	const pr_url = await git_gh_command.pr_get_url(input.branch_name)
 
+	await telegram_notify.send({
+		message: input.notify_config?.message ?? TELEGRAM_DEFAULT_MESSAGE,
+		issue_number: input.issue_number,
+		pr_url,
+	})
 	await post_completion_notification({
 		branch_name: input.branch_name,
 		issue_number: input.issue_number,
 		notify_config: input.notify_config,
-		pr_url,
-	})
-	await telegram_notify.send({
-		message: input.notify_config?.message ?? TELEGRAM_DEFAULT_MESSAGE,
-		issue_number: input.issue_number,
 		pr_url,
 	})
 }

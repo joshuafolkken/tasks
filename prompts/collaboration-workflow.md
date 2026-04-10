@@ -15,7 +15,7 @@
 
 Issue には次の要素を必ず含める。
 
-- タイトルは簡潔な英語で記載する
+- タイトルは簡潔な英語で記載する（日本語で作成した場合は、AIツールが実装開始前に英語タイトルへ更新すること。GitHub Issue のタイトルも `gh issue edit` で更新する）
 - 目的（何を改善したいか）
 - 現象（現在の不具合や課題）
 - 期待結果（完了時の状態）
@@ -73,11 +73,15 @@ Issue: <issue-url>
 3. 実装を開始する
 4. 実装後は `AGENTS.md` の検証ゲートを実行する
 
-`pnpm git` の基本実行:
+`pnpm git` の基本実行（`-y` で確認プロンプトをスキップ）。**初回コミット前に必ず `pnpm version:minor` を実行する。** ただし、同一 PR 内の追加修正コミット（CodeRabbit 指摘対応など）では実行しない。
 
 ```bash
-pnpm git "<issue-title> #<issue-number>"
+pnpm version:minor
+pnpm git -y "<issue-title> #<issue-number>"
 ```
+
+> **Note**: Issue タイトルが日本語の場合、`pnpm git` を実行する前に英語タイトルへ変換すること。
+> `gh issue edit <number> --title "<english-title>"` で GitHub Issue タイトルも合わせて更新する。
 
 ## Step 4: PR結果確認 + 完了通知（別スクリプト）
 
@@ -92,7 +96,7 @@ pnpm git "<issue-title> #<issue-number>"
 主なオプション:
 
 - `--notify-target`: `pr` | `issue` | `both`（未指定時は `issue`）
-- `--notify-message`: 完了コメント本文の先頭メッセージ
+- `--notify-message`: 完了コメント本文。定型文ではなく実装内容のサマリーを英語で記載する（例: `"Implemented X:\n- Added ...\n- Changed ..."`）
 - `--notify-mentions`: カンマ区切りメンション（`user` または `org/team`）
 - `--coderabbit-ignore-reason`: 未対応を残す場合の理由コメント
 - `--issue-number`: Issue 番号（または位置引数に `"<title> #<number>"`）
@@ -102,7 +106,9 @@ pnpm git "<issue-title> #<issue-number>"
 ```bash
 pnpm git:followup "<issue-title> #<issue-number>" \
   --notify-target pr \
-  --notify-message "実装と検証が完了しました。確認をお願いします。" \
+  --notify-message "Implemented <title>:
+- Added ...
+- Changed ..." \
   --notify-mentions "reviewer1,org/team-name"
 ```
 
@@ -111,7 +117,9 @@ pnpm git:followup "<issue-title> #<issue-number>" \
 ```bash
 pnpm git:followup "<issue-title> #<issue-number>" \
   --notify-target both \
-  --notify-message "この Issue の対応は完了です。" \
+  --notify-message "Implemented <title>:
+- Added ...
+- Fixed ..." \
   --notify-mentions "owner" \
   --coderabbit-ignore-reason "仕様上この指摘は該当しないため"
 ```

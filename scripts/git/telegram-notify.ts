@@ -45,9 +45,17 @@ async function post_message(config: TelegramConfig, text: string): Promise<void>
 	}
 }
 
+const SKIP_WARNING =
+	'⚠️  Telegram not configured: TELEGRAM_BOT_TOKEN and/or TELEGRAM_CHAT_ID not set. Skipping.'
+
 async function send(input: TelegramSendInput): Promise<void> {
 	const config = load_config()
-	if (config === undefined) return
+
+	if (config === undefined) {
+		console.warn(SKIP_WARNING)
+
+		return
+	}
 
 	const text = build_text(input)
 

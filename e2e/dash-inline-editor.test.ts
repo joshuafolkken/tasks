@@ -133,7 +133,7 @@ async function close_recurrence_after_daily(page: Page): Promise<void> {
 		.click()
 }
 
-/** After RR save the form is pristine; deferred blur intentionally does not exit edit (see inline editor). */
+/** After RR dialog closes the 2500 ms blur-grace window keeps the inline editor open despite the pristine form. */
 async function expect_rr_closed_keeps_inline(
 	page: Page,
 	card_id: string,
@@ -353,9 +353,22 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 			const destination_title = page.getByTestId(tid.inline_title)
 
 			await expect(destination_title).not.toHaveValue('', { timeout: RELOAD_STABLE_TIMEOUT_MS })
-			/* Pristine blur no longer exits edit (see DashTaskInlineEditor `run_deferred_blur_commit`). */
 			await page.keyboard.press('Escape')
 			await expect(page.getByRole('button', { name: run_id })).toBeVisible({
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
+		}, [run_id])
+	})
+
+	test('Clicking search field while editor is pristine exits edit mode', async ({ page }) => {
+		const run_id = `E2E_BLURPRI_${String(Date.now())}`
+
+		await playwright_dash_ux.run_authed(page, async () => {
+			await playwright_dash_ux.save_new_task(page, run_id)
+			await page.getByRole('button', { name: run_id }).click()
+			await expect(page.getByTestId(tid.inline_title)).toBeVisible()
+			await playwright_dash_ux.blur_inline_editor(page)
+			await expect(page.getByTestId(tid.inline_title)).toHaveCount(0, {
 				timeout: RELOAD_STABLE_TIMEOUT_MS,
 			})
 		}, [run_id])

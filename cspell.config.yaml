@@ -40,7 +40,10 @@ ignorePaths:
   - src/lib/server/db/auth.schema.ts
   - e2e/.auth/**
 words:
+  - docstrings
   - aboutads
+  - languagetool
+  - shellcheck
   - aikidosec
   - appleboy
   - autorestart
@@ -59,12 +62,14 @@ words:
   - EDITMSG
   - CTRLN
   - CTRLU
+  - BLURPRI
   - EDSC
   - EFOC
   - elif
   - esbuild
   - eslintcache
   - fastcgi
+  - fullrun
   - Folkken
   - Frontmatter
   - GHSA
