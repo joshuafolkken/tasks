@@ -116,6 +116,10 @@ async function push(): Promise<void> {
 	}
 }
 
+async function pull(): Promise<void> {
+	await exec_git_command_with_output('pull', [])
+}
+
 async function branch_exists(branch_name: string): Promise<boolean> {
 	try {
 		const output: string = await exec_git_command(`branch --list ${branch_name}`)
@@ -135,6 +139,7 @@ const git_command = {
 	checkout,
 	commit,
 	push,
+	pull,
 	branch_exists,
 }
 
