@@ -312,7 +312,11 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 			await expect(inline_title).toHaveValue(title_b)
 			await inline_title.fill(title_b_edited)
 			await expect(inline_title).toHaveValue(title_b_edited)
+			const save_response = wait_for_update_task_ok(page)
+
 			await page.keyboard.press('ArrowDown')
+			// Wait for the dirty-form save to complete before asserting focus so the race is fully resolved.
+			await save_response
 			// After dirty-form arrow navigation, focus must stay on the next task (title_a), not stolen back.
 			await expect_focused_inline_value(page, title_a)
 		}, [title_b_edited, title_a])

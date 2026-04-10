@@ -845,7 +845,11 @@
 		await run_after_successful_update(reason, is_saved_via_blur_commit)
 		reset_blur_defer_flags()
 
-		if (!is_blur_commit_exit(reason, is_saved_via_blur_commit) && !is_navigating_away) {
+		const did_navigate_away = is_navigating_away
+
+		is_navigating_away = false
+
+		if (!is_blur_commit_exit(reason, is_saved_via_blur_commit) && !did_navigate_away) {
 			await tick()
 			await next_animation_frame()
 			await next_animation_frame()
