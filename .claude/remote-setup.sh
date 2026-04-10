@@ -16,9 +16,12 @@ else
 fi
 
 echo "==> Fetching .env from Gist..."
-GIST_ID="${SECRETS_GIST_ID:-e17877eb0ee23f89dbcc160ed594629e}"
+if [ -z "$SECRETS_GIST_ID" ]; then
+	echo "ERROR: SECRETS_GIST_ID environment variable is not set"
+	exit 1
+fi
 tmp_env="$(mktemp)"
-gh gist view "$GIST_ID" --raw > "$tmp_env" || { echo "ERROR: Failed to fetch .env"; rm -f "$tmp_env"; exit 1; }
+gh gist view "$SECRETS_GIST_ID" --raw > "$tmp_env" || { echo "ERROR: Failed to fetch .env"; rm -f "$tmp_env"; exit 1; }
 chmod 600 "$tmp_env"
 mv "$tmp_env" .env
 
