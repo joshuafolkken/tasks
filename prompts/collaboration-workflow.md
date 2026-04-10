@@ -9,7 +9,7 @@
 1. Issue を作成する
 2. Issue を元に実装提案を作る
 3. 計画コメントを Issue に残してから実装を進める
-4. 実装完了後に PR/Issue へ完了コメントを投稿し、必要なメンション通知を送る
+4. 実装完了後に Issue へ完了コメントを投稿する
 
 ## Step 1: Issue 作成テンプレ
 
@@ -70,8 +70,12 @@ Issue: <issue-url>
 
 1. 提案を人間が判断する
 2. 採用した計画を Issue コメントに記録する
-3. 実装を開始する
-4. 実装後は `AGENTS.md` の検証ゲートを実行する
+3. メインブランチへ切り替えて最新を取得する:
+   ```bash
+   git switch main && git pull
+   ```
+4. 実装を開始する
+5. 実装後は `AGENTS.md` の検証ゲートを実行する
 
 `pnpm git` の基本実行（`-y` で確認プロンプトをスキップ）。**初回コミット前に必ず `pnpm version:minor` を実行する。** ただし、同一 PR 内の追加修正コミット（CodeRabbit 指摘対応など）では実行しない。
 
@@ -91,36 +95,47 @@ pnpm git -y "<issue-title> #<issue-number>"
 
 - Cloudflare / CodeRabbit / SonarQube の結果確認（Required チェックのみ待機。CodeQL 等の non-required チェックは待たない）
 - CodeRabbit 指摘の未対応検出（必要なら理由コメント投稿）
-- PR/Issue への完了コメント投稿 + メンション通知
+- Issue への完了コメント投稿
 
 主なオプション:
 
-- `--notify-target`: `pr` | `issue` | `both`（未指定時は `issue`）
-- `--notify-message`: 完了コメント本文。定型文ではなく実装内容のサマリーを英語で記載する（例: `"Implemented X:\n- Added ...\n- Changed ..."`）
-- `--notify-mentions`: カンマ区切りメンション（`user` または `org/team`）
+- `--notify-target`: `issue`（固定。PR への完了報告は行わない）
+- `--notify-message`: 完了コメント本文。以下のフォーマットで記載する:
+
+  ```
+  ✅ <repository-name>
+  <issue title>
+
+  Issue: <issue-url>
+
+  PR: <pr-url>
+  ```
+
 - `--coderabbit-ignore-reason`: 未対応を残す場合の理由コメント
 - `--issue-number`: Issue 番号（または位置引数に `"<title> #<number>"`）
 
-例1: PR コメントで通知
+例1: 基本
 
 ```bash
 pnpm git:followup "<issue-title> #<issue-number>" \
-  --notify-target pr \
-  --notify-message "Implemented <title>:
-- Added ...
-- Changed ..." \
-  --notify-mentions "reviewer1,org/team-name"
+  --notify-message "✅ <repository-name>
+<issue-title>
+
+Issue: <issue-url>
+
+PR: <pr-url>"
 ```
 
-例2: Issue コメント + PR コメントの両方 + CodeRabbit 未対応理由
+例2: CodeRabbit 未対応理由あり
 
 ```bash
 pnpm git:followup "<issue-title> #<issue-number>" \
-  --notify-target both \
-  --notify-message "Implemented <title>:
-- Added ...
-- Fixed ..." \
-  --notify-mentions "owner" \
+  --notify-message "✅ <repository-name>
+<issue-title>
+
+Issue: <issue-url>
+
+PR: <pr-url>" \
   --coderabbit-ignore-reason "仕様上この指摘は該当しないため"
 ```
 
@@ -128,5 +143,4 @@ pnpm git:followup "<issue-title> #<issue-number>" \
 
 - 通知は CI チェック成功後に投稿する
 - 通知投稿に失敗しても、実装完了の事実はログで確認できるようにする
-- 通知先・文面は Issue の重要度に応じて調整する
-- 自動投稿される PR / Issue コメント文面は英語で記載する
+- 自動投稿される Issue コメント文面は英語で記載する
