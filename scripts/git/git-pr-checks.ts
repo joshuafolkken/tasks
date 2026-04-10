@@ -102,11 +102,19 @@ function has_pending_check(checks: ReadonlyArray<RollupCheck>): boolean {
 	return checks.some((check) => check.status === CHECK_STATUS_PENDING)
 }
 
+function has_all_required_checks(checks: ReadonlyArray<RollupCheck>): boolean {
+	return REQUIRED_CHECKS.every((name) => checks.some((check) => check.name === name))
+}
+
+function is_checks_settled(checks: ReadonlyArray<RollupCheck>): boolean {
+	return !has_pending_check(checks) && has_all_required_checks(checks)
+}
+
 async function wait_checks_completed(branch_name: string): Promise<Array<RollupCheck>> {
 	for (let attempt = 0; attempt < CHECK_MAX_ATTEMPTS; attempt += 1) {
 		const rollup_json = await git_gh_command.pr_get_status_rollup(branch_name)
 		const checks = parse_rollup_checks(rollup_json)
-		if (!has_pending_check(checks)) return checks
+		if (is_checks_settled(checks)) return checks
 
 		await sleep(CHECK_WAIT_INTERVAL_MS)
 	}
