@@ -608,8 +608,8 @@
 		}
 
 		if (!is_form_dirty()) {
-			/* Pristine outside-click used to call `on_escape()`, but focus churn during save
-			 * (recurrence / due / invalidate) triggers the same deferred path spuriously. */
+			on_escape()
+
 			return
 		}
 

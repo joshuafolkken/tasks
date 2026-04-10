@@ -61,12 +61,14 @@ words:
   - EDITMSG
   - CTRLN
   - CTRLU
+  - BLURPRI
   - EDSC
   - EFOC
   - elif
   - esbuild
   - eslintcache
   - fastcgi
+  - fullrun
   - Folkken
   - Frontmatter
   - GHSA
