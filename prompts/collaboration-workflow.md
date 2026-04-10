@@ -89,7 +89,7 @@ pnpm git -y "<issue-title> #<issue-number>"
 
 `pnpm git:followup` の主な動作:
 
-- Cloudflare / CodeRabbit / SonarQube / その他 CI の結果確認
+- Cloudflare / CodeRabbit / SonarQube の結果確認（Required チェックのみ待機。CodeQL 等の non-required チェックは待たない）
 - CodeRabbit 指摘の未対応検出（必要なら理由コメント投稿）
 - PR/Issue への完了コメント投稿 + メンション通知
 

@@ -146,7 +146,6 @@ async function run_checks(input: { branch_name: string; is_skip_watch: boolean }
 
 	const checks = await git_pr_checks.wait_checks_completed(input.branch_name)
 
-	git_pr_checks.assert_all_checks_passed(checks)
 	git_pr_checks.assert_required_checks_passed(checks)
 }
 
