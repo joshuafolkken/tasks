@@ -1,0 +1,282 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+deleted file mode 100644
+index bfaae2edc85d2ac819c975cc8f72a98678a6ab21..0000000000000000000000000000000000000000
+diff --git a/dist/esm/cache.js b/dist/esm/cache.js
+index f17a05aa3c6ce8fdf299c9d9d3e0b582d8afadaf..e56d6661ac86594e995c227056878799b65c09cb 100644
+--- a/dist/esm/cache.js
++++ b/dist/esm/cache.js
+@@ -92,4 +92,3 @@ var Cache = /** @class */ (function () {
+     return Cache;
+ }());
+ export { Cache };
+-//# sourceMappingURL=cache.js.map
+\ No newline at end of file
+diff --git a/dist/esm/callbackiterresult.js b/dist/esm/callbackiterresult.js
+index d95f279bb45e3f56f69e1a79577319e50dfd06c5..989d1830dbdfc6d75ef25fbee532069f35e3fa78 100644
+--- a/dist/esm/callbackiterresult.js
++++ b/dist/esm/callbackiterresult.js
+@@ -21,4 +21,3 @@ var CallbackIterResult = /** @class */ (function (_super) {
+     return CallbackIterResult;
+ }(IterResult));
+ export default CallbackIterResult;
+-//# sourceMappingURL=callbackiterresult.js.map
+\ No newline at end of file
+diff --git a/dist/esm/datetime.js b/dist/esm/datetime.js
+index c1187188a71d21c6038872176d8f4c801c7d9d64..0ad8703661415d5d1d155a22a5b42f0cc5c9960b 100644
+--- a/dist/esm/datetime.js
++++ b/dist/esm/datetime.js
+@@ -183,4 +183,3 @@ var DateTime = /** @class */ (function (_super) {
+     return DateTime;
+ }(Time));
+ export { DateTime };
+-//# sourceMappingURL=datetime.js.map
+\ No newline at end of file
+diff --git a/dist/esm/dateutil.js b/dist/esm/dateutil.js
+index abfd43a242a68ce874bb61864b82302e419b566f..20311bacb8b7507414c1173949c956931d322418 100644
+--- a/dist/esm/dateutil.js
++++ b/dist/esm/dateutil.js
+@@ -158,4 +158,3 @@ export var dateInTimeZone = function (date, timeZone) {
+     var tzOffset = dateInTargetTZ.getTime() - dateInLocalTZ.getTime();
+     return new Date(date.getTime() - tzOffset);
+ };
+-//# sourceMappingURL=dateutil.js.map
+\ No newline at end of file
+diff --git a/dist/esm/datewithzone.js b/dist/esm/datewithzone.js
+index 4cf4b5c3d90e5a4f69a30a2509c7f1dd8515b6bc..d4b6995dc91ac771290b7294e5261d608a3f3e4c 100644
+--- a/dist/esm/datewithzone.js
++++ b/dist/esm/datewithzone.js
+@@ -33,4 +33,3 @@ var DateWithZone = /** @class */ (function () {
+     return DateWithZone;
+ }());
+ export { DateWithZone };
+-//# sourceMappingURL=datewithzone.js.map
+\ No newline at end of file
+diff --git a/dist/esm/helpers.js b/dist/esm/helpers.js
+index 99cf75845e2f853dc01963e7a98c6fe9722d790f..3f23321f46ff6915ad767e08a605654839f6358b 100644
+--- a/dist/esm/helpers.js
++++ b/dist/esm/helpers.js
+@@ -115,4 +115,3 @@ export var notEmpty = function (obj) {
+ export var includes = function (arr, val) {
+     return notEmpty(arr) && arr.indexOf(val) !== -1;
+ };
+-//# sourceMappingURL=helpers.js.map
+\ No newline at end of file
+diff --git a/dist/esm/index.js b/dist/esm/index.js
+index 7297aa8d02ad53579724d9c4279ed91afd37ec42..2a409a83e2872235e305f6cba709386469ae1406 100644
+--- a/dist/esm/index.js
++++ b/dist/esm/index.js
+@@ -19,4 +19,3 @@ export { rrulestr } from './rrulestr';
+ export { Frequency } from './types';
+ export { Weekday, ALL_WEEKDAYS } from './weekday';
+ export { datetime } from './dateutil';
+-//# sourceMappingURL=index.js.map
+\ No newline at end of file
+diff --git a/dist/esm/iter/index.js b/dist/esm/iter/index.js
+index 2dbadcf4a4810ad5882162ad49815b1dffae61fa..0e4a9b01b9d5c68141bb304c50a3372866560df3 100644
+--- a/dist/esm/iter/index.js
++++ b/dist/esm/iter/index.js
+@@ -135,4 +135,3 @@ function makeTimeset(ii, counterDate, options) {
+     }
+     return ii.gettimeset(freq)(counterDate.hour, counterDate.minute, counterDate.second, counterDate.millisecond);
+ }
+-//# sourceMappingURL=index.js.map
+\ No newline at end of file
+diff --git a/dist/esm/iter/poslist.js b/dist/esm/iter/poslist.js
+index 15501eb983817fecfd0af8dbd8bae745d3f24d77..39972b79865adabc2b2bbddd3ba2781d22b99949 100644
+--- a/dist/esm/iter/poslist.js
++++ b/dist/esm/iter/poslist.js
+@@ -39,4 +39,3 @@ export function buildPoslist(bysetpos, timeset, start, end, ii, dayset) {
+     sort(poslist);
+     return poslist;
+ }
+-//# sourceMappingURL=poslist.js.map
+\ No newline at end of file
+diff --git a/dist/esm/iterinfo/easter.js b/dist/esm/iterinfo/easter.js
+index a2a27319bfc61589f48da05608977e77a4c6299f..8a35fb2bfeb47274d490c5f5d999719c1737fc16 100644
+--- a/dist/esm/iterinfo/easter.js
++++ b/dist/esm/iterinfo/easter.js
+@@ -18,4 +18,3 @@ export function easter(y, offset) {
+     var yearStart = Date.UTC(y, 0, 1);
+     return [Math.ceil((date - yearStart) / (1000 * 60 * 60 * 24))];
+ }
+-//# sourceMappingURL=easter.js.map
+\ No newline at end of file
+diff --git a/dist/esm/iterinfo/index.js b/dist/esm/iterinfo/index.js
+index 4d5dd57ef4dee0e8d0ca1cd7782cae7ccb1d9134..522426e06c31b0e3017ef33b592316a99354da58 100644
+--- a/dist/esm/iterinfo/index.js
++++ b/dist/esm/iterinfo/index.js
+@@ -185,4 +185,3 @@ var Iterinfo = /** @class */ (function () {
+     return Iterinfo;
+ }());
+ export default Iterinfo;
+-//# sourceMappingURL=index.js.map
+\ No newline at end of file
+diff --git a/dist/esm/iterinfo/monthinfo.js b/dist/esm/iterinfo/monthinfo.js
+index f96376c53f4aaf817fbe2d027495ba603a88824a..69f049391bf3c8e6dc6cf881fd8289191a3a78f5 100644
+--- a/dist/esm/iterinfo/monthinfo.js
++++ b/dist/esm/iterinfo/monthinfo.js
+@@ -48,4 +48,3 @@ export function rebuildMonth(year, month, yearlen, mrange, wdaymask, options) {
+     }
+     return result;
+ }
+-//# sourceMappingURL=monthinfo.js.map
+\ No newline at end of file
+diff --git a/dist/esm/iterinfo/yearinfo.js b/dist/esm/iterinfo/yearinfo.js
+index a7cbb63336a16e452a98f02d263471de72d1aa98..0f3b70ecf9806bf6b85d37216b34a3c46532ec3a 100644
+--- a/dist/esm/iterinfo/yearinfo.js
++++ b/dist/esm/iterinfo/yearinfo.js
+@@ -125,4 +125,3 @@ function baseYearMasks(year) {
+         mrange: M366RANGE,
+     };
+ }
+-//# sourceMappingURL=yearinfo.js.map
+\ No newline at end of file
+diff --git a/dist/esm/iterresult.js b/dist/esm/iterresult.js
+index afad09501aea7aa6c27c60e2fa7cb529a9bbcbce..70acbd47993350cf68d67e35bdd0fa91e7af9b76 100644
+--- a/dist/esm/iterresult.js
++++ b/dist/esm/iterresult.js
+@@ -85,4 +85,3 @@ var IterResult = /** @class */ (function () {
+     return IterResult;
+ }());
+ export default IterResult;
+-//# sourceMappingURL=iterresult.js.map
+\ No newline at end of file
+diff --git a/dist/esm/iterset.js b/dist/esm/iterset.js
+index 356b845688f04d3e8cde96de5897542bc2dd2032..7f3423f45ae2dc62ab694116f4c75861f87b345a 100644
+--- a/dist/esm/iterset.js
++++ b/dist/esm/iterset.js
+@@ -60,4 +60,3 @@ export function iterSet(iterResult, _rrule, _exrule, _rdate, _exdate, tzid) {
+             return ((res.length && res[0]) || null);
+     }
+ }
+-//# sourceMappingURL=iterset.js.map
+\ No newline at end of file
+diff --git a/dist/esm/masks.js b/dist/esm/masks.js
+index c55e853644c3b878013f7f7c523040ff5ccdac9a..51db715b55ae46070f3eacd63d07ca792ad8fb69 100644
+--- a/dist/esm/masks.js
++++ b/dist/esm/masks.js
+@@ -27,4 +27,3 @@ var WDAYMASK = (function () {
+     return wdaymask;
+ })();
+ export { WDAYMASK, M365MASK, M365RANGE, M366MASK, M366RANGE, MDAY365MASK, MDAY366MASK, NMDAY365MASK, NMDAY366MASK, };
+-//# sourceMappingURL=masks.js.map
+\ No newline at end of file
+diff --git a/dist/esm/nlp/i18n.js b/dist/esm/nlp/i18n.js
+index 6db2572f184f6b7b188d5626e0d3f9dc8e7b2a43..fbfd86b3247313533aee41dcb1bda2f462b8f224 100644
+--- a/dist/esm/nlp/i18n.js
++++ b/dist/esm/nlp/i18n.js
+@@ -71,4 +71,3 @@ var ENGLISH = {
+     },
+ };
+ export default ENGLISH;
+-//# sourceMappingURL=i18n.js.map
+\ No newline at end of file
+diff --git a/dist/esm/nlp/index.js b/dist/esm/nlp/index.js
+index 653286455c555711f226ce64404a91af86ff8dba..1952947e7b8a66a8594ae2b61362061df114370b 100644
+--- a/dist/esm/nlp/index.js
++++ b/dist/esm/nlp/index.js
+@@ -119,4 +119,3 @@ var toText = function (rrule, gettext, language, dateFormatter) {
+ };
+ var isFullyConvertible = ToText.isFullyConvertible;
+ export { fromText, parseText, isFullyConvertible, toText };
+-//# sourceMappingURL=index.js.map
+\ No newline at end of file
+diff --git a/dist/esm/nlp/parsetext.js b/dist/esm/nlp/parsetext.js
+index bd9e1a19903d36712defb372ccd74e46b4f5dbdb..f825893770bc4ebdd7b087020d74a22641d4a3ce 100644
+--- a/dist/esm/nlp/parsetext.js
++++ b/dist/esm/nlp/parsetext.js
+@@ -388,4 +388,3 @@ export default function parseText(text, language) {
+         }
+     }
+ }
+-//# sourceMappingURL=parsetext.js.map
+\ No newline at end of file
+diff --git a/dist/esm/nlp/totext.js b/dist/esm/nlp/totext.js
+index f2d4c46b8c27b74cc97151c773c433944fb028ed..15e4fd43a22f2fda5f00ef2af3e4a45e58b0f9dd 100644
+--- a/dist/esm/nlp/totext.js
++++ b/dist/esm/nlp/totext.js
+@@ -392,4 +392,3 @@ var ToText = /** @class */ (function () {
+     return ToText;
+ }());
+ export default ToText;
+-//# sourceMappingURL=totext.js.map
+\ No newline at end of file
+diff --git a/dist/esm/optionstostring.js b/dist/esm/optionstostring.js
+index 510c521942b462a1e16951a70a7cca03f00db526..54bbee678f4f6c192bf591bfdb661649ef230e9c 100644
+--- a/dist/esm/optionstostring.js
++++ b/dist/esm/optionstostring.js
+@@ -95,4 +95,3 @@ function buildDtstart(dtstart, tzid) {
+     }
+     return 'DTSTART' + new DateWithZone(new Date(dtstart), tzid).toString();
+ }
+-//# sourceMappingURL=optionstostring.js.map
+\ No newline at end of file
+diff --git a/dist/esm/parseoptions.js b/dist/esm/parseoptions.js
+index f12aeabbf49368c7a19a0740e67e37e3fa9bdec9..8808e0b4828dc040695e5fd8728e1f852e3991e3 100644
+--- a/dist/esm/parseoptions.js
++++ b/dist/esm/parseoptions.js
+@@ -198,4 +198,3 @@ export function buildTimeset(opts) {
+     });
+     return timeset;
+ }
+-//# sourceMappingURL=parseoptions.js.map
+\ No newline at end of file
+diff --git a/dist/esm/parsestring.js b/dist/esm/parsestring.js
+index c09fc02b3c501ddf62298ec8db0e9463e7218fef..98acd81c9a3b02c91683739bf6057b275c9aa718 100644
+--- a/dist/esm/parsestring.js
++++ b/dist/esm/parsestring.js
+@@ -125,4 +125,3 @@ function parseWeekday(value) {
+         return new Weekday(wday, n);
+     });
+ }
+-//# sourceMappingURL=parsestring.js.map
+\ No newline at end of file
+diff --git a/dist/esm/rrule.js b/dist/esm/rrule.js
+index 1e601fff55471620426492b8a6411195afd278a0..815fafb9aef0ba7e9c5a024413755a9d75169877 100644
+--- a/dist/esm/rrule.js
++++ b/dist/esm/rrule.js
+@@ -229,4 +229,3 @@ var RRule = /** @class */ (function () {
+     return RRule;
+ }());
+ export { RRule };
+-//# sourceMappingURL=rrule.js.map
+\ No newline at end of file
+diff --git a/dist/esm/rruleset.js b/dist/esm/rruleset.js
+index 81a7b6ae8a1b06d87e8dadb0e03a2cb60312c582..65774525fb3b5da619c848b1e52de5735df9991c 100644
+--- a/dist/esm/rruleset.js
++++ b/dist/esm/rruleset.js
+@@ -179,4 +179,3 @@ function rdatesToString(param, rdates, tzid) {
+         .join(',');
+     return "".concat(header).concat(dateString);
+ }
+-//# sourceMappingURL=rruleset.js.map
+\ No newline at end of file
+diff --git a/dist/esm/rrulestr.js b/dist/esm/rrulestr.js
+index de4b5fc249f0eb2bf356f606725cfb9c71ce0a60..3aa3c7aed9d948fafb6cb0104bb66e6c946a1478 100644
+--- a/dist/esm/rrulestr.js
++++ b/dist/esm/rrulestr.js
+@@ -185,4 +185,3 @@ function parseRDate(rdateval, parms) {
+     validateDateParm(parms);
+     return rdateval.split(',').map(function (datestr) { return untilStringToDate(datestr); });
+ }
+-//# sourceMappingURL=rrulestr.js.map
+\ No newline at end of file
+diff --git a/dist/esm/types.js b/dist/esm/types.js
+index 9b394fe4df6543c45d879c98890e96f00b5696c9..ff170d785a1053a59ddd87c38ee88332eaaf234e 100644
+--- a/dist/esm/types.js
++++ b/dist/esm/types.js
+@@ -11,4 +11,3 @@ export var Frequency;
+ export function freqIsDailyOrGreater(freq) {
+     return freq < Frequency.HOURLY;
+ }
+-//# sourceMappingURL=types.js.map
+\ No newline at end of file
+diff --git a/dist/esm/weekday.js b/dist/esm/weekday.js
+index de82cc585f3d641819b0b7285643a5d0db51304b..d5dae28ccc897a5d3da05394f05a9f64abccadc7 100644
+--- a/dist/esm/weekday.js
++++ b/dist/esm/weekday.js
+@@ -42,4 +42,3 @@ var Weekday = /** @class */ (function () {
+     return Weekday;
+ }());
+ export { Weekday };
+-//# sourceMappingURL=weekday.js.map

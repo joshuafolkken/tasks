@@ -28,6 +28,7 @@ ignorePaths:
   - src/lib/paraglide/runtime.js
   - src/stories/**
   - messages/km.json
+  - patches/**
   - messages/uz.json
   - src/lib/paraglide/messages/**
   - src/lib/locale/locale-names.ts
