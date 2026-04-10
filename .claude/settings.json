@@ -8,15 +8,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "if [ \"$CLAUDE_CODE_REMOTE\" = \"true\" ]; then corepack enable && pnpm install; fi"
-					},
-					{
-						"type": "command",
-						"command": "if [ \"$CLAUDE_CODE_REMOTE\" = \"true\" ]; then gh gist view e17877eb0ee23f89dbcc160ed594629e --raw > .env; fi"
-					},
-					{
-						"type": "command",
-						"command": "if [ \"$CLAUDE_CODE_REMOTE\" = \"true\" ]; then pnpm db:apply:local; fi"
+						"command": "bash .claude/remote-setup.sh"
 					}
 				]
 			}
