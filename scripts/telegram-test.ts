@@ -8,7 +8,7 @@ const DEFAULT_TEST_MESSAGE = 'Test notification from tasks project.'
 interface CliArguments {
 	values: {
 		message?: string
-		'issue-number'?: string
+		'issue-url'?: string
 		'pr-url'?: string
 	}
 }
@@ -18,7 +18,7 @@ function parse_cli_arguments(): CliArguments {
 	return parseArgs({
 		options: {
 			message: { type: 'string' },
-			'issue-number': { type: 'string' },
+			'issue-url': { type: 'string' },
 			'pr-url': { type: 'string' },
 		},
 	})
@@ -29,7 +29,7 @@ async function main(): Promise<void> {
 
 	await telegram_notify.send({
 		message: values.message ?? DEFAULT_TEST_MESSAGE,
-		issue_number: values['issue-number'],
+		issue_url: values['issue-url'],
 		pr_url: values['pr-url'],
 	})
 }

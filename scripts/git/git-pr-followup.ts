@@ -9,6 +9,18 @@ const CODERABBIT_AUTHOR = 'coderabbitai[bot]'
 const CODERABBIT_FLAG = '_⚠️ Potential issue_'
 const CODERABBIT_RESOLVED = '✅ Addressed in commit'
 const TELEGRAM_DEFAULT_MESSAGE = 'PR followup completed.'
+const GITHUB_PULL_URL_PATTERN = /^(https:\/\/github\.com\/[^/]+\/[^/]+)\/pull\/\d+$/u
+
+function build_issue_url(
+	pr_url: string | undefined,
+	issue_number: string | undefined,
+): string | undefined {
+	if (pr_url === undefined || issue_number === undefined) return undefined
+	const match = GITHUB_PULL_URL_PATTERN.exec(pr_url)
+	if (match?.[1] === undefined) return undefined
+
+	return `${match[1]}/issues/${issue_number}`
+}
 
 interface PullComment {
 	body?: string
@@ -159,7 +171,7 @@ async function run(input: FollowupInput): Promise<void> {
 
 	await telegram_notify.send({
 		message: input.notify_config?.message ?? TELEGRAM_DEFAULT_MESSAGE,
-		issue_number: input.issue_number,
+		issue_url: build_issue_url(pr_url, input.issue_number),
 		pr_url,
 	})
 	await post_completion_notification({

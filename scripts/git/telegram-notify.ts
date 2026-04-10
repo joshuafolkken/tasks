@@ -2,7 +2,7 @@ const TELEGRAM_API_BASE = 'https://api.telegram.org'
 
 interface TelegramSendInput {
 	message: string
-	issue_number: string | undefined
+	issue_url: string | undefined
 	pr_url: string | undefined
 }
 
@@ -20,16 +20,18 @@ function load_config(): TelegramConfig | undefined {
 	return { bot_token: bot_token.trim(), chat_id: chat_id.trim() }
 }
 
+function append_if_present(parts: Array<string>, label: string, value: string | undefined): void {
+	if (value !== undefined && value.length > 0) parts.push(`${label}: ${value}`)
+}
+
 function build_text(input: TelegramSendInput): string {
-	const lines = [`✅ ${input.message}`]
+	const [raw_title = '', ...bullets] = input.message.split('\n')
+	const parts: Array<string> = [`✅ ${raw_title}`, ...bullets]
 
-	if (input.issue_number !== undefined && input.issue_number.length > 0) {
-		lines.push(`Issue: #${input.issue_number}`)
-	}
+	append_if_present(parts, 'Issue', input.issue_url)
+	append_if_present(parts, 'PR', input.pr_url)
 
-	if (input.pr_url !== undefined && input.pr_url.length > 0) lines.push(`PR: ${input.pr_url}`)
-
-	return lines.join('\n')
+	return parts.join('\n\n')
 }
 
 async function post_message(config: TelegramConfig, text: string): Promise<void> {
