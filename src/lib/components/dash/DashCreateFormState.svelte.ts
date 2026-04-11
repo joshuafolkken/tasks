@@ -34,6 +34,7 @@ export class DashCreateFormState {
 	is_form_saving = $state(false)
 	create_error = $state<string | undefined>()
 	#blur_commit_timer: ReturnType<typeof globalThis.setTimeout> | undefined = undefined
+	#pointer_up_timer: ReturnType<typeof globalThis.setTimeout> | undefined = undefined
 	is_pointer_held = $state(false)
 	is_blur_deferred_to_pointer_up = $state(false)
 	is_blur_submit_pending = $state(false)
@@ -193,7 +194,11 @@ export class DashCreateFormState {
 		if (!this.is_blur_deferred_to_pointer_up) return
 
 		this.is_blur_deferred_to_pointer_up = false
-		globalThis.setTimeout(() => {
+
+		if (this.#pointer_up_timer !== undefined) globalThis.clearTimeout(this.#pointer_up_timer)
+
+		this.#pointer_up_timer = globalThis.setTimeout(() => {
+			this.#pointer_up_timer = undefined
 			this.#run_deferred_blur_commit()
 		}, POINTER_UP_SETTLE_MS)
 	}

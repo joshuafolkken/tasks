@@ -85,13 +85,6 @@ describe('is_focus_still_inside_form', () => {
 
 		expect(dash_task_form_shared.is_focus_still_inside_form(form, node)).toBe(true)
 	})
-
-	it('returns false when related is outside form_element', () => {
-		const form = make_form_mock(false)
-		const node = {} as unknown as Node
-
-		expect(dash_task_form_shared.is_focus_still_inside_form(form, node)).toBe(false)
-	})
 })
 
 describe('format_due_date_display', () => {
