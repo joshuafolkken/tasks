@@ -182,7 +182,7 @@ export class DashInlineEditorState extends DashInlineEditorBaseState {
 	#is_spurious_post_mount_blur(): boolean {
 		if (!this.is_in_post_mount_grace()) return false
 
-		return this.is_focus_outside_form()
+		return this.is_focus_on_body_or_null()
 	}
 
 	#refocus_after_spurious_blur(): void {

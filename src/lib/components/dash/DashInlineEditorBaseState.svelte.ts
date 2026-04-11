@@ -206,12 +206,11 @@ export class DashInlineEditorBaseState {
 		return globalThis.performance.now() - this.mounted_at_ms < POST_MOUNT_BLUR_GRACE_MS
 	}
 
-	is_focus_outside_form(): boolean {
+	is_focus_on_body_or_null(): boolean {
 		const active = document.activeElement
 		if (active === null) return true
-		if (active === document.body) return true
 
-		return this.form_element?.contains(active) !== true
+		return active === document.body
 	}
 
 	should_abort_blur_commit(): boolean {

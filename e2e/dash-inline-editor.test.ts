@@ -50,12 +50,15 @@ async function expect_focused_inline_value(page: Page, value: string): Promise<v
 }
 
 async function read_inline_card_id(page: Page): Promise<string> {
+	// Use document.activeElement to avoid racing with an old editor that is still sliding out
+	// (transition:slide|global keeps the outgoing DOM node alive for ~200ms).
 	const raw = await page.evaluate(
 		(payload: { attr: string; row_sel: string; testid: string }) => {
-			const element = document.querySelector(`[data-testid="${payload.testid}"]`)
-			if (!(element instanceof HTMLInputElement)) return ''
+			const active = document.activeElement
+			if (!(active instanceof HTMLInputElement)) return ''
+			if (Reflect.get(active.dataset, 'testid') !== payload.testid) return ''
 
-			const card = element.closest(payload.row_sel)
+			const card = active.closest(payload.row_sel)
 			if (!(card instanceof Element)) return ''
 
 			return (card.getAttribute(payload.attr) ?? '').trim()
@@ -63,7 +66,7 @@ async function read_inline_card_id(page: Page): Promise<string> {
 		{ attr: ATTR_DASH_TASK_CARD, row_sel: TASK_CARD_SELECTOR, testid: tid.inline_title },
 	)
 
-	expect(raw, 'inline title must sit inside a task card').not.toBe('')
+	expect(raw, 'active inline title must sit inside a task card').not.toBe('')
 
 	return raw
 }
