@@ -50,6 +50,14 @@ Stack: TypeScript · pnpm · SvelteKit · Vitest · Playwright · TailwindCSS ·
 
 For every code modification, follow this order exactly:
 
+0. **Test declaration** _(mandatory before writing any implementation code)_: Declare every change and its test. Do not touch implementation files until this list exists.
+   - **Tests are required for ALL code changes** — including bug fixes, timing/animation fixes, and refactors.
+   - Bug fix → regression test that would have caught the bug
+   - UI / animation / timing fix → E2E test for the observable behavior change
+   - Logic / utility change → unit test
+   - **Refactoring → write unit/E2E tests that verify existing behavior BEFORE making any structural changes** — see `prompts/refactoring.md`
+   - If a test is genuinely infeasible, state the reason explicitly and obtain user approval before proceeding.
+
 1. **Refactor first** _(mandatory before lint or tests)_: apply high/medium-priority refactoring to all new/modified code — see `prompts/refactoring.md`. Do not proceed until no high/medium items remain.
 2. **Tests**: add/update unit tests (Vitest) + E2E tests (Playwright) for all behavior changes — see `prompts/testing-guide.md`
    - **E2E cleanup / leaked data**: When fixing issues where E2E leaves database or UI artifacts, follow the **Regression fix workflow** in `prompts/testing-guide.md` (add a failing guard → fix → confirm green). Prefer stable selectors (`data-testid`) over locale-dependent strings for teardown.
@@ -80,6 +88,7 @@ If you changed **only** docs or config that does not affect tests, still run lin
 ## Refactoring Rules
 
 - When performing any refactoring, ALWAYS read and follow `prompts/refactoring.md` before starting.
+- Write tests for existing behavior **before** making any structural changes — this is mandatory and not optional.
 
 ## Git Rules
 

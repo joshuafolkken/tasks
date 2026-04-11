@@ -62,6 +62,7 @@ For every code modification, follow this order exactly:
    - Bug fix → regression test that would have caught the bug
    - UI / animation / timing fix → E2E test for the observable behavior change
    - Logic / utility change → unit test
+   - **Refactoring → write unit/E2E tests that verify existing behavior BEFORE making any structural changes** — see `prompts/refactoring.md`
    - If a test is genuinely infeasible, state the reason explicitly and obtain user approval before proceeding.
 
 1. **Refactor first** _(mandatory before lint or tests)_: apply high/medium-priority refactoring to all new/modified code — see `prompts/refactoring.md`. Do not proceed until no high/medium items remain.
