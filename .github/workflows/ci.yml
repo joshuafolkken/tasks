@@ -61,8 +61,7 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Run security audit
-        # GHSA-2crg-3p73-43xp, GHSA-3f6h-2hrp-w5wx: @sveltejs/kit <=2.57.0 — pending fix in 2.57.1 (not yet released)
-        run: pnpm audit --audit-level low --ignore GHSA-2crg-3p73-43xp --ignore GHSA-3f6h-2hrp-w5wx
+        run: pnpm audit --audit-level low
 
       - name: Run spell check
         run: pnpm exec cspell . --dot
