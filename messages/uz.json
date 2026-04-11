@@ -50,6 +50,7 @@
 	"dash_create_title_placeholder": "Vazifa sarlavhasi *",
 	"dash_create_detail_placeholder": "Tafsilotlar (ixtiyoriy)",
 	"dash_create_label_placeholder": "Yorliq kiriting va qo'shish uchun Enter bosing...",
+	"dash_label_remove_aria": "Remove label",
 	"dash_create_due_label": "Muddat",
 	"dash_create_cancel": "Bekor qilish",
 	"dash_create_saving": "Saqlanmoqda...",

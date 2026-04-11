@@ -71,7 +71,7 @@
 				{new_label}
 				<button
 					type="button"
-					aria-label="Remove label"
+					aria-label={m.dash_label_remove_aria()}
 					onclick={() => {
 						on_remove_pending(new_label)
 					}}

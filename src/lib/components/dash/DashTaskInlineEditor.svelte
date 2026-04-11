@@ -56,6 +56,7 @@
 		},
 	)
 
+	// Wait for Svelte DOM updates (tick x2) and any slide transition to settle (RAF) before focusing.
 	$effect(() => {
 		if (focus_request_id <= state.last_seen_focus_request_id) return
 

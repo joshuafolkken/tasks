@@ -129,14 +129,12 @@ export class DashInlineEditorState extends DashInlineEditorBaseState {
 
 			if (should_cancel) {
 				cancel()
-
-				return this.#handle_update_enhance_result.bind(this)
+			} else {
+				this.is_rr_post_close_submit = false
+				form_element.removeAttribute(ATTR_RR_ENH_GRACE_UNTIL)
+				this.clear_blur_discard_timer()
+				this.is_form_saving = true
 			}
-
-			this.is_rr_post_close_submit = false
-			form_element.removeAttribute(ATTR_RR_ENH_GRACE_UNTIL)
-			this.clear_blur_discard_timer()
-			this.is_form_saving = true
 
 			return this.#handle_update_enhance_result.bind(this)
 		}
@@ -302,12 +300,11 @@ export class DashInlineEditorState extends DashInlineEditorBaseState {
 		this.is_blur_commit_pending = false
 		this.#reset_blur_defer_flags()
 		await update({ reset: false })
-		this.#reset_blur_defer_flags()
 		await tick()
 		this.sync_form_from_task_item()
 		await this.#run_after_successful_update(reason, is_saved_via_blur_commit)
-		this.#reset_blur_defer_flags()
 		await this.#maybe_refocus_title(reason, is_saved_via_blur_commit)
+		this.#reset_blur_defer_flags()
 	}
 
 	async #run_after_successful_update(
