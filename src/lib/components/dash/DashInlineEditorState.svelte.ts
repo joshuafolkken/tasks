@@ -152,6 +152,7 @@ export class DashInlineEditorState extends DashInlineEditorBaseState {
 
 	async #run_deferred_blur_commit(): Promise<void> {
 		if (this.should_abort_blur_commit()) return
+		if (this.is_navigating_away) return
 
 		if (!this.form_title.trim()) {
 			await this.#commit_blur_when_title_missing()
@@ -164,8 +165,6 @@ export class DashInlineEditorState extends DashInlineEditorBaseState {
 
 			return
 		}
-
-		if (this.is_navigating_away) return
 
 		this.#cbs.get_on_escape()()
 	}

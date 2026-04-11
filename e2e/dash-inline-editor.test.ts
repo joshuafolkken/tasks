@@ -10,6 +10,8 @@ import { expect, test, type Locator, type Page, type Response } from './worker-f
 
 const tid = playwright_dash_ux.testid
 const RELOAD_STABLE_TIMEOUT_MS = 10_000
+/** Extra wait after a save to let any second async blur-commit and its callbacks settle before asserting the editor is still open. */
+const POST_SAVE_SETTLE_MS = 400
 /** Native `showPicker()` is not reliable in CI; same `input`/`change` path as picking a date. */
 const DUE_DATE_ISO_STUB = '2030-06-15'
 const DASH_FORM_DUE_INPUT_NAME = 'due_date'
@@ -293,8 +295,18 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 			await page.keyboard.press('ArrowDown')
 			// Wait for the dirty-form save to complete before asserting focus so the race is fully resolved.
 			await save_response
-			// After dirty-form arrow navigation, focus must stay on the next task (title_a), not stolen back.
+			// After dirty-form arrow navigation, focus must land on the next task.
 			await expect_focused_inline_value(page, title_a)
+
+			// Record which card the inline editor is now in (task_a's card).
+			const task_a_card_id = await read_inline_card_id(page)
+
+			// Wait for any async post-save callbacks (e.g. a second blur-commit racing the first save's
+			// response) to fully settle before asserting the editor is still open.
+			await page.waitForTimeout(POST_SAVE_SETTLE_MS)
+
+			// The inline editor for task_a must remain open — not closed by a focus-steal race.
+			await expect_inline_open_in_card(page, task_a_card_id, title_a)
 		}, [title_b_edited, title_a])
 	})
 
