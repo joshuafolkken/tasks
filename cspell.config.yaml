@@ -5,6 +5,7 @@ files:
   - e2e/**/*
   - stories/**/*
 ignorePaths:
+  - .claude/**
   - .vscode/**
   - node_modules/**
   - build/**

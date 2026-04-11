@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DEFAULT_ICON_CLASS, type IconProperties } from './types'
+	import { DEFAULT_ICON_CLASS, type IconProperties } from '$lib/types'
 
 	interface Props extends IconProperties {
 		is_rotated?: boolean
