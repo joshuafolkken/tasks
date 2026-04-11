@@ -15,6 +15,7 @@ const testid = {
 	add_task: 'dash-add-task-label',
 	inline_title: 'dash-inline-title-input',
 	inline_label_input: 'dash-inline-label-input',
+	inline_editor_slide_wrapper: 'dash-inline-editor-slide-wrapper',
 	search: 'dash-search-input',
 	task_row: 'dash-task-row',
 	complete: 'dash-task-complete-button',
