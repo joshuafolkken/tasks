@@ -894,7 +894,10 @@
 	onpointercancel={handle_document_pointercancel}
 />
 
-<div transition:slide|global={{ duration: 200, axis: 'y' }}>
+<div
+	data-testid="dash-inline-editor-slide-wrapper"
+	transition:slide|global={{ duration: 200, axis: 'y' }}
+>
 	<div class="-m-1 overflow-hidden p-1">
 		<form
 			bind:this={form_element}

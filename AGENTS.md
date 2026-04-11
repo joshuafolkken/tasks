@@ -50,6 +50,14 @@ Stack: TypeScript · pnpm · SvelteKit · Vitest · Playwright · TailwindCSS ·
 
 For every code modification, follow this order exactly:
 
+0. **Test declaration** _(mandatory before writing any implementation code)_: Declare every change and its test. Do not touch implementation files until this list exists.
+   - **Tests are required for ALL code changes** — including bug fixes, timing/animation fixes, and refactors.
+   - Bug fix → regression test that would have caught the bug
+   - UI / animation / timing fix → E2E test for the observable behavior change
+   - Logic / utility change → unit test
+   - **Refactoring → write unit/E2E tests that verify existing behavior BEFORE making any structural changes** — see `prompts/refactoring.md`
+   - If a test is genuinely infeasible, state the reason explicitly and obtain user approval before proceeding.
+
 1. **Refactor first** _(mandatory before lint or tests)_: apply high/medium-priority refactoring to all new/modified code — see `prompts/refactoring.md`. Do not proceed until no high/medium items remain.
 2. **Tests**: add/update unit tests (Vitest) + E2E tests (Playwright) for all behavior changes — see `prompts/testing-guide.md`
    - **E2E cleanup / leaked data**: When fixing issues where E2E leaves database or UI artifacts, follow the **Regression fix workflow** in `prompts/testing-guide.md` (add a failing guard → fix → confirm green). Prefer stable selectors (`data-testid`) over locale-dependent strings for teardown.
@@ -80,6 +88,7 @@ If you changed **only** docs or config that does not affect tests, still run lin
 ## Refactoring Rules
 
 - When performing any refactoring, ALWAYS read and follow `prompts/refactoring.md` before starting.
+- Write tests for existing behavior **before** making any structural changes — this is mandatory and not optional.
 
 ## Git Rules
 
@@ -92,5 +101,5 @@ If you changed **only** docs or config that does not affect tests, still run lin
 
 ### Shorthand Commands
 
-- `fullrun #<N>`: Post the agreed plan as an Issue #N comment → implement → `pnpm version:minor` → `pnpm git -y` → `pnpm git:followup` (full run from Step 3 onward in `prompts/collaboration-workflow.md`). Issue plan comments MUST be written in English. When running `pnpm git:followup`, compose an implementation summary in English and pass it via `--notify-message`. Format: `"<title>\n- <change1>\n- <change2>\n..."` (one bullet per meaningful change — what was added, changed, or fixed).
-- `fullrun new` or `fullrun new "<title>"`: When no Issue exists yet (full run from Step 1 onward in `prompts/collaboration-workflow.md`). Steps: (1) Derive an English title from the conversation, or use the provided title. (2) Create Issue: `gh issue create --title "<title>" --body "<body>"` — body follows the minimum template in `prompts/collaboration-workflow.md`, filled from conversation context. Capture the new Issue number `<N>`. (3) Post the agreed plan as a comment in English: `gh issue comment <N> --body "<plan>"`. (4) Implement. (5) `pnpm version:minor`. (6) `pnpm git -y "<title> #<N>"`. (7) `pnpm git:followup "<title> #<N>" --notify-message "<title>\n- <change1>\n- <change2>\n..."` (one bullet per meaningful change).
+- `fullrun #<N>`: Post the agreed plan as an Issue #N comment → implement → `pnpm version:minor` → `pnpm git -y` → `pnpm git:followup` (full run from Step 3 onward in `prompts/collaboration-workflow.md`). Issue plan comments MUST be written in English. Before implementing, run `git switch main && git pull`, then `pnpm latest` (includes `pnpm audit`). **After `pnpm latest`: verify `pnpm.overrides` was not modified — if any override was auto-removed or changed, restore it before proceeding (do NOT remove intentional overrides without user approval).** When running `pnpm git:followup`, compose an implementation summary in English and pass it via `--notify-message`. Format: `"<title>\n- <change1>\n- <change2>\n..."` (one bullet per meaningful change — what was added, changed, or fixed). **After followup: check `gh pr checks` and report ALL failing checks (including non-required ones such as Workers Builds) to the user. Never claim completion if deployment checks are failing.**
+- `fullrun new` or `fullrun new "<title>"`: When no Issue exists yet (full run from Step 1 onward in `prompts/collaboration-workflow.md`). Steps: (1) Derive an English title from the conversation, or use the provided title. (2) Create Issue: `gh issue create --title "<title>" --body "<body>"` — body follows the minimum template in `prompts/collaboration-workflow.md`, filled from conversation context. Capture the new Issue number `<N>`. (3) Post the agreed plan as a comment in English: `gh issue comment <N> --body "<plan>"`. (4) Run `git switch main && git pull`. (5) Run `pnpm latest`. **After `pnpm latest`: verify `pnpm.overrides` was not modified — if any override was auto-removed or changed, restore it before proceeding.** (6) Implement. (7) `pnpm version:minor`. (8) `pnpm git -y "<title> #<N>"`. (9) `pnpm git:followup "<title> #<N>" --notify-message "<title>\n- <change1>\n- <change2>\n..."` (one bullet per meaningful change). **After followup: check `gh pr checks` and report ALL failing checks (including non-required ones such as Workers Builds) to the user. Never claim completion if deployment checks are failing.**

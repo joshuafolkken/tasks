@@ -495,18 +495,32 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 		})
 	})
 
-	// Regression #165: discard_empty_inline_task used to call cancel_task_edit() synchronously,
-	// preventing the out:slide animation from starting before unmount. The fix defers via
-	// queueMicrotask. Direct animation testing is infeasible in Playwright; this test verifies
-	// the observable behavior — the editor closes correctly after blur.
-	test('Blurring out of an empty new task row closes the inline editor', async ({ page }) => {
+	// Regression #165 (strengthened): discard_empty_inline_task must use an optimistic update so
+	// out:slide starts before the server call. We intercept ?/discard_empty_open_task and assert
+	// the slide wrapper is still in the DOM at that point — proving the animation began before
+	// unmount. The old synchronous cancel_task_edit() pattern would have already removed the
+	// wrapper by the time the request fires, making this assertion fail.
+	test('Blurring out of an empty new task row starts the close animation before the server call', async ({
+		page,
+	}) => {
 		await playwright_dash_ux.run_authed(page, async () => {
 			await playwright_dash_ux.open_new_task_editor(page)
 			await expect(page.getByTestId(tid.inline_title)).toBeVisible()
+
+			let is_wrapper_in_dom_at_fetch = false
+
+			await page.route('**/dash?/discard_empty_open_task', async (route) => {
+				is_wrapper_in_dom_at_fetch =
+					(await page.getByTestId(tid.inline_editor_slide_wrapper).count()) > 0
+				await route.continue()
+			})
+
 			await playwright_dash_ux.blur_inline_editor(page)
 			await expect(page.getByTestId(tid.inline_title)).toHaveCount(0, {
 				timeout: RELOAD_STABLE_TIMEOUT_MS,
 			})
+
+			expect(is_wrapper_in_dom_at_fetch).toBe(true)
 		})
 	})
 })
