@@ -1,6 +1,6 @@
 <script lang="ts">
 	/* eslint-disable max-lines, max-statements -- mirrors create form for inline edit */
-	/* eslint-disable unicorn/prevent-abbreviations, sonarjs/void-use, @typescript-eslint/no-floating-promises, promise/catch-or-return, promise/prefer-await-to-then, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-magic-numbers, unicorn/no-useless-undefined -- DOM measurement, $effect tick scheduling, and mirrored title/detail Enter handlers */
+	/* eslint-disable unicorn/prevent-abbreviations, sonarjs/void-use, @typescript-eslint/no-floating-promises, promise/catch-or-return, promise/prefer-await-to-then, promise/always-return, unicorn/no-useless-undefined -- DOM measurement and $effect tick scheduling */
 	import type { ActionResult } from '@sveltejs/kit'
 	import { enhance } from '$app/forms'
 	import RecurrenceInput from '$lib/components/RecurrenceInput.svelte'
@@ -9,9 +9,15 @@
 	import { dash_inline_editor_keyboard } from '$lib/dash-inline-editor-keyboard'
 	import type { ActionData, PageData, TaskItem } from '$lib/dash-page-types'
 	import { m } from '$lib/paraglide/messages'
-	import { rrule_summary } from '$lib/rrule-summary'
 	import { tick } from 'svelte'
 	import { slide } from 'svelte/transition'
+	import {
+		BLUR_COMMIT_DELAY_MS,
+		dash_task_form_shared,
+		DIALOG_RECURRENCE_CLASS,
+		LABEL_BLUR_DELAY_MS,
+		POINTER_UP_SETTLE_MS,
+	} from './dash-task-form-shared'
 
 	interface Props {
 		task_item: TaskItem
@@ -46,11 +52,6 @@
 		on_navigate_arrow,
 	}: Props = $props()
 
-	const label_suggestion_limit = 5
-	const label_blur_delay_ms = 150
-	const blur_commit_delay_ms = 120
-	// One frame after pointerup so the click event has already fired before we commit/discard.
-	const pointer_up_settle_ms = 16
 	const rr_close_blur_grace_ms = 2500
 	const MS_PER_SECOND = 1000
 	const SECONDS_PER_HOUR = 3600
@@ -63,9 +64,6 @@
 	const SELECTOR_INLINE_TITLE = '[data-testid="dash-inline-title-input"]'
 	/** After `HTMLDialogElement.close()` or `invalidateAll`, focus may be reset after our first `focus()`. */
 	const RR_POST_MODAL_FOCUS_MS = 100
-	const RRULE_BUTTON_DISPLAY_MAX_CHARS = 48
-	const dialog_recurrence_class =
-		'fixed left-1/2 top-1/2 z-[100] max-h-[90vh] w-[min(100%,28rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-gray-200 bg-white p-4 shadow-xl dark:border-gray-600 dark:bg-gray-800'
 
 	let form_element = $state<HTMLFormElement | undefined>()
 	let title_input_el = $state<HTMLInputElement | undefined>()
@@ -158,59 +156,29 @@
 	}
 
 	const pending_new_label_names = $derived(
-		form_selected_labels.filter(
-			(name) => !data.labels.some((label_row) => label_row.name === name),
-		),
+		dash_task_form_shared.compute_pending_new_labels(form_selected_labels, data.labels),
 	)
 
 	const label_suggestions = $derived(
-		form_label_input.trim()
-			? data.labels
-					.filter(
-						(label_row) =>
-							label_row.name.toLowerCase().includes(form_label_input.toLowerCase()) &&
-							!form_selected_labels.includes(label_row.name),
-					)
-					.slice(0, label_suggestion_limit)
-			: [],
+		dash_task_form_shared.compute_label_suggestions(
+			form_label_input,
+			data.labels,
+			form_selected_labels,
+		),
 	)
 
-	const due_display_text = $derived(
-		form_due_date
-			? new Date(`${form_due_date}T12:00:00`).toLocaleDateString(undefined, {
-					year: 'numeric',
-					month: 'short',
-					day: 'numeric',
-				})
-			: '',
+	const due_display_text = $derived(dash_task_form_shared.format_due_date_display(form_due_date))
+
+	const recurrence_edit_button_text = $derived(
+		dash_task_form_shared.format_recurrence_button_text(form_rrule),
 	)
-
-	function truncate_rule_for_button(raw: string): string {
-		if (raw.length <= RRULE_BUTTON_DISPLAY_MAX_CHARS) return raw
-
-		return `${raw.slice(0, RRULE_BUTTON_DISPLAY_MAX_CHARS - 1)}…`
-	}
-
-	const recurrence_edit_button_text = $derived.by(() => {
-		if (!form_rrule.trim()) return ''
-		const summary = rrule_summary.format_rrule_summary(form_rrule)
-		if (summary !== '') return summary
-
-		return m.dash_recurrence_unparsed_display({ rule: truncate_rule_for_button(form_rrule) })
-	})
-
-	function sync_detail_height(): void {
-		const el = detail_textarea_el
-		if (!el) return
-
-		el.style.height = 'auto'
-		el.style.height = `${Math.max(el.scrollHeight, 36)}px`
-	}
 
 	$effect(() => {
 		void form_detail
 		void detail_textarea_el
-		tick().then(sync_detail_height)
+		tick().then(() => {
+			dash_task_form_shared.sync_textarea_height(detail_textarea_el)
+		})
 	})
 
 	$effect(() => {
@@ -249,7 +217,7 @@
 		sync_form_from_task_item()
 		focus_inline_title_at_end()
 		tick().then(() => {
-			sync_detail_height()
+			dash_task_form_shared.sync_textarea_height(detail_textarea_el)
 			focus_inline_title_at_end()
 
 			return undefined
@@ -305,24 +273,6 @@
 		recurrence_dialog_element?.close()
 	}
 
-	function is_plain_object(value: unknown): value is Record<string, unknown> {
-		return value !== null && typeof value === 'object'
-	}
-
-	function read_optional_string_field(payload: unknown, field: string): string | undefined {
-		if (!is_plain_object(payload) || !(field in payload)) return undefined
-
-		const value = payload[field]
-
-		return typeof value === 'string' ? value : undefined
-	}
-
-	function apply_failure_error_message(result: ActionResult): void {
-		if (result.type !== 'failure') return
-
-		edit_error = read_optional_string_field(result.data, 'error') ?? m.dash_create_error_default()
-	}
-
 	function read_rr_dialog_from_dom(): HTMLDialogElement | undefined {
 		const host = form_element?.querySelector(SELECTOR_DASH_RR_DIALOG)
 
@@ -376,10 +326,6 @@
 		return is_live_open_dialog(read_rr_dialog_from_dom())
 	}
 
-	function is_focus_still_inside_form(related: Node | null): boolean {
-		return related !== null && Boolean(form_element?.contains(related))
-	}
-
 	function is_rr_dialog_null_focusout(focus_event: FocusEvent): boolean {
 		if (focus_event.relatedTarget !== null) return false
 		const { target } = focus_event
@@ -388,8 +334,15 @@
 		return target.closest(SELECTOR_DASH_RR_DIALOG) !== null
 	}
 
+	function get_related_node(focus_event: FocusEvent): Node | undefined {
+		const target = focus_event.relatedTarget
+
+		return target instanceof Node ? target : undefined
+	}
+
 	function should_skip_form_focusout(focus_event: FocusEvent): boolean {
-		if (is_focus_still_inside_form(focus_event.relatedTarget as Node | null)) return true
+		const related = get_related_node(focus_event)
+		if (dash_task_form_shared.is_focus_still_inside_form(form_element, related)) return true
 		if (is_rr_dialog_null_focusout(focus_event)) return true
 		if (globalThis.performance.now() < rr_close_blur_grace_until_ms) return true
 		if (is_rr_dialog_session) return true
@@ -634,7 +587,7 @@
 
 		const delay_ms = is_switching_to_other_task(focus_event.relatedTarget)
 			? 0
-			: blur_commit_delay_ms
+			: BLUR_COMMIT_DELAY_MS
 
 		blur_discard_timer = globalThis.setTimeout(() => {
 			blur_discard_timer = undefined
@@ -653,7 +606,7 @@
 
 		is_blur_deferred_to_pointer_up = false
 		await new Promise((resolve) => {
-			globalThis.setTimeout(resolve, pointer_up_settle_ms)
+			globalThis.setTimeout(resolve, POINTER_UP_SETTLE_MS)
 		})
 		await run_deferred_blur_commit()
 	}
@@ -875,7 +828,7 @@
 		}
 
 		is_blur_commit_pending = false
-		apply_failure_error_message(result)
+		edit_error = dash_task_form_shared.read_action_error(result)
 		await update({ reset: false })
 	}
 
@@ -965,7 +918,9 @@
 				rows="1"
 				class="{input_class} min-h-9 resize-none overflow-hidden"
 				onkeydown={handle_detail_keydown}
-				oninput={sync_detail_height}
+				oninput={() => {
+					dash_task_form_shared.sync_textarea_height(detail_textarea_el)
+				}}
 			></textarea>
 
 			<div class="space-y-1.5">
@@ -1018,7 +973,7 @@
 						onblur={() => {
 							setTimeout(() => {
 								is_form_label_focused = false
-							}, label_blur_delay_ms)
+							}, LABEL_BLUR_DELAY_MS)
 						}}
 						placeholder={m.dash_create_label_placeholder()}
 						class={input_class}
@@ -1160,7 +1115,7 @@
 			<dialog
 				bind:this={recurrence_dialog_element}
 				data-testid="dash-recurrence-dialog"
-				class={dialog_recurrence_class}
+				class={DIALOG_RECURRENCE_CLASS}
 				onclose={handle_recurrence_dialog_close}
 			>
 				<h2 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">
