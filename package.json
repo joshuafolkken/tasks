@@ -23,7 +23,8 @@
 			"cookie@<0.7.0": ">=0.7.0",
 			"lodash@>=4.0.0 <=4.17.22": ">=4.17.23",
 			"drizzle-orm@<0.45.2": ">=0.45.2",
-			"cspell@>=10": "^9"
+			"cspell@>=10": "^9",
+			"@sveltejs/kit@<=2.57.0": ">=2.57.1"
 		},
 		"ignoredBuiltDependencies": [
 			"lefthook"
