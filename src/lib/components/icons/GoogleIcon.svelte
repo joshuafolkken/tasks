@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DEFAULT_ICON_CLASS, type IconProperties } from './types'
+	import { DEFAULT_ICON_CLASS, type IconProperties } from '$lib/types'
 
 	const { class: class_name = DEFAULT_ICON_CLASS }: IconProperties = $props()
 </script>

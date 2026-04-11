@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DEFAULT_ICON_CLASS, type IconProperties } from './types'
+	import { DEFAULT_ICON_CLASS, type IconProperties } from '$lib/types'
 
 	const PLUS_STROKE_PATH = 'M12 4v16m8-8H4'
 
