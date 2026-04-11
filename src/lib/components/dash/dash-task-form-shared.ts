@@ -16,6 +16,22 @@ interface LabelItem {
 	name: string
 }
 
+interface InlineFormValues {
+	title: string
+	detail: string
+	selected_labels: ReadonlyArray<string>
+	due_date: string
+	rrule: string
+}
+
+interface TaskFieldSnapshot {
+	title: string
+	detail: string | null
+	task_labels: ReadonlyArray<{ label: { name: string } }>
+	due_date: string | null
+	recurrence_rule: string | null
+}
+
 function is_plain_object(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === 'object'
 }
@@ -80,6 +96,47 @@ function compute_pending_new_labels(
 	return selected.filter((name) => !existing.some((label) => label.name === name))
 }
 
+function apply_add_label(labels: ReadonlyArray<string>, name: string): Array<string> {
+	const trimmed = name.trim()
+
+	if (!trimmed || labels.includes(trimmed)) return labels as Array<string>
+
+	return [...labels, trimmed]
+}
+
+function apply_toggle_label(labels: ReadonlyArray<string>, name: string): Array<string> {
+	return labels.includes(name)
+		? labels.filter((label_name) => label_name !== name)
+		: [...labels, name]
+}
+
+function sorted_label_names(labels: ReadonlyArray<string>): Array<string> {
+	return [...labels].toSorted((left, right) => left.localeCompare(right))
+}
+
+function is_text_dirty(form: InlineFormValues, task: TaskFieldSnapshot): boolean {
+	return (
+		form.title.trim() !== task.title.trim() || form.detail.trim() !== (task.detail ?? '').trim()
+	)
+}
+
+function is_labels_dirty(form: InlineFormValues, task: TaskFieldSnapshot): boolean {
+	const task_label_names = task.task_labels.map((row) => row.label.name)
+
+	return (
+		sorted_label_names(form.selected_labels).join('\0') !==
+		sorted_label_names(task_label_names).join('\0')
+	)
+}
+
+function is_schedule_dirty(form: InlineFormValues, task: TaskFieldSnapshot): boolean {
+	return form.due_date !== (task.due_date ?? '') || form.rrule !== (task.recurrence_rule ?? '')
+}
+
+function is_inline_form_dirty(form: InlineFormValues, task: TaskFieldSnapshot): boolean {
+	return is_text_dirty(form, task) || is_labels_dirty(form, task) || is_schedule_dirty(form, task)
+}
+
 function compute_label_suggestions(
 	input: string,
 	labels: ReadonlyArray<LabelItem>,
@@ -104,6 +161,9 @@ const dash_task_form_shared = {
 	is_focus_still_inside_form,
 	compute_pending_new_labels,
 	compute_label_suggestions,
+	apply_add_label,
+	apply_toggle_label,
+	is_inline_form_dirty,
 }
 
 export {
@@ -115,4 +175,4 @@ export {
 	DIALOG_RECURRENCE_CLASS,
 	dash_task_form_shared,
 }
-export type { LabelItem }
+export type { LabelItem, InlineFormValues, TaskFieldSnapshot }

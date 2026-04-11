@@ -1,23 +1,14 @@
 <script lang="ts">
-	/* eslint-disable max-lines, max-statements -- mirrors create form for inline edit */
-	/* eslint-disable unicorn/prevent-abbreviations, sonarjs/void-use, @typescript-eslint/no-floating-promises, promise/catch-or-return, promise/prefer-await-to-then, promise/always-return, unicorn/no-useless-undefined -- DOM measurement and $effect tick scheduling */
-	import type { ActionResult } from '@sveltejs/kit'
 	import { enhance } from '$app/forms'
 	import RecurrenceInput from '$lib/components/RecurrenceInput.svelte'
 	import Spinner from '$lib/components/Spinner.svelte'
-	import { dash_display } from '$lib/dash-display'
-	import { dash_inline_editor_keyboard } from '$lib/dash-inline-editor-keyboard'
 	import type { ActionData, PageData, TaskItem } from '$lib/dash-page-types'
 	import { m } from '$lib/paraglide/messages'
 	import { tick } from 'svelte'
 	import { slide } from 'svelte/transition'
-	import {
-		BLUR_COMMIT_DELAY_MS,
-		dash_task_form_shared,
-		DIALOG_RECURRENCE_CLASS,
-		LABEL_BLUR_DELAY_MS,
-		POINTER_UP_SETTLE_MS,
-	} from './dash-task-form-shared'
+	import { dash_task_form_shared, DIALOG_RECURRENCE_CLASS } from './dash-task-form-shared'
+	import { DashInlineEditorState } from './DashInlineEditorState.svelte'
+	import DashTaskLabelPicker from './DashTaskLabelPicker.svelte'
 
 	interface Props {
 		task_item: TaskItem
@@ -52,799 +43,57 @@
 		on_navigate_arrow,
 	}: Props = $props()
 
-	const rr_close_blur_grace_ms = 2500
-	const MS_PER_SECOND = 1000
-	const SECONDS_PER_HOUR = 3600
-	/** Block `use:enhance` submits while the recurrence modal is open (Svelte may keep a stale enhance callback). */
-	const RR_OPEN_ENH_BLOCK_MS = SECONDS_PER_HOUR * MS_PER_SECOND
-	/** Brief window after closing the modal to cancel spurious submits; intentional save can follow soon after. */
-	const RR_CLOSE_ENH_CANCEL_MS = 600
-	const ATTR_RR_ENH_GRACE_UNTIL = 'data-dash-rr-enhance-grace-until'
-	const SELECTOR_DASH_RR_DIALOG = '[data-testid="dash-recurrence-dialog"]'
-	const SELECTOR_INLINE_TITLE = '[data-testid="dash-inline-title-input"]'
-	/** After `HTMLDialogElement.close()` or `invalidateAll`, focus may be reset after our first `focus()`. */
-	const RR_POST_MODAL_FOCUS_MS = 100
-
-	let form_element = $state<HTMLFormElement | undefined>()
-	let title_input_el = $state<HTMLInputElement | undefined>()
-	let detail_textarea_el = $state<HTMLTextAreaElement | undefined>()
-	let due_picker_input_el = $state<HTMLInputElement | undefined>()
-	let is_date_picker_open = $state(false)
-
-	let form_title = $state('')
-	let form_detail = $state('')
-	let form_label_input = $state('')
-	let is_form_label_focused = $state(false)
-	let form_selected_labels = $state<Array<string>>([])
-	let form_due_date = $state('')
-	let form_rrule = $state('')
-	/** Edited inside the recurrence dialog; merged into `form_rrule` on dialog close only. */
-	let rrule_draft = $state('')
-	let recurrence_dialog_mount_key = $state(0)
-	let is_form_saving = $state(false)
-	let edit_error = $state<string | undefined>()
-	let recurrence_dialog_element = $state<HTMLDialogElement | undefined>()
-
-	let submit_reason = $state<'normal' | 'title_enter_new'>('normal')
-	let blur_discard_timer: ReturnType<typeof globalThis.setTimeout> | undefined = undefined
-	let is_blur_commit_pending = $state(false)
-	let is_pointer_held = $state(false)
-	let is_blur_deferred_to_pointer_up = $state(false)
-	let rr_close_blur_grace_until_ms = 0
-	/** True from opening the recurrence dialog until close (covers close() vs `open` timing). */
-	let is_rr_dialog_session = false
-	/** `HTMLDialogElement.open` can stay true for one frame after `close()`; still submit from `onclose`. */
-	let is_rr_post_close_submit = false
-	/** Prevents the focusout path from triggering a second discard when arrow navigation already handled it. */
-	let is_arrow_nav_discard_active = false
-	/** Set when arrow navigation is initiated so finalize_success_then_refocus skips stealing focus back. */
-	let is_navigating_away = false
-
-	function clear_blur_discard_timer(): void {
-		if (blur_discard_timer === undefined) return
-
-		globalThis.clearTimeout(blur_discard_timer)
-		blur_discard_timer = undefined
-	}
-
-	function is_node_inside_add_task_region(node: Node | null): boolean {
-		return node instanceof HTMLElement && Boolean(node.closest('[data-dash-add-task-region]'))
-	}
-
-	function blur_effect_cleanup(): void {
-		clear_blur_discard_timer()
-		is_blur_deferred_to_pointer_up = false
-	}
-
-	const label_sort_compare = (left: string, right: string): number => left.localeCompare(right)
-
-	function is_never_titled_row(): boolean {
-		return !task_item.title.trim()
-	}
-
-	function sorted_label_names_from_task(): Array<string> {
-		return task_item.task_labels.map((row) => row.label.name).toSorted(label_sort_compare)
-	}
-
-	function sorted_label_names_from_form(): Array<string> {
-		return [...form_selected_labels]
-			.map((name) => name.trim())
-			.filter(Boolean)
-			.toSorted(label_sort_compare)
-	}
-
-	function is_label_set_changed(): boolean {
-		return sorted_label_names_from_form().join('\0') !== sorted_label_names_from_task().join('\0')
-	}
-
-	function is_text_fields_changed(): boolean {
-		return (
-			form_title.trim() !== task_item.title.trim() ||
-			form_detail.trim() !== (task_item.detail ?? '').trim()
-		)
-	}
-
-	function is_schedule_changed(): boolean {
-		return (
-			form_due_date !== (task_item.due_date ?? '') ||
-			form_rrule !== (task_item.recurrence_rule ?? '')
-		)
-	}
-
-	function is_form_dirty(): boolean {
-		return is_text_fields_changed() || is_label_set_changed() || is_schedule_changed()
-	}
-
-	const pending_new_label_names = $derived(
-		dash_task_form_shared.compute_pending_new_labels(form_selected_labels, data.labels),
-	)
-
-	const label_suggestions = $derived(
-		dash_task_form_shared.compute_label_suggestions(
-			form_label_input,
-			data.labels,
-			form_selected_labels,
-		),
-	)
-
-	const due_display_text = $derived(dash_task_form_shared.format_due_date_display(form_due_date))
-
-	const recurrence_edit_button_text = $derived(
-		dash_task_form_shared.format_recurrence_button_text(form_rrule),
+	const state = new DashInlineEditorState(
+		() => task_item,
+		() => data.labels,
+		{
+			get_on_escape: () => on_escape,
+			get_on_saved: () => on_saved,
+			get_on_blur_commit_saved: () => on_blur_commit_saved,
+			get_on_title_enter_saved: () => on_title_enter_saved,
+			get_on_try_discard_empty: () => on_try_discard_empty,
+			get_on_navigate_arrow: () => on_navigate_arrow,
+		},
 	)
 
 	$effect(() => {
-		void form_detail
-		void detail_textarea_el
-		tick().then(() => {
-			dash_task_form_shared.sync_textarea_height(detail_textarea_el)
-		})
-	})
+		if (focus_request_id <= state.last_seen_focus_request_id) return
 
-	$effect(() => {
-		return blur_effect_cleanup
-	})
-
-	let last_seen_focus_request_id = $state(0)
-
-	let last_seeded_task_id = $state<string | undefined>(undefined)
-
-	function focus_inline_title_at_end(): void {
-		const el = title_input_el
-		if (!el) return
-
-		el.focus()
-		el.setSelectionRange(el.value.length, el.value.length)
-	}
-
-	function sync_form_from_task_item(): void {
-		is_blur_commit_pending = false
-		is_navigating_away = false
-		form_title = task_item.title
-		form_detail = task_item.detail ?? ''
-		form_label_input = ''
-		form_selected_labels = task_item.task_labels.map((row) => row.label.name)
-		form_due_date = task_item.due_date ?? ''
-		form_rrule = task_item.recurrence_rule ?? ''
-		edit_error = undefined
-	}
-
-	$effect(() => {
-		const { id } = task_item
-		if (id === last_seeded_task_id) return
-		last_seeded_task_id = id
-
-		sync_form_from_task_item()
-		focus_inline_title_at_end()
-		tick().then(() => {
-			dash_task_form_shared.sync_textarea_height(detail_textarea_el)
-			focus_inline_title_at_end()
-
-			return undefined
-		})
-	})
-
-	function add_label(name: string): void {
-		const trimmed = name.trim()
-
-		if (trimmed && !form_selected_labels.includes(trimmed)) {
-			form_selected_labels = [...form_selected_labels, trimmed]
-		}
-
-		form_label_input = ''
-	}
-
-	function commit_pending_label_input(): void {
-		if (form_label_input.trim()) add_label(form_label_input)
-	}
-
-	function toggle_label_name(name: string): void {
-		form_selected_labels = form_selected_labels.includes(name)
-			? form_selected_labels.filter((label_name) => label_name !== name)
-			: [...form_selected_labels, name]
-	}
-
-	function read_label_input_value(key_event: KeyboardEvent): string {
-		const host = key_event.currentTarget
-
-		return host instanceof HTMLInputElement ? host.value : form_label_input
-	}
-
-	function handle_label_keydown(key_event: KeyboardEvent): void {
-		if (key_event.key === 'Enter' && !key_event.isComposing) {
-			key_event.preventDefault()
-			key_event.stopPropagation()
-			const draft = read_label_input_value(key_event).trim()
-			if (draft) add_label(draft)
-		}
-	}
-
-	function revert_to_task_item(): void {
-		form_title = task_item.title
-		form_detail = task_item.detail ?? ''
-		form_label_input = ''
-		form_selected_labels = task_item.task_labels.map((row) => row.label.name)
-		form_due_date = task_item.due_date ?? ''
-		form_rrule = task_item.recurrence_rule ?? ''
-		edit_error = undefined
-	}
-
-	function close_dialogs(): void {
-		recurrence_dialog_element?.close()
-	}
-
-	function read_rr_dialog_from_dom(): HTMLDialogElement | undefined {
-		const host = form_element?.querySelector(SELECTOR_DASH_RR_DIALOG)
-
-		return host instanceof HTMLDialogElement ? host : undefined
-	}
-
-	function task_form_from_host(host: HTMLElement | undefined): HTMLFormElement | undefined {
-		if (host === undefined) return undefined
-
-		const found = host.closest('form')
-
-		return found instanceof HTMLFormElement ? found : undefined
-	}
-
-	function resolve_inline_task_form(anchor?: HTMLElement): HTMLFormElement | undefined {
-		const from_anchor = task_form_from_host(anchor)
-		if (from_anchor !== undefined) return from_anchor
-
-		const from_title = task_form_from_host(title_input_el)
-		if (from_title !== undefined) return from_title
-
-		const from_dialog = task_form_from_host(recurrence_dialog_element)
-		if (from_dialog !== undefined) return from_dialog
-
-		return form_element
-	}
-
-	function write_rr_enhance_grace_ms(duration_ms: number, anchor?: HTMLElement): void {
-		const el = resolve_inline_task_form(anchor)
-		if (el === undefined) return
-
-		el.setAttribute(ATTR_RR_ENH_GRACE_UNTIL, String(globalThis.performance.now() + duration_ms))
-	}
-
-	function is_rr_enhance_grace_active_on(submit_form: HTMLFormElement): boolean {
-		const raw = submit_form.getAttribute(ATTR_RR_ENH_GRACE_UNTIL)
-		if (raw === null) return false
-
-		const until = Number(raw)
-
-		return Number.isFinite(until) && globalThis.performance.now() < until
-	}
-
-	function is_live_open_dialog(host: HTMLDialogElement | undefined): boolean {
-		return Boolean(host?.isConnected && host.open)
-	}
-
-	function is_dialog_open(): boolean {
-		if (is_live_open_dialog(recurrence_dialog_element)) return true
-
-		return is_live_open_dialog(read_rr_dialog_from_dom())
-	}
-
-	function is_rr_dialog_null_focusout(focus_event: FocusEvent): boolean {
-		if (focus_event.relatedTarget !== null) return false
-		const { target } = focus_event
-		if (!(target instanceof Element)) return false
-
-		return target.closest(SELECTOR_DASH_RR_DIALOG) !== null
-	}
-
-	function get_related_node(focus_event: FocusEvent): Node | undefined {
-		const target = focus_event.relatedTarget
-
-		return target instanceof Node ? target : undefined
-	}
-
-	function should_skip_form_focusout(focus_event: FocusEvent): boolean {
-		const related = get_related_node(focus_event)
-		if (dash_task_form_shared.is_focus_still_inside_form(form_element, related)) return true
-		if (is_rr_dialog_null_focusout(focus_event)) return true
-		if (globalThis.performance.now() < rr_close_blur_grace_until_ms) return true
-		if (is_rr_dialog_session) return true
-
-		return false
-	}
-
-	async function next_animation_frame(): Promise<void> {
-		await new Promise<void>((resolve) => {
-			globalThis.requestAnimationFrame(() => {
-				resolve()
-			})
-		})
-	}
-
-	function open_recurrence_dialog(anchor?: HTMLElement): void {
-		write_rr_enhance_grace_ms(RR_OPEN_ENH_BLOCK_MS, anchor)
-		rrule_draft = form_rrule
-		recurrence_dialog_mount_key += 1
-		is_rr_dialog_session = true
-		recurrence_dialog_element?.showModal()
-	}
-
-	function close_rr_dialog_ui(anchor?: HTMLElement): void {
-		write_rr_enhance_grace_ms(RR_CLOSE_ENH_CANCEL_MS, anchor)
-		rr_close_blur_grace_until_ms = globalThis.performance.now() + rr_close_blur_grace_ms
-		recurrence_dialog_element?.close()
-	}
-
-	function resolve_title_focus_target(): HTMLInputElement | undefined {
-		if (title_input_el !== undefined) return title_input_el
-
-		const from_form = form_element?.querySelector(SELECTOR_INLINE_TITLE)
-
-		return from_form instanceof HTMLInputElement ? from_form : undefined
-	}
-
-	async function refocus_title_through_churn(): Promise<void> {
-		resolve_title_focus_target()?.focus()
-		await new Promise<void>((resolve) => {
-			globalThis.setTimeout(() => {
-				resolve_title_focus_target()?.focus()
-				resolve()
-			}, 0)
-		})
-		await new Promise<void>((resolve) => {
-			globalThis.setTimeout(() => {
-				resolve_title_focus_target()?.focus()
-				resolve()
-			}, RR_POST_MODAL_FOCUS_MS)
-		})
-	}
-
-	$effect(() => {
-		if (focus_request_id <= last_seen_focus_request_id) return
-
-		last_seen_focus_request_id = focus_request_id
+		state.last_seen_focus_request_id = focus_request_id
 
 		void (async () => {
 			await tick()
 			await tick()
-			await next_animation_frame()
-			const title_el = resolve_title_focus_target()
+			await new Promise<void>((resolve) => {
+				globalThis.requestAnimationFrame(() => {
+					resolve()
+				})
+			})
+			const title_element = state.title_input_el
 
-			if (title_el) {
-				title_el.focus()
-				title_el.setSelectionRange(title_el.value.length, title_el.value.length)
+			if (title_element) {
+				title_element.focus()
+				title_element.setSelectionRange(title_element.value.length, title_element.value.length)
 			}
 		})()
 	})
-
-	async function focus_title_after_rr_close(): Promise<void> {
-		await tick()
-		await next_animation_frame()
-		await next_animation_frame()
-		await refocus_title_through_churn()
-		await next_animation_frame()
-	}
-
-	async function end_rr_session_clear_enhance(): Promise<void> {
-		is_rr_dialog_session = false
-		rr_close_blur_grace_until_ms = 0
-		form_element?.removeAttribute(ATTR_RR_ENH_GRACE_UNTIL)
-		await tick()
-		await next_animation_frame()
-	}
-
-	function submit_dirty_if_rr_idle(): void {
-		commit_pending_label_input()
-		clear_blur_discard_timer()
-
-		if (!is_form_saving && form_title.trim() !== '' && is_form_dirty()) {
-			is_blur_commit_pending = false
-			submit_reason = 'normal'
-			is_rr_post_close_submit = true
-			form_element?.requestSubmit()
-		}
-	}
-
-	async function handle_recurrence_dialog_close(): Promise<void> {
-		/* Dialog close uses pointerdown/up; drop stale deferred blur before refocus + submit. */
-		clear_blur_discard_timer()
-		is_blur_deferred_to_pointer_up = false
-		form_rrule = rrule_draft
-		write_rr_enhance_grace_ms(RR_CLOSE_ENH_CANCEL_MS)
-		rr_close_blur_grace_until_ms = globalThis.performance.now() + rr_close_blur_grace_ms
-		await focus_title_after_rr_close()
-		await end_rr_session_clear_enhance()
-		await tick()
-		await next_animation_frame()
-		submit_dirty_if_rr_idle()
-	}
-
-	function is_due_input_focused(): boolean {
-		return due_picker_input_el !== undefined && document.activeElement === due_picker_input_el
-	}
-
-	function is_blocking_interaction_active(): boolean {
-		return is_dialog_open() || is_form_saving || is_date_picker_open
-	}
-
-	function is_rr_blur_block_active(): boolean {
-		if (is_rr_dialog_session) return true
-		if (globalThis.performance.now() < rr_close_blur_grace_until_ms) return true
-
-		return false
-	}
-
-	function should_abort_blur_commit(): boolean {
-		if (is_rr_blur_block_active()) return true
-		if (form_element?.contains(document.activeElement)) return true
-		if (is_due_input_focused()) return true
-
-		return is_blocking_interaction_active()
-	}
-
-	function read_task_id_from_title_host(host: HTMLElement): string | undefined {
-		/* eslint-disable-next-line unicorn/prefer-dom-node-dataset -- `dataset` index typing is awkward; marker is fixed. */
-		const raw_id = (host.getAttribute('data-task-id') ?? '').trim()
-
-		return raw_id === '' ? undefined : raw_id
-	}
-
-	function title_host_from_related(related: HTMLElement): HTMLElement | undefined {
-		const host = related.closest('[data-dash-task-title]')
-		if (host === null) return undefined
-
-		return host instanceof HTMLElement ? host : undefined
-	}
-
-	function read_title_switch_task_id(related: EventTarget | null): string | undefined {
-		if (!(related instanceof HTMLElement)) return undefined
-
-		const host = title_host_from_related(related)
-		if (host === undefined) return undefined
-
-		return read_task_id_from_title_host(host)
-	}
-
-	function read_card_switch_task_id(related: EventTarget | null): string | undefined {
-		if (!(related instanceof HTMLElement)) return undefined
-
-		const card = related.closest('[data-dash-task-card]')
-		if (!(card instanceof HTMLElement)) return undefined
-
-		/* eslint-disable-next-line unicorn/prefer-dom-node-dataset -- same reason as title host */
-		const raw_id = (card.getAttribute('data-dash-task-card') ?? '').trim()
-
-		return raw_id === '' ? undefined : raw_id
-	}
-
-	function is_switching_to_other_task(related: EventTarget | null): boolean {
-		const title_id = read_title_switch_task_id(related)
-		if (title_id !== undefined && title_id !== task_item.id) return true
-
-		const card_id = read_card_switch_task_id(related)
-
-		return card_id !== undefined && card_id !== task_item.id
-	}
-
-	async function run_discard_empty_animated(): Promise<void> {
-		if (on_try_discard_empty === undefined) return
-		await on_try_discard_empty()
-	}
-
-	async function apply_empty_blur_outcome(): Promise<void> {
-		if (is_node_inside_add_task_region(document.activeElement)) return
-		if (is_arrow_nav_discard_active) return
-
-		await run_discard_empty_animated()
-	}
-
-	function apply_dirty_blur_submit(): void {
-		if (is_rr_blur_block_active()) return
-
-		commit_pending_label_input()
-		is_blur_commit_pending = true
-		submit_reason = 'normal'
-		form_element?.requestSubmit()
-	}
-
-	async function commit_blur_when_title_missing(): Promise<void> {
-		if (!is_never_titled_row()) {
-			revert_to_task_item()
-
-			return
-		}
-
-		await apply_empty_blur_outcome()
-	}
-
-	async function run_deferred_blur_commit(): Promise<void> {
-		if (should_abort_blur_commit()) return
-
-		if (!form_title.trim()) {
-			await commit_blur_when_title_missing()
-
-			return
-		}
-
-		if (is_form_dirty()) {
-			apply_dirty_blur_submit()
-
-			return
-		}
-
-		if (!is_navigating_away) on_escape()
-	}
-
-	function handle_form_focusout(focus_event: FocusEvent): void {
-		if (should_skip_form_focusout(focus_event)) return
-
-		clear_blur_discard_timer()
-
-		// Delay until pointerup so the row does not vanish on mousedown;
-		// the click event will complete normally before the editor closes.
-		if (is_pointer_held) {
-			is_blur_deferred_to_pointer_up = true
-
-			return
-		}
-
-		const delay_ms = is_switching_to_other_task(focus_event.relatedTarget)
-			? 0
-			: BLUR_COMMIT_DELAY_MS
-
-		blur_discard_timer = globalThis.setTimeout(() => {
-			blur_discard_timer = undefined
-			void run_deferred_blur_commit()
-		}, delay_ms)
-	}
-
-	function handle_document_pointerdown(): void {
-		is_pointer_held = true
-	}
-
-	async function handle_document_pointerup(): Promise<void> {
-		is_pointer_held = false
-
-		if (!is_blur_deferred_to_pointer_up) return
-
-		is_blur_deferred_to_pointer_up = false
-		await new Promise((resolve) => {
-			globalThis.setTimeout(resolve, POINTER_UP_SETTLE_MS)
-		})
-		await run_deferred_blur_commit()
-	}
-
-	function handle_document_pointercancel(): void {
-		is_pointer_held = false
-		is_blur_deferred_to_pointer_up = false
-	}
-
-	function is_escape_suppressed_by_modal(): boolean {
-		/* Blur still uses `is_rr_dialog_session`; Escape must work as soon as the dialog is gone
-		 * (post-close focus runs async and would otherwise swallow Escape until session ends). */
-		return is_dialog_open()
-	}
-
-	function should_discard_on_escape(): boolean {
-		return !form_title.trim() && is_never_titled_row()
-	}
-
-	function finalize_standard_escape(): void {
-		revert_to_task_item()
-		on_escape()
-	}
-
-	function apply_escape_key_outcome(): void {
-		close_dialogs()
-
-		if (should_discard_on_escape()) {
-			void on_try_discard_empty?.()
-
-			return
-		}
-
-		finalize_standard_escape()
-	}
-
-	function handle_document_keydown(key_event: KeyboardEvent): void {
-		if (key_event.key !== 'Escape' || key_event.isComposing) return
-		if (is_escape_suppressed_by_modal()) return
-
-		key_event.preventDefault()
-		apply_escape_key_outcome()
-	}
-
-	function try_submit_form(): void {
-		if (is_rr_blur_block_active()) return
-		if (is_form_saving || form_title.trim() === '') return
-
-		commit_pending_label_input()
-		clear_blur_discard_timer()
-		is_blur_commit_pending = false
-		submit_reason = 'normal'
-
-		form_element?.requestSubmit()
-	}
-
-	function is_plain_enter_key(key_event: KeyboardEvent): boolean {
-		return key_event.key === 'Enter' && !key_event.shiftKey && !key_event.isComposing
-	}
-
-	function handle_arrow_without_title(direction: 'up' | 'down'): void {
-		if (!is_never_titled_row()) revert_to_task_item()
-
-		is_navigating_away = true
-		on_navigate_arrow?.(direction)
-
-		if (is_never_titled_row()) {
-			is_arrow_nav_discard_active = true
-			void on_try_discard_empty?.()
-		}
-	}
-
-	function handle_arrow_with_title(direction: 'up' | 'down'): void {
-		if (is_form_dirty()) try_submit_form()
-
-		is_navigating_away = true
-		on_navigate_arrow?.(direction)
-	}
-
-	function handle_arrow_navigation(key_event: KeyboardEvent): void {
-		if (key_event.isComposing) return
-
-		const direction = dash_inline_editor_keyboard.read_vertical_arrow_direction(key_event)
-		if (direction === undefined) return
-
-		key_event.preventDefault()
-
-		if (!form_title.trim()) {
-			handle_arrow_without_title(direction)
-
-			return
-		}
-
-		handle_arrow_with_title(direction)
-	}
-
-	function handle_title_enter_confirm(key_event: KeyboardEvent): void {
-		key_event.preventDefault()
-		if (is_rr_blur_block_active()) return
-		if (is_form_saving) return
-		if (!form_title.trim()) return
-
-		clear_blur_discard_timer()
-		is_blur_commit_pending = false
-		submit_reason = 'title_enter_new'
-		form_element?.requestSubmit()
-	}
-
-	function handle_title_keydown(key_event: KeyboardEvent): void {
-		if (dash_inline_editor_keyboard.read_vertical_arrow_direction(key_event) !== undefined) {
-			handle_arrow_navigation(key_event)
-
-			return
-		}
-
-		if (!is_plain_enter_key(key_event)) return
-
-		handle_title_enter_confirm(key_event)
-	}
-
-	function handle_detail_keydown(key_event: KeyboardEvent): void {
-		if (key_event.key === 'Enter' && !key_event.shiftKey && !key_event.isComposing) {
-			key_event.preventDefault()
-			try_submit_form()
-		}
-	}
-
-	function open_due_picker(): void {
-		const el = due_picker_input_el
-		if (!el) return
-
-		is_date_picker_open = true
-
-		if (typeof el.showPicker === 'function') {
-			el.showPicker()
-		} else {
-			el.click()
-		}
-	}
-
-	function is_title_enter_chain(reason: 'normal' | 'title_enter_new'): boolean {
-		return reason === 'title_enter_new' && on_title_enter_saved !== undefined
-	}
-
-	function is_blur_commit_exit(
-		reason: 'normal' | 'title_enter_new',
-		is_saved_via_blur_commit: boolean,
-	): boolean {
-		return reason === 'normal' && is_saved_via_blur_commit && on_blur_commit_saved !== undefined
-	}
-
-	async function run_after_successful_update(
-		reason: 'normal' | 'title_enter_new',
-		is_saved_via_blur_commit: boolean,
-	): Promise<void> {
-		if (is_title_enter_chain(reason)) {
-			await on_title_enter_saved?.()
-
-			return
-		}
-
-		if (is_blur_commit_exit(reason, is_saved_via_blur_commit)) {
-			await on_blur_commit_saved?.()
-
-			return
-		}
-
-		await on_saved()
-	}
-
-	function reset_blur_defer_flags(): void {
-		clear_blur_discard_timer()
-		is_blur_deferred_to_pointer_up = false
-	}
-
-	async function finalize_success_then_refocus(
-		reason: 'normal' | 'title_enter_new',
-		is_saved_via_blur_commit: boolean,
-		update: (options?: { reset?: boolean }) => Promise<void>,
-	): Promise<void> {
-		close_dialogs()
-		edit_error = undefined
-		is_blur_commit_pending = false
-		reset_blur_defer_flags()
-		await update({ reset: false })
-		reset_blur_defer_flags()
-
-		const did_navigate_away = is_navigating_away
-
-		/* Same task id skips the seed $effect; align with load data so normalized fields (e.g. rrule) are not left dirty. */
-		await tick()
-		sync_form_from_task_item()
-		await run_after_successful_update(reason, is_saved_via_blur_commit)
-		reset_blur_defer_flags()
-
-		if (!is_blur_commit_exit(reason, is_saved_via_blur_commit) && !did_navigate_away) {
-			await tick()
-			await next_animation_frame()
-			await next_animation_frame()
-			await refocus_title_through_churn()
-		}
-	}
-
-	async function finalize_update_action(
-		result: ActionResult,
-		update: (options?: { reset?: boolean }) => Promise<void>,
-	): Promise<void> {
-		is_form_saving = false
-		const reason = submit_reason
-
-		submit_reason = 'normal'
-
-		if (result.type === 'success') {
-			const is_saved_via_blur_commit = is_blur_commit_pending
-
-			await finalize_success_then_refocus(reason, is_saved_via_blur_commit, update)
-
-			return
-		}
-
-		is_blur_commit_pending = false
-		edit_error = dash_task_form_shared.read_action_error(result)
-		await update({ reset: false })
-	}
-
-	async function handle_update_enhance_result(input: {
-		result: ActionResult
-		update: (options?: { reset?: boolean }) => Promise<void>
-	}): Promise<void> {
-		await finalize_update_action(input.result, input.update)
-	}
 </script>
 
-<svelte:window onkeydown={handle_document_keydown} />
+<svelte:window
+	onkeydown={(key_event: KeyboardEvent) => {
+		state.handle_document_keydown(key_event)
+	}}
+/>
 <svelte:document
-	onpointerdown={handle_document_pointerdown}
-	onpointerup={handle_document_pointerup}
-	onpointercancel={handle_document_pointercancel}
+	onpointerdown={() => {
+		state.handle_document_pointerdown()
+	}}
+	onpointerup={async () => {
+		await state.handle_document_pointerup()
+	}}
+	onpointercancel={() => {
+		state.handle_document_pointercancel()
+	}}
 />
 
 <div
@@ -853,43 +102,18 @@
 >
 	<div class="-m-1 overflow-hidden p-1">
 		<form
-			bind:this={form_element}
+			bind:this={state.form_element}
 			method="POST"
 			action="?/update_task"
-			use:enhance={(submission) => {
-				if (is_rr_enhance_grace_active_on(submission.formElement)) {
-					submission.cancel()
-
-					return handle_update_enhance_result
-				}
-
-				if (is_rr_blur_block_active()) {
-					submission.cancel()
-
-					return handle_update_enhance_result
-				}
-
-				const is_dialog_submit_exempt = is_rr_post_close_submit
-
-				if (is_dialog_open() && !is_dialog_submit_exempt) {
-					submission.cancel()
-
-					return handle_update_enhance_result
-				}
-
-				is_rr_post_close_submit = false
-				submission.formElement.removeAttribute(ATTR_RR_ENH_GRACE_UNTIL)
-				clear_blur_discard_timer()
-				is_form_saving = true
-
-				return handle_update_enhance_result
-			}}
+			use:enhance={state.get_enhance_callback()}
 			class="relative min-w-0 flex-1 space-y-1.5"
-			onfocusout={handle_form_focusout}
+			onfocusout={(focus_event: FocusEvent) => {
+				state.handle_form_focusout(focus_event)
+			}}
 		>
 			<input type="hidden" name="task_id" value={task_item.id} />
 
-			{#if is_form_saving}
+			{#if state.is_form_saving}
 				<div
 					class="absolute inset-e-0 top-0 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400"
 				>
@@ -899,192 +123,123 @@
 			{/if}
 
 			<input
-				bind:this={title_input_el}
+				bind:this={state.title_input_el}
 				type="text"
 				name="title"
 				data-testid="dash-inline-title-input"
-				bind:value={form_title}
+				bind:value={state.form_title}
 				placeholder={m.dash_create_title_placeholder()}
 				class={input_class}
-				onkeydown={handle_title_keydown}
+				onkeydown={(key_event: KeyboardEvent) => {
+					state.handle_title_keydown(key_event)
+				}}
 			/>
 
 			<textarea
-				bind:this={detail_textarea_el}
+				bind:this={state.detail_textarea_el}
 				name="detail"
 				data-testid="dash-inline-detail-input"
-				bind:value={form_detail}
+				bind:value={state.form_detail}
 				placeholder={m.dash_create_detail_placeholder()}
 				rows="1"
 				class="{input_class} min-h-9 resize-none overflow-hidden"
-				onkeydown={handle_detail_keydown}
+				onkeydown={(key_event: KeyboardEvent) => {
+					state.handle_detail_keydown(key_event)
+				}}
 				oninput={() => {
-					dash_task_form_shared.sync_textarea_height(detail_textarea_el)
+					dash_task_form_shared.sync_textarea_height(state.detail_textarea_el)
 				}}
 			></textarea>
 
 			<div class="space-y-1.5">
-				{#each form_selected_labels as hidden_label (hidden_label)}
-					<input type="hidden" name="labels" value={hidden_label} />
-				{/each}
-				{#if data.labels.length > 0 || pending_new_label_names.length > 0}
-					<div class="flex flex-wrap gap-1.5">
-						{#each data.labels as label_row (label_row.id)}
-							<button
-								type="button"
-								onclick={() => {
-									toggle_label_name(label_row.name)
-								}}
-								class={dash_display.label_chip_filter_class(
-									label_row.name,
-									form_selected_labels.includes(label_row.name),
-								)}
-							>
-								{label_row.name}
-							</button>
-						{/each}
-						{#each pending_new_label_names as new_label (new_label)}
-							<span
-								class="{dash_display.label_chip_filter_class(
-									new_label,
-									true,
-								)} inline-flex items-center gap-1"
-							>
-								{new_label}
-								<button
-									type="button"
-									aria-label="Remove label"
-									onclick={() => {
-										form_selected_labels = form_selected_labels.filter((name) => name !== new_label)
-									}}
-									class="leading-none">×</button
-								>
-							</span>
-						{/each}
-					</div>
-				{/if}
-				<div class="relative">
-					<input
-						type="text"
-						data-testid="dash-inline-label-input"
-						bind:value={form_label_input}
-						onkeydown={handle_label_keydown}
-						onfocus={() => (is_form_label_focused = true)}
-						onblur={() => {
-							setTimeout(() => {
-								is_form_label_focused = false
-							}, LABEL_BLUR_DELAY_MS)
-						}}
-						placeholder={m.dash_create_label_placeholder()}
-						class={input_class}
-					/>
-					{#if is_form_label_focused && label_suggestions.length > 0}
-						<div
-							class="absolute top-full z-10 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800"
-						>
-							{#each label_suggestions as suggestion (suggestion.id)}
-								<button
-									type="button"
-									class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
-									onclick={() => {
-										add_label(suggestion.name)
-									}}
-								>
-									{suggestion.name}
-								</button>
-							{/each}
-						</div>
-					{/if}
-				</div>
+				<DashTaskLabelPicker
+					all_labels={data.labels}
+					selected_labels={state.form_selected_labels}
+					bind:label_input={state.form_label_input}
+					{input_class}
+					input_testid="dash-inline-label-input"
+					on_toggle={(name: string) => {
+						state.toggle_label_name(name)
+					}}
+					on_add={(name: string) => {
+						state.add_label(name)
+					}}
+					on_remove_pending={(name: string) => {
+						state.form_selected_labels = state.form_selected_labels.filter(
+							(label_name) => label_name !== name,
+						)
+					}}
+					on_keydown={(key_event: KeyboardEvent) => {
+						state.handle_label_keydown(key_event)
+					}}
+				/>
 			</div>
 
 			<input
-				bind:this={due_picker_input_el}
+				bind:this={state.due_picker_input_el}
 				type="date"
 				name="due_date"
-				bind:value={form_due_date}
+				bind:value={state.form_due_date}
 				class="sr-only"
 				tabindex={-1}
 				aria-hidden="true"
 				onchange={() => {
-					is_date_picker_open = false
-					title_input_el?.focus()
+					state.is_date_picker_open = false
+					state.title_input_el?.focus()
 				}}
 			/>
-			<input type="hidden" name="recurrence_rule" value={form_rrule} />
+			<input type="hidden" name="recurrence_rule" value={state.form_rrule} />
 
 			<div class="flex flex-wrap items-center gap-2">
-				{#if form_due_date}
-					<div class="flex flex-wrap items-center gap-1.5">
-						<button
-							type="button"
-							onclick={open_due_picker}
-							class="flex h-9 w-9 shrink-0 items-center justify-center text-gray-400 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:hover:bg-gray-700 dark:hover:text-blue-400"
-							aria-label={m.dash_create_due_pick_aria()}
-						>
-							<svg
-								class="h-5 w-5"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								aria-hidden="true"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="1.5"
-									d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-								></path>
-							</svg>
-						</button>
-						<span class="text-sm text-gray-700 dark:text-gray-200">{due_display_text}</span>
-						<button
-							type="button"
-							onclick={() => {
-								form_due_date = ''
-							}}
-							class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-red-600 dark:hover:bg-gray-700 dark:hover:text-red-400"
-							aria-label={m.dash_create_due_clear()}
-						>
-							<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-								<path
-									fill-rule="evenodd"
-									d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-									clip-rule="evenodd"
-								></path>
-							</svg>
-						</button>
-					</div>
-				{:else}
+				<button
+					type="button"
+					onclick={() => {
+						state.open_due_picker()
+					}}
+					class="flex h-9 w-9 shrink-0 items-center justify-center text-gray-400 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:hover:bg-gray-700 dark:hover:text-blue-400"
+					aria-label={m.dash_create_due_pick_aria()}
+				>
+					<svg
+						class="h-5 w-5"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						aria-hidden="true"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="1.5"
+							d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+						></path>
+					</svg>
+				</button>
+				{#if state.form_due_date}
+					<span class="text-sm text-gray-700 dark:text-gray-200">{state.due_display_text}</span>
 					<button
 						type="button"
-						onclick={open_due_picker}
-						class="flex h-9 w-9 shrink-0 items-center justify-center text-gray-400 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:hover:bg-gray-700 dark:hover:text-blue-400"
-						aria-label={m.dash_create_due_pick_aria()}
+						onclick={() => {
+							state.form_due_date = ''
+						}}
+						class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-red-600 dark:hover:bg-gray-700 dark:hover:text-red-400"
+						aria-label={m.dash_create_due_clear()}
 					>
-						<svg
-							class="h-5 w-5"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							aria-hidden="true"
-						>
+						<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="1.5"
-								d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+								fill-rule="evenodd"
+								d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+								clip-rule="evenodd"
 							></path>
 						</svg>
 					</button>
 				{/if}
 
-				{#if form_rrule}
+				{#if state.form_rrule}
 					<button
 						type="button"
 						data-testid="dash-inline-recurrence-button"
 						onclick={(mouse_event) => {
-							open_recurrence_dialog(
+							state.open_recurrence_dialog(
 								mouse_event.currentTarget instanceof HTMLElement
 									? mouse_event.currentTarget
 									: undefined,
@@ -1092,13 +247,13 @@
 						}}
 						class="rounded-lg border border-gray-200 px-2 py-1 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700/80"
 					>
-						{recurrence_edit_button_text}
+						{state.recurrence_edit_button_text}
 					</button>
 				{:else}
 					<button
 						type="button"
 						onclick={(mouse_event) => {
-							open_recurrence_dialog(
+							state.open_recurrence_dialog(
 								mouse_event.currentTarget instanceof HTMLElement
 									? mouse_event.currentTarget
 									: undefined,
@@ -1113,17 +268,19 @@
 			</div>
 
 			<dialog
-				bind:this={recurrence_dialog_element}
+				bind:this={state.recurrence_dialog_element}
 				data-testid="dash-recurrence-dialog"
 				class={DIALOG_RECURRENCE_CLASS}
-				onclose={handle_recurrence_dialog_close}
+				onclose={async () => {
+					await state.handle_recurrence_dialog_close()
+				}}
 			>
 				<h2 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">
 					{m.dash_create_recurrence_dialog_title()}
 				</h2>
-				{#key recurrence_dialog_mount_key}
-					{#if recurrence_dialog_mount_key > 0}
-						<RecurrenceInput bind:value={rrule_draft} />
+				{#key state.recurrence_dialog_mount_key}
+					{#if state.recurrence_dialog_mount_key > 0}
+						<RecurrenceInput bind:value={state.rrule_draft} />
 					{/if}
 				{/key}
 				<div class="mt-4 flex justify-end">
@@ -1136,7 +293,7 @@
 						onclick={(mouse_event) => {
 							mouse_event.preventDefault()
 							mouse_event.stopPropagation()
-							close_rr_dialog_ui(
+							state.close_rr_dialog_ui(
 								mouse_event.currentTarget instanceof HTMLElement
 									? mouse_event.currentTarget
 									: undefined,
@@ -1148,8 +305,8 @@
 				</div>
 			</dialog>
 
-			{#if edit_error}
-				<p class="text-sm text-red-500">{edit_error}</p>
+			{#if state.edit_error}
+				<p class="text-sm text-red-500">{state.edit_error}</p>
 			{/if}
 			{#if form?.error}
 				<p class="text-sm text-red-500">{form.error}</p>

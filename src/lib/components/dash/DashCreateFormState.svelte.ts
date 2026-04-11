@@ -72,19 +72,18 @@ export class DashCreateFormState {
 	}
 
 	add_label(name: string): void {
-		const trimmed = name.trim()
-
-		if (trimmed && !this.form_selected_labels.includes(trimmed)) {
-			this.form_selected_labels = [...this.form_selected_labels, trimmed]
-		}
-
+		this.form_selected_labels = dash_task_form_shared.apply_add_label(
+			this.form_selected_labels,
+			name,
+		)
 		this.form_label_input = ''
 	}
 
 	toggle_label_name(name: string): void {
-		this.form_selected_labels = this.form_selected_labels.includes(name)
-			? this.form_selected_labels.filter((label_name) => label_name !== name)
-			: [...this.form_selected_labels, name]
+		this.form_selected_labels = dash_task_form_shared.apply_toggle_label(
+			this.form_selected_labels,
+			name,
+		)
 	}
 
 	handle_label_keydown(key_event: KeyboardEvent): void {
