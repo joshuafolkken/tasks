@@ -301,9 +301,12 @@ export class DashInlineEditorState extends DashInlineEditorBaseState {
 		this.#reset_blur_defer_flags()
 		await update({ reset: false })
 		await tick()
+
+		const did_navigate_away = this.is_navigating_away
+
 		this.sync_form_from_task_item()
 		await this.#run_after_successful_update(reason, is_saved_via_blur_commit)
-		await this.#maybe_refocus_title(reason, is_saved_via_blur_commit)
+		await this.#maybe_refocus_title(reason, is_saved_via_blur_commit, did_navigate_away)
 		this.#reset_blur_defer_flags()
 	}
 
@@ -333,13 +336,14 @@ export class DashInlineEditorState extends DashInlineEditorBaseState {
 	async #maybe_refocus_title(
 		reason: 'normal' | 'title_enter_new',
 		is_saved_via_blur_commit: boolean,
+		did_navigate_away: boolean,
 	): Promise<void> {
 		const is_blur_exit =
 			reason === 'normal' &&
 			is_saved_via_blur_commit &&
 			this.#cbs.get_on_blur_commit_saved() !== undefined
 
-		if (is_blur_exit || this.is_navigating_away) return
+		if (is_blur_exit || did_navigate_away) return
 
 		await tick()
 		await dash_inline_editor_helpers.next_animation_frame()
