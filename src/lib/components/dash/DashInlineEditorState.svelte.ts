@@ -152,6 +152,7 @@ export class DashInlineEditorState extends DashInlineEditorBaseState {
 
 	async #run_deferred_blur_commit(): Promise<void> {
 		if (this.should_abort_blur_commit()) return
+		if (this.is_navigating_away) return
 
 		if (!this.form_title.trim()) {
 			await this.#commit_blur_when_title_missing()
@@ -159,15 +160,37 @@ export class DashInlineEditorState extends DashInlineEditorBaseState {
 			return
 		}
 
+		this.#apply_titled_blur_outcome()
+	}
+
+	#apply_titled_blur_outcome(): void {
 		if (this.is_form_dirty()) {
 			this.#apply_dirty_blur_submit()
 
 			return
 		}
 
-		if (this.is_navigating_away) return
+		if (this.#is_spurious_post_mount_blur()) {
+			this.#refocus_after_spurious_blur()
+
+			return
+		}
 
 		this.#cbs.get_on_escape()()
+	}
+
+	#is_spurious_post_mount_blur(): boolean {
+		if (!this.is_in_post_mount_grace()) return false
+
+		return this.is_focus_on_body_or_null()
+	}
+
+	#refocus_after_spurious_blur(): void {
+		const el = this.title_input_el
+		if (!el) return
+
+		el.focus()
+		el.setSelectionRange(el.value.length, el.value.length)
 	}
 
 	async #commit_blur_when_title_missing(): Promise<void> {
@@ -301,9 +324,12 @@ export class DashInlineEditorState extends DashInlineEditorBaseState {
 		this.#reset_blur_defer_flags()
 		await update({ reset: false })
 		await tick()
+
+		const did_navigate_away = this.is_navigating_away
+
 		this.sync_form_from_task_item()
 		await this.#run_after_successful_update(reason, is_saved_via_blur_commit)
-		await this.#maybe_refocus_title(reason, is_saved_via_blur_commit)
+		await this.#maybe_refocus_title(reason, is_saved_via_blur_commit, did_navigate_away)
 		this.#reset_blur_defer_flags()
 	}
 
@@ -333,13 +359,14 @@ export class DashInlineEditorState extends DashInlineEditorBaseState {
 	async #maybe_refocus_title(
 		reason: 'normal' | 'title_enter_new',
 		is_saved_via_blur_commit: boolean,
+		did_navigate_away: boolean,
 	): Promise<void> {
 		const is_blur_exit =
 			reason === 'normal' &&
 			is_saved_via_blur_commit &&
 			this.#cbs.get_on_blur_commit_saved() !== undefined
 
-		if (is_blur_exit || this.is_navigating_away) return
+		if (is_blur_exit || did_navigate_away) return
 
 		await tick()
 		await dash_inline_editor_helpers.next_animation_frame()
