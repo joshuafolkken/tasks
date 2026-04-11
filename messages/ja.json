@@ -50,6 +50,7 @@
 	"dash_create_title_placeholder": "タスクのタイトル *",
 	"dash_create_detail_placeholder": "詳細（任意）",
 	"dash_create_label_placeholder": "ラベルを入力してEnterで追加...",
+	"dash_label_remove_aria": "ラベルを削除",
 	"dash_create_due_label": "期限",
 	"dash_create_cancel": "キャンセル",
 	"dash_create_saving": "登録中...",
