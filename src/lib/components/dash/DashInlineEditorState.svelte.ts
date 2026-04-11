@@ -160,13 +160,37 @@ export class DashInlineEditorState extends DashInlineEditorBaseState {
 			return
 		}
 
+		this.#apply_titled_blur_outcome()
+	}
+
+	#apply_titled_blur_outcome(): void {
 		if (this.is_form_dirty()) {
 			this.#apply_dirty_blur_submit()
 
 			return
 		}
 
+		if (this.#is_spurious_post_mount_blur()) {
+			this.#refocus_after_spurious_blur()
+
+			return
+		}
+
 		this.#cbs.get_on_escape()()
+	}
+
+	#is_spurious_post_mount_blur(): boolean {
+		if (!this.is_in_post_mount_grace()) return false
+
+		return this.is_focus_outside_form()
+	}
+
+	#refocus_after_spurious_blur(): void {
+		const el = this.title_input_el
+		if (!el) return
+
+		el.focus()
+		el.setSelectionRange(el.value.length, el.value.length)
 	}
 
 	async #commit_blur_when_title_missing(): Promise<void> {

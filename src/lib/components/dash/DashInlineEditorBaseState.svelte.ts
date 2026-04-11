@@ -13,10 +13,15 @@ const MS_PER_SECOND = 1000
 const SECONDS_PER_HOUR = 3600
 const RR_OPEN_ENH_BLOCK_MS = SECONDS_PER_HOUR * MS_PER_SECOND
 const RR_CLOSE_ENH_CANCEL_MS = 600
+/** Right after mount, a sibling editor finishing its in-flight save can trigger a Svelte re-render that
+ * momentarily drops browser focus to BODY without removing any DOM node. That spurious focusout is
+ * indistinguishable from a legitimate outside-click, so we suppress pristine blur exits for this window. */
+const POST_MOUNT_BLUR_GRACE_MS = 500
 
 export class DashInlineEditorBaseState {
 	readonly #get_task_item: () => TaskItem
 	readonly #get_labels: () => PageData['labels']
+	readonly mounted_at_ms: number = globalThis.performance.now()
 	form_element = $state<HTMLFormElement | undefined>()
 	title_input_el = $state<HTMLInputElement | undefined>()
 	detail_textarea_el = $state<HTMLTextAreaElement | undefined>()
@@ -195,6 +200,18 @@ export class DashInlineEditorBaseState {
 		if (globalThis.performance.now() < this.rr_close_blur_grace_until_ms) return true
 
 		return false
+	}
+
+	is_in_post_mount_grace(): boolean {
+		return globalThis.performance.now() - this.mounted_at_ms < POST_MOUNT_BLUR_GRACE_MS
+	}
+
+	is_focus_outside_form(): boolean {
+		const active = document.activeElement
+		if (active === null) return true
+		if (active === document.body) return true
+
+		return this.form_element?.contains(active) !== true
 	}
 
 	should_abort_blur_commit(): boolean {
