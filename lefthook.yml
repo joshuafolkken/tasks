@@ -6,7 +6,8 @@ pre-commit:
       run: pnpm run prevent-main-commit
 
     audit:
-      run: pnpm audit
+      # GHSA-2crg-3p73-43xp, GHSA-3f6h-2hrp-w5wx: @sveltejs/kit <=2.57.0 — pending fix in 2.57.1 (not yet released)
+      run: pnpm audit --ignore GHSA-2crg-3p73-43xp --ignore GHSA-3f6h-2hrp-w5wx
 
     cspell:
       glob: '*.{ts,tsx,js,jsx,svelte,md,mdx,html,css,scss,yml,yaml}'

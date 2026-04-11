@@ -74,8 +74,13 @@ Issue: <issue-url>
    ```bash
    git switch main && git pull
    ```
-4. 実装を開始する
-5. 実装後は `AGENTS.md` の検証ゲートを実行する
+4. 依存関係を最新化し、脆弱性を確認する（`pnpm latest` は内部で `pnpm audit` も実行する）:
+   ```bash
+   pnpm latest
+   # 脆弱性が見つかった場合: package.json の overrides に対象バージョンを追加して pnpm install 後に再確認
+   ```
+5. 実装を開始する
+6. 実装後は `AGENTS.md` の検証ゲートを実行する
 
 `pnpm git` の基本実行（`-y` で確認プロンプトをスキップ）。**初回コミット前に必ず `pnpm version:minor` を実行する。** ただし、同一 PR 内の追加修正コミット（CodeRabbit 指摘対応など）では実行しない。
 
