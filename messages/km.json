@@ -50,6 +50,7 @@
 	"dash_create_title_placeholder": "ចំណងជើងកិច្ចការ *",
 	"dash_create_detail_placeholder": "ព័ត៌មានលម្អិត (ស្រេចចិត្ត)",
 	"dash_create_label_placeholder": "វាយស្លាក ហើយចុច Enter ដើម្បីបន្ថែម...",
+	"dash_label_remove_aria": "Remove label",
 	"dash_create_due_label": "កាលបរិច្ឆេទផុតកំណត់",
 	"dash_create_cancel": "បោះបង់",
 	"dash_create_saving": "កំពុងរក្សាទុក...",

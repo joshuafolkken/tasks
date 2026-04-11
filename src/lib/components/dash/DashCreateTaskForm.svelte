@@ -3,16 +3,12 @@
 	import { enhance } from '$app/forms'
 	import RecurrenceInput from '$lib/components/RecurrenceInput.svelte'
 	import Spinner from '$lib/components/Spinner.svelte'
-	import { dash_display } from '$lib/dash-display'
 	import type { ActionData, PageData } from '$lib/dash-page-types'
 	import { m } from '$lib/paraglide/messages'
 	import { tick } from 'svelte'
-	import {
-		dash_task_form_shared,
-		DIALOG_RECURRENCE_CLASS,
-		LABEL_BLUR_DELAY_MS,
-	} from './dash-task-form-shared'
+	import { dash_task_form_shared, DIALOG_RECURRENCE_CLASS } from './dash-task-form-shared'
 	import { DashCreateFormState } from './DashCreateFormState.svelte'
+	import DashTaskLabelPicker from './DashTaskLabelPicker.svelte'
 
 	interface Props {
 		data: PageData
@@ -105,81 +101,26 @@
 	></textarea>
 
 	<div class="space-y-1.5">
-		{#each state.form_selected_labels as hidden_label (hidden_label)}
-			<input type="hidden" name="labels" value={hidden_label} />
-		{/each}
-		{#if data.labels.length > 0 || state.pending_new_label_names.length > 0}
-			<div class="flex flex-wrap gap-1.5">
-				{#each data.labels as label_row (label_row.id)}
-					<button
-						type="button"
-						onclick={() => {
-							state.toggle_label_name(label_row.name)
-						}}
-						class={dash_display.label_chip_filter_class(
-							label_row.name,
-							state.form_selected_labels.includes(label_row.name),
-						)}
-					>
-						{label_row.name}
-					</button>
-				{/each}
-				{#each state.pending_new_label_names as new_label (new_label)}
-					<span
-						class="{dash_display.label_chip_filter_class(
-							new_label,
-							true,
-						)} inline-flex items-center gap-1"
-					>
-						{new_label}
-						<button
-							type="button"
-							aria-label="Remove label"
-							onclick={() => {
-								state.form_selected_labels = state.form_selected_labels.filter(
-									(name) => name !== new_label,
-								)
-							}}
-							class="leading-none">×</button
-						>
-					</span>
-				{/each}
-			</div>
-		{/if}
-		<div class="relative">
-			<input
-				type="text"
-				bind:value={state.form_label_input}
-				onkeydown={(key_event: KeyboardEvent) => {
-					state.handle_label_keydown(key_event)
-				}}
-				onfocus={() => (state.is_form_label_focused = true)}
-				onblur={() => {
-					setTimeout(() => {
-						state.is_form_label_focused = false
-					}, LABEL_BLUR_DELAY_MS)
-				}}
-				placeholder={m.dash_create_label_placeholder()}
-				class={input_class}
-			/>
-			{#if state.is_form_label_focused && state.label_suggestions.length > 0}
-				<div
-					class="absolute top-full z-10 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800"
-				>
-					{#each state.label_suggestions as suggestion (suggestion.id)}
-						<button
-							type="button"
-							class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
-							onclick={() => {
-								state.add_label(suggestion.name)
-							}}
-						>
-							{suggestion.name}
-						</button>
-					{/each}
-				</div>
-			{/if}
-		</div>
+		<DashTaskLabelPicker
+			all_labels={data.labels}
+			selected_labels={state.form_selected_labels}
+			bind:label_input={state.form_label_input}
+			{input_class}
+			on_toggle={(name: string) => {
+				state.toggle_label_name(name)
+			}}
+			on_add={(name: string) => {
+				state.add_label(name)
+			}}
+			on_remove_pending={(name: string) => {
+				state.form_selected_labels = state.form_selected_labels.filter(
+					(label_name) => label_name !== name,
+				)
+			}}
+			on_keydown={(key_event: KeyboardEvent) => {
+				state.handle_label_keydown(key_event)
+			}}
+		/>
 	</div>
 
 	<input

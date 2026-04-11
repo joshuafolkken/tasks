@@ -1,9 +1,11 @@
+/* eslint-disable unicorn/no-null -- TaskFieldSnapshot mirrors nullable DB fields */
 import type { ActionResult } from '@sveltejs/kit'
 import { describe, expect, it } from 'vitest'
 import { dash_task_form_shared, RRULE_BUTTON_DISPLAY_MAX_CHARS } from './dash-task-form-shared'
 
 const ERROR_MESSAGE = 'Something went wrong'
 const EXISTING_LABEL_NAME = 'existing-label'
+const RRULE_WEEKLY = 'FREQ=WEEKLY'
 
 describe('read_action_error', () => {
 	it('returns default message for non-failure result', () => {
@@ -41,7 +43,7 @@ describe('read_action_error', () => {
 
 describe('truncate_rule_for_button', () => {
 	it('returns the original string when within the limit', () => {
-		const short = 'FREQ=WEEKLY'
+		const short = RRULE_WEEKLY
 
 		expect(dash_task_form_shared.truncate_rule_for_button(short)).toBe(short)
 	})
@@ -144,5 +146,130 @@ describe('compute_label_suggestions', () => {
 		const result = dash_task_form_shared.compute_label_suggestions('WORK', labels, [])
 
 		expect(result.map((label) => label.name)).toEqual(['work'])
+	})
+})
+
+describe('apply_add_label', () => {
+	it('appends the trimmed name when not already present', () => {
+		expect(dash_task_form_shared.apply_add_label(['a'], 'b')).toEqual(['a', 'b'])
+	})
+
+	it('trims the name before adding', () => {
+		expect(dash_task_form_shared.apply_add_label([], '  hello  ')).toEqual(['hello'])
+	})
+
+	it('returns the same array when the trimmed name already exists', () => {
+		const original = ['a']
+		const result = dash_task_form_shared.apply_add_label(original, 'a')
+
+		expect(result).toBe(original)
+	})
+
+	it('returns the same array for an empty string', () => {
+		const original = ['a']
+		const result = dash_task_form_shared.apply_add_label(original, '')
+
+		expect(result).toBe(original)
+	})
+
+	it('returns the same array for a whitespace-only string', () => {
+		const original = ['a']
+		const result = dash_task_form_shared.apply_add_label(original, '   ')
+
+		expect(result).toBe(original)
+	})
+})
+
+describe('apply_toggle_label', () => {
+	it('adds the name when not present', () => {
+		expect(dash_task_form_shared.apply_toggle_label(['a'], 'b')).toEqual(['a', 'b'])
+	})
+
+	it('removes the name when already present', () => {
+		expect(dash_task_form_shared.apply_toggle_label(['a', 'b'], 'a')).toEqual(['b'])
+	})
+})
+
+const TASK_DUE_DATE = '2026-01-01'
+const TASK_RRULE = 'FREQ=DAILY'
+
+const TASK_BASE = {
+	title: 'hello',
+	detail: 'details',
+	task_labels: [{ label: { name: 'work' } }],
+	due_date: TASK_DUE_DATE,
+	recurrence_rule: TASK_RRULE,
+} as const
+
+const FORM_MATCHING = {
+	title: 'hello',
+	detail: 'details',
+	selected_labels: ['work'],
+	due_date: TASK_DUE_DATE,
+	rrule: TASK_RRULE,
+} as const
+
+describe('is_inline_form_dirty / matching and text fields', () => {
+	it('returns false when all fields match the task', () => {
+		expect(dash_task_form_shared.is_inline_form_dirty(FORM_MATCHING, TASK_BASE)).toBe(false)
+	})
+
+	it('ignores leading/trailing whitespace in title and detail', () => {
+		const form = { ...FORM_MATCHING, title: '  hello  ', detail: '  details  ' }
+
+		expect(dash_task_form_shared.is_inline_form_dirty(form, TASK_BASE)).toBe(false)
+	})
+
+	it('returns true when title differs', () => {
+		const form = { ...FORM_MATCHING, title: 'changed' }
+
+		expect(dash_task_form_shared.is_inline_form_dirty(form, TASK_BASE)).toBe(true)
+	})
+
+	it('returns true when detail differs', () => {
+		const form = { ...FORM_MATCHING, detail: 'other' }
+
+		expect(dash_task_form_shared.is_inline_form_dirty(form, TASK_BASE)).toBe(true)
+	})
+
+	it('treats null task detail as empty string', () => {
+		const task = { ...TASK_BASE, detail: null }
+		const form = { ...FORM_MATCHING, detail: '' }
+
+		expect(dash_task_form_shared.is_inline_form_dirty(form, task)).toBe(false)
+	})
+})
+
+describe('is_inline_form_dirty / labels and schedule', () => {
+	it('returns true when label set differs', () => {
+		const form = { ...FORM_MATCHING, selected_labels: ['personal'] }
+
+		expect(dash_task_form_shared.is_inline_form_dirty(form, TASK_BASE)).toBe(true)
+	})
+
+	it('returns true when due_date differs', () => {
+		const form = { ...FORM_MATCHING, due_date: '2026-06-01' }
+
+		expect(dash_task_form_shared.is_inline_form_dirty(form, TASK_BASE)).toBe(true)
+	})
+
+	it('treats null task due_date as empty string', () => {
+		const task = { ...TASK_BASE, due_date: null }
+		const form = { ...FORM_MATCHING, due_date: '' }
+
+		expect(dash_task_form_shared.is_inline_form_dirty(form, task)).toBe(false)
+	})
+
+	it('returns true when rrule differs', () => {
+		const form = { ...FORM_MATCHING, rrule: RRULE_WEEKLY }
+
+		expect(dash_task_form_shared.is_inline_form_dirty(form, TASK_BASE)).toBe(true)
+	})
+
+	it('treats null task recurrence_rule as empty string', () => {
+		const task = { ...TASK_BASE, recurrence_rule: null }
+		const form = { ...FORM_MATCHING, rrule: '' }
+
+		expect(dash_task_form_shared.is_inline_form_dirty(form, task)).toBe(false)
 	})
 })

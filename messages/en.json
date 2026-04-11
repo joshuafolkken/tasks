@@ -50,6 +50,7 @@
 	"dash_create_title_placeholder": "Task title *",
 	"dash_create_detail_placeholder": "Details (optional)",
 	"dash_create_label_placeholder": "Type a label and press Enter to add...",
+	"dash_label_remove_aria": "Remove label",
 	"dash_create_due_label": "Due date",
 	"dash_create_cancel": "Cancel",
 	"dash_create_saving": "Saving...",
