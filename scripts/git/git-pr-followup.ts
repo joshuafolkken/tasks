@@ -140,8 +140,9 @@ async function post_notify_issue(input: {
 	}
 
 	const current_body = await git_gh_command.issue_get_body(input.issue_number)
+	const should_edit_body = current_body !== undefined && is_blank_issue_body(current_body)
 
-	await (is_blank_issue_body(current_body)
+	await (should_edit_body
 		? git_gh_command.issue_edit_body(input.issue_number, input.body)
 		: git_gh_command.issue_comment(input.issue_number, input.body))
 }
@@ -225,5 +226,11 @@ const git_pr_followup = {
 	run,
 }
 
-export { git_pr_followup, build_telegram_message, parse_repo_name, is_blank_issue_body }
+export {
+	git_pr_followup,
+	build_telegram_message,
+	parse_repo_name,
+	is_blank_issue_body,
+	post_notify_issue,
+}
 export type { FollowupInput }
