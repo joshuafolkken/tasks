@@ -70,7 +70,57 @@ function read_overrides_from_package(package_json_content: string): Record<strin
 	return parsed.pnpm?.overrides ?? {}
 }
 
-const overrides_check = { compare, read_overrides_from_package, SNAPSHOT_PATH }
+function find_version_separator(key: string): number {
+	const scope_offset = key.startsWith('@') ? 1 : 0
+
+	return key.indexOf('@', scope_offset)
+}
+
+function extract_package_name(key: string): string {
+	const separator = find_version_separator(key)
+
+	if (separator === -1) return key
+
+	return key.slice(0, separator)
+}
+
+function is_version_cap_override(key: string): boolean {
+	const separator = find_version_separator(key)
+
+	if (separator === -1) return false
+
+	const constraint = key.slice(separator + 1)
+
+	return (
+		(constraint.startsWith('>=') || constraint.startsWith('>')) &&
+		!constraint.includes('<=') &&
+		!constraint.includes('<')
+	)
+}
+
+function extract_capped_package_names(overrides: Record<string, string>): Array<string> {
+	return Object.keys(overrides)
+		.filter((key) => is_version_cap_override(key))
+		.map((key) => extract_package_name(key))
+}
+
+function read_dep_names(package_json_content: string): Array<string> {
+	const parsed = JSON.parse(package_json_content) as {
+		dependencies?: Record<string, string>
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		devDependencies?: Record<string, string>
+	}
+
+	return [...Object.keys(parsed.dependencies ?? {}), ...Object.keys(parsed.devDependencies ?? {})]
+}
+
+const overrides_check = {
+	compare,
+	read_overrides_from_package,
+	extract_capped_package_names,
+	read_dep_names,
+	SNAPSHOT_PATH,
+}
 
 export type { OverridesDiff, AddedEntry, RemovedEntry, ModifiedEntry }
 export { overrides_check }
