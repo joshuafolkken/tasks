@@ -69,7 +69,7 @@ Issue: <issue-url>
 ## Step 3: 計画コメントを記録して実行
 
 1. 提案を人間が判断する
-2. 採用した計画を Issue コメントに記録する
+2. 採用した計画を Issue に記録する（Issue body が空の場合は `gh issue edit <N> --body "<plan>"` で body に書き込む。body が既にある場合は `gh issue comment <N> --body "<plan>"` でコメント追加する）
 3. メインブランチへ切り替えて最新を取得する:
    ```bash
    git switch main && git pull
@@ -101,7 +101,7 @@ pnpm git -y "<issue-title> #<issue-number>"
 
 - Cloudflare / CodeRabbit / SonarQube の結果確認（Required チェックのみ待機。CodeQL 等の non-required チェックは待たない）
 - CodeRabbit 指摘の未対応検出（必要なら理由コメント投稿）
-- Issue への完了コメント投稿
+- Issue への完了通知投稿（Issue body が空なら body を編集、既にあればコメント追加）
 
 主なオプション:
 
