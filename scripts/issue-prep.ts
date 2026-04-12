@@ -10,7 +10,7 @@ import { issue_logic } from './issue/issue-logic'
 const ARGV_INDEX = 2
 const issue_number_argument = process.argv[ARGV_INDEX]
 
-if (issue_number_argument === undefined || !/^\d+$/u.test(issue_number_argument)) {
+if (issue_number_argument === undefined || !/^[1-9]\d*$/u.test(issue_number_argument)) {
 	console.error('Usage: tsx scripts/issue-prep.ts <issue-number>')
 	process.exit(1)
 }

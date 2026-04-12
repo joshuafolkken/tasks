@@ -14,6 +14,10 @@ describe('issue_logic.has_cjk', () => {
 		expect(issue_logic.has_cjk('创建协作脚本')).toBe(true)
 	})
 
+	it('returns true for Korean text', () => {
+		expect(issue_logic.has_cjk('협업 스크립트 만들기')).toBe(true)
+	})
+
 	it('returns true for mixed text', () => {
 		expect(issue_logic.has_cjk('Add 自動化 scripts')).toBe(true)
 	})
