@@ -29,10 +29,8 @@ function load_snapshot(): Record<string, string> {
 	} catch {
 		console.error(`✖ Snapshot not found: ${overrides_check.SNAPSHOT_PATH}`)
 		console.error('  Run with --save first to create a snapshot.')
-		process.exit(1)
+		throw new Error('Snapshot not found')
 	}
-
-	return {} // unreachable — satisfies consistent-return
 }
 
 const snapshot = load_snapshot()
