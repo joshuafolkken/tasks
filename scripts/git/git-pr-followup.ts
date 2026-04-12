@@ -125,6 +125,12 @@ function build_notify_body(input: {
 	})
 }
 
+function is_blank_issue_body(body: string | undefined): boolean {
+	if (body === undefined) return true
+
+	return body.trim().length === 0
+}
+
 async function post_notify_issue(input: {
 	issue_number: string | undefined
 	body: string
@@ -133,7 +139,11 @@ async function post_notify_issue(input: {
 		throw new Error('Issue number is required for issue notification.')
 	}
 
-	await git_gh_command.issue_comment(input.issue_number, input.body)
+	const current_body = await git_gh_command.issue_get_body(input.issue_number)
+
+	await (is_blank_issue_body(current_body)
+		? git_gh_command.issue_edit_body(input.issue_number, input.body)
+		: git_gh_command.issue_comment(input.issue_number, input.body))
 }
 
 function should_notify_pr(target: GitNotifyConfig['target']): boolean {
@@ -215,5 +225,5 @@ const git_pr_followup = {
 	run,
 }
 
-export { git_pr_followup, build_telegram_message, parse_repo_name }
+export { git_pr_followup, build_telegram_message, parse_repo_name, is_blank_issue_body }
 export type { FollowupInput }
