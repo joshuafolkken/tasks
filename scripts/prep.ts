@@ -61,17 +61,24 @@ function handle_overrides_change(snapshot: Record<string, string>): void {
 	console.info('\n✔ Overrides restored from snapshot. Please review before proceeding.')
 }
 
-function build_update_command(overrides: Record<string, string>): string {
+function filter_update_targets(overrides: Record<string, string>): Array<string> {
+	const capped = overrides_check.extract_capped_package_names(overrides)
+	const all_names = overrides_check.read_dep_names(read_package_json())
+	const capped_set = new Set(capped)
+
+	console.info(`\n⏭ Skipping capped-override packages: ${capped.join(', ')}`)
+
+	return all_names.filter((name) => !capped_set.has(name))
+}
+
+function build_update_command(overrides: Record<string, string>): string | undefined {
 	const capped = overrides_check.extract_capped_package_names(overrides)
 
 	if (capped.length === 0) return 'pnpm update --latest'
 
-	const content = read_package_json()
-	const all_names = overrides_check.read_dep_names(content)
-	const capped_set = new Set(capped)
-	const targets = all_names.filter((name) => !capped_set.has(name))
+	const targets = filter_update_targets(overrides)
 
-	console.info(`\n⏭ Skipping capped-override packages: ${capped.join(', ')}`)
+	if (targets.length === 0) return undefined
 
 	return `pnpm update --latest ${targets.join(' ')}`
 }
@@ -88,7 +95,13 @@ console.info('\n✔ Overrides snapshot saved.')
 
 // Step 3: run corepack update, filtered dep update, and audit
 run('pnpm latest:corepack')
-run(build_update_command(snapshot))
+
+const update_command = build_update_command(snapshot)
+
+if (update_command !== undefined) {
+	run(update_command)
+}
+
 run('pnpm audit')
 
 // Step 4: compare overrides
