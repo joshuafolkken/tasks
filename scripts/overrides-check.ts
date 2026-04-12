@@ -23,13 +23,22 @@ if (values.save) {
 	process.exit(0)
 }
 
+function is_file_not_found(error: unknown): boolean {
+	return error instanceof Error && 'code' in error && error.code === 'ENOENT'
+}
+
 function load_snapshot(): Record<string, string> {
 	try {
 		return JSON.parse(readFileSync(overrides_check.SNAPSHOT_PATH, 'utf8')) as Record<string, string>
-	} catch {
-		console.error(`✖ Snapshot not found: ${overrides_check.SNAPSHOT_PATH}`)
-		console.error('  Run with --save first to create a snapshot.')
-		throw new Error('Snapshot not found')
+	} catch (error) {
+		if (is_file_not_found(error)) {
+			console.error(`✖ Snapshot not found: ${overrides_check.SNAPSHOT_PATH}`)
+			console.error('  Run with --save first to create a snapshot.')
+		} else {
+			console.error(`✖ Invalid snapshot JSON: ${overrides_check.SNAPSHOT_PATH}`)
+		}
+
+		throw new Error('Failed to load snapshot', { cause: error })
 	}
 }
 
