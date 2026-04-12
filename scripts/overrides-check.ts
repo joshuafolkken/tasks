@@ -1,0 +1,59 @@
+#!/usr/bin/env tsx
+/**
+ * Check pnpm.overrides for unexpected changes.
+ *
+ * Usage:
+ *   tsx scripts/overrides-check.ts --save      # save current overrides as snapshot
+ *   tsx scripts/overrides-check.ts              # compare current overrides against snapshot
+ */
+import { readFileSync, writeFileSync } from 'node:fs'
+import { parseArgs } from 'node:util'
+import { overrides_check } from './overrides/overrides-logic'
+
+const { values } = parseArgs({
+	options: { save: { type: 'boolean', default: false } },
+	strict: true,
+})
+
+const current = overrides_check.read_overrides_from_package(readFileSync('package.json', 'utf8'))
+
+if (values.save) {
+	writeFileSync(overrides_check.SNAPSHOT_PATH, `${JSON.stringify(current, undefined, '\t')}\n`)
+	console.info(`✔ Overrides snapshot saved to ${overrides_check.SNAPSHOT_PATH}`)
+	process.exit(0)
+}
+
+function load_snapshot(): Record<string, string> {
+	try {
+		return JSON.parse(readFileSync(overrides_check.SNAPSHOT_PATH, 'utf8')) as Record<string, string>
+	} catch {
+		console.error(`✖ Snapshot not found: ${overrides_check.SNAPSHOT_PATH}`)
+		console.error('  Run with --save first to create a snapshot.')
+		process.exit(1)
+	}
+
+	return {} // unreachable — satisfies consistent-return
+}
+
+const snapshot = load_snapshot()
+const diff = overrides_check.compare(snapshot, current)
+
+if (diff.is_changed) {
+	console.error('✖ pnpm.overrides changed unexpectedly:')
+
+	for (const entry of diff.added) {
+		console.error(`  + added:   ${entry.key} → ${entry.value}`)
+	}
+
+	for (const entry of diff.removed) {
+		console.error(`  - removed: ${entry.key} (was ${entry.value})`)
+	}
+
+	for (const entry of diff.modified) {
+		console.error(`  ~ changed: ${entry.key}: ${entry.old_value} → ${entry.new_value}`)
+	}
+
+	process.exit(1)
+}
+
+console.info('✔ pnpm.overrides unchanged.')
