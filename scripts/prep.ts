@@ -19,8 +19,12 @@ function run(command: string): void {
 	execSync(command, { stdio: 'inherit' }) // eslint-disable-line sonarjs/os-command
 }
 
+function read_package_json(): string {
+	return readFileSync(PACKAGE_JSON_PATH, 'utf8')
+}
+
 function read_overrides(): Record<string, string> {
-	return overrides_check.read_overrides_from_package(readFileSync(PACKAGE_JSON_PATH, 'utf8'))
+	return overrides_check.read_overrides_from_package(read_package_json())
 }
 
 function save_snapshot(overrides: Record<string, string>): void {
@@ -28,7 +32,7 @@ function save_snapshot(overrides: Record<string, string>): void {
 }
 
 function restore_overrides(snapshot: Record<string, string>): void {
-	const package_json = JSON.parse(readFileSync(PACKAGE_JSON_PATH, 'utf8')) as PackageJson
+	const package_json = JSON.parse(read_package_json()) as PackageJson
 
 	package_json.pnpm ??= {}
 	package_json.pnpm.overrides = snapshot
@@ -57,6 +61,28 @@ function handle_overrides_change(snapshot: Record<string, string>): void {
 	console.info('\n✔ Overrides restored from snapshot. Please review before proceeding.')
 }
 
+function filter_update_targets(overrides: Record<string, string>): Array<string> {
+	const capped = overrides_check.extract_capped_package_names(overrides)
+	const all_names = overrides_check.read_dep_names(read_package_json())
+	const capped_set = new Set(capped)
+
+	console.info(`\n⏭ Skipping capped-override packages: ${capped.join(', ')}`)
+
+	return all_names.filter((name) => !capped_set.has(name))
+}
+
+function build_update_command(overrides: Record<string, string>): string | undefined {
+	const capped = overrides_check.extract_capped_package_names(overrides)
+
+	if (capped.length === 0) return 'pnpm update --latest'
+
+	const targets = filter_update_targets(overrides)
+
+	if (targets.length === 0) return undefined
+
+	return `pnpm update --latest ${targets.join(' ')}`
+}
+
 // Step 1: switch to main and pull
 run('git switch main')
 run('git pull')
@@ -67,8 +93,16 @@ const snapshot = read_overrides()
 save_snapshot(snapshot)
 console.info('\n✔ Overrides snapshot saved.')
 
-// Step 3: run pnpm latest (corepack + update + audit)
-run('pnpm latest')
+// Step 3: run corepack update, filtered dep update, and audit
+run('pnpm latest:corepack')
+
+const update_command = build_update_command(snapshot)
+
+if (update_command !== undefined) {
+	run(update_command)
+}
+
+run('pnpm audit')
 
 // Step 4: compare overrides
 const diff = overrides_check.compare(snapshot, read_overrides())
