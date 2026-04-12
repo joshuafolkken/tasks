@@ -308,6 +308,25 @@ async function pr_comment(branch_name: string, body: string): Promise<string> {
 	})
 }
 
+async function issue_get_body(issue_number: string): Promise<string | undefined> {
+	try {
+		const result: string = await exec_gh_command(
+			`issue view ${issue_number} --json body --jq .body`,
+		)
+
+		return result
+	} catch {
+		return undefined
+	}
+}
+
+async function issue_edit_body(issue_number: string, body: string): Promise<string> {
+	return await exec_gh_command_with_stdin({
+		args: ['issue', 'edit', issue_number, BODY_FILE_FLAG, BODY_FROM_STDIN],
+		stdin_body: body,
+	})
+}
+
 async function issue_comment(issue_number: string, body: string): Promise<string> {
 	return await exec_gh_command_with_stdin({
 		args: ['issue', 'comment', issue_number, BODY_FILE_FLAG, BODY_FROM_STDIN],
@@ -326,6 +345,8 @@ const git_gh_command = {
 	pr_get_number,
 	pr_get_status_rollup,
 	issue_get_title,
+	issue_get_body,
+	issue_edit_body,
 	repo_get_name_with_owner,
 	pr_get_review_comments,
 	pr_comment,
