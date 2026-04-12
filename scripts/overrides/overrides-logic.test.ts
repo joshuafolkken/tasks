@@ -5,10 +5,19 @@ function make_overrides(entries: Array<[string, string]>): Record<string, string
 	return Object.fromEntries(entries)
 }
 
+function make_package_json(
+	deps: Record<string, string>,
+	development_deps: Record<string, string>,
+): string {
+	return JSON.stringify({ dependencies: deps, devDependencies: development_deps })
+}
+
 const CSPELL_KEY = 'cspell@>=10'
 const CSPELL_VALUE = '^9'
 const ESBUILD_KEY = 'esbuild@<=0.24.2'
 const ESBUILD_VALUE = '>=0.25.0'
+const COOKIE_KEY = 'cookie@<0.7.0'
+const COOKIE_VALUE = '>=0.7.0'
 const NEW_PKG_KEY = 'new-pkg@>=1'
 
 describe('overrides_check.compare — no changes', () => {
@@ -108,5 +117,120 @@ describe('overrides_check.read_overrides_from_package', () => {
 		const content = JSON.stringify({ pnpm: {} })
 
 		expect(overrides_check.read_overrides_from_package(content)).toEqual({})
+	})
+})
+
+describe('overrides_check.extract_capped_package_names', () => {
+	it('extracts packages with >= lower-bound constraints', () => {
+		const overrides = make_overrides([
+			[CSPELL_KEY, CSPELL_VALUE],
+			[ESBUILD_KEY, ESBUILD_VALUE],
+		])
+
+		expect(overrides_check.extract_capped_package_names(overrides)).toEqual(['cspell'])
+	})
+
+	it('extracts packages with > lower-bound constraints', () => {
+		const overrides = make_overrides([['pkg@>5', '^4']])
+
+		expect(overrides_check.extract_capped_package_names(overrides)).toEqual(['pkg'])
+	})
+
+	it('excludes range constraints with both >= and <=', () => {
+		const overrides = make_overrides([['lodash@>=4.0.0 <=4.17.22', '>=4.17.23']])
+
+		expect(overrides_check.extract_capped_package_names(overrides)).toEqual([])
+	})
+
+	it('excludes upper-bound constraints (<=, <)', () => {
+		const overrides = make_overrides([
+			[ESBUILD_KEY, ESBUILD_VALUE],
+			[COOKIE_KEY, COOKIE_VALUE],
+		])
+
+		expect(overrides_check.extract_capped_package_names(overrides)).toEqual([])
+	})
+
+	it('handles scoped packages correctly', () => {
+		const overrides = make_overrides([['@scope/pkg@>=2', '^1']])
+
+		expect(overrides_check.extract_capped_package_names(overrides)).toEqual(['@scope/pkg'])
+	})
+
+	it('returns empty array when no overrides', () => {
+		expect(overrides_check.extract_capped_package_names({})).toEqual([])
+	})
+
+	it('ignores keys without version constraint', () => {
+		const overrides = make_overrides([['bare-pkg', '^1']])
+
+		expect(overrides_check.extract_capped_package_names(overrides)).toEqual([])
+	})
+})
+
+describe('integration: filtering capped packages from update targets', () => {
+	it('excludes capped-override packages from dependency list', () => {
+		const overrides = make_overrides([
+			[CSPELL_KEY, CSPELL_VALUE],
+			[ESBUILD_KEY, ESBUILD_VALUE],
+			[COOKIE_KEY, COOKIE_VALUE],
+		])
+		const content = make_package_json(
+			{ svelte: '^5.0.0' },
+			{ cspell: '^9.0.0', esbuild: '^0.25.0', vitest: '^3.0.0' },
+		)
+
+		const capped = overrides_check.extract_capped_package_names(overrides)
+		const all_names = overrides_check.read_dep_names(content)
+		const capped_set = new Set(capped)
+		const targets = all_names.filter((name) => !capped_set.has(name))
+
+		expect(capped).toEqual(['cspell'])
+		expect(targets).toEqual(['svelte', 'esbuild', 'vitest'])
+	})
+
+	it('returns all deps when no capped overrides exist', () => {
+		const overrides = make_overrides([[ESBUILD_KEY, ESBUILD_VALUE]])
+		const content = make_package_json({}, { esbuild: '^0.25.0', vitest: '^3.0.0' })
+
+		const capped = overrides_check.extract_capped_package_names(overrides)
+		const all_names = overrides_check.read_dep_names(content)
+		const targets = all_names.filter((name) => !new Set(capped).has(name))
+
+		expect(targets).toEqual(['esbuild', 'vitest'])
+	})
+})
+
+describe('overrides_check.read_dep_names', () => {
+	it('returns all dependency and devDependency names', () => {
+		const content = make_package_json(
+			{ svelte: '^5.0.0', drizzle: '^1.0.0' },
+			{ vitest: '^3.0.0', cspell: '^9.0.0' },
+		)
+
+		expect(overrides_check.read_dep_names(content)).toEqual([
+			'svelte',
+			'drizzle',
+			'vitest',
+			'cspell',
+		])
+	})
+
+	it('handles missing dependencies section', () => {
+		const content = JSON.stringify({ devDependencies: { vitest: '^3.0.0' } })
+
+		expect(overrides_check.read_dep_names(content)).toEqual(['vitest'])
+	})
+
+	it('handles missing devDependencies section', () => {
+		const content = JSON.stringify({ dependencies: { svelte: '^5.0.0' } })
+
+		expect(overrides_check.read_dep_names(content)).toEqual(['svelte'])
+	})
+
+	it('returns empty array for package.json with no deps', () => {
+		const content = JSON.stringify({ name: 'test' })
+
+		expect(overrides_check.read_dep_names(content)).toEqual([])
 	})
 })
