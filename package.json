@@ -1,7 +1,7 @@
 {
 	"name": "tasks",
 	"private": true,
-	"version": "0.64.0",
+	"version": "0.65.0",
 	"type": "module",
 	"packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
 	"engines": {
@@ -76,6 +76,9 @@
 		"cspell:dot": "cspell . --dot",
 		"check-commit-message": "tsx scripts/check-commit-message.ts",
 		"prevent-main-commit": "tsx scripts/prevent-main-commit.ts",
+		"prep": "tsx scripts/prep.ts",
+		"overrides:check": "tsx scripts/overrides-check.ts",
+		"issue:prep": "tsx scripts/issue-prep.ts",
 		"git": "tsx scripts/git-workflow.ts",
 		"git:followup": "tsx --env-file=.env scripts/git-followup-workflow.ts",
 		"telegram:test": "tsx --env-file=.env scripts/telegram-test.ts",
@@ -120,7 +123,7 @@
 		"@vitest/browser-playwright": "^4.1.4",
 		"@vitest/coverage-v8": "^4.1.4",
 		"better-auth": "~1.6.2",
-		"cspell": "^9",
+		"cspell": "^9.0.0",
 		"drizzle-kit": "^0.31.10",
 		"drizzle-orm": "^0.45.2",
 		"eslint": "^10.2.0",

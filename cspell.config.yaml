@@ -46,6 +46,7 @@ words:
   - sveltejs
   - docstrings
   - aboutads
+  - arrowdown
   - languagetool
   - shellcheck
   - aikidosec
@@ -59,6 +60,7 @@ words:
   - Caddyfile
   - CCPA
   - codegen
+  - collab
   - cooldown
   - Csvg
   - darkmode
