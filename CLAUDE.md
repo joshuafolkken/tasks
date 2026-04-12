@@ -46,6 +46,12 @@ Stack: TypeScript · pnpm · SvelteKit · Vitest · Playwright · TailwindCSS ·
 - No code duplication: extract to shared functions/modules immediately
 - `/* @refactor-ignore */` at file top excludes a file from refactoring
 
+### Dependency overrides (package.json)
+
+- **NEVER** remove or modify entries in `pnpm.overrides` without explicit user approval.
+- Specifically, `"cspell@>=10": "^9"` **MUST** remain — cspell v10 is intentionally blocked. Do not upgrade cspell to v10 or change the `devDependencies` entry to `^10`.
+- After running `pnpm update`, `pnpm latest`, or any dependency-update command, verify that `pnpm.overrides` is unchanged **and** that `devDependencies` versions still respect the overrides. If any entry was removed, modified, or bumped past an override, restore it immediately.
+
 ## Code Change Rules
 
 For every code modification, follow this order exactly:
