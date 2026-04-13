@@ -201,6 +201,33 @@ describe('integration: filtering capped packages from update targets', () => {
 	})
 })
 
+describe('overrides_check.build_update_command', () => {
+	it('returns unfiltered command when no capped overrides exist', () => {
+		const overrides = make_overrides([[ESBUILD_KEY, ESBUILD_VALUE]])
+		const content = make_package_json({ svelte: '^5' }, { vitest: '^3' })
+
+		expect(overrides_check.build_update_command(overrides, content)).toBe('pnpm update --latest')
+	})
+
+	it('excludes capped-override packages from update targets', () => {
+		const overrides = make_overrides([
+			[CSPELL_KEY, CSPELL_VALUE],
+			[ESBUILD_KEY, ESBUILD_VALUE],
+		])
+		const content = make_package_json({ svelte: '^5' }, { cspell: '^9', vitest: '^3' })
+		const result = overrides_check.build_update_command(overrides, content)
+
+		expect(result).toBe('pnpm update --latest svelte vitest')
+	})
+
+	it('returns undefined when all packages are capped', () => {
+		const overrides = make_overrides([[CSPELL_KEY, CSPELL_VALUE]])
+		const content = make_package_json({}, { cspell: '^9' })
+
+		expect(overrides_check.build_update_command(overrides, content)).toBeUndefined()
+	})
+})
+
 describe('overrides_check.read_dep_names', () => {
 	it('returns all dependency and devDependency names', () => {
 		const content = make_package_json(
