@@ -1,3 +1,4 @@
+import { git_command } from './git-command'
 import { git_prompt } from './git-prompt'
 import { git_status } from './git-status'
 
@@ -49,15 +50,16 @@ async function check_and_confirm_package_json(force = false): Promise<void> {
 	}
 }
 
+async function stage_tracked_files(): Promise<void> {
+	await git_command.add_tracked()
+	console.info('💡 Auto-staged tracked modified files (git add -u).')
+}
+
 async function check_and_confirm_staging(force = false): Promise<void> {
 	const has_unstaged = await git_status.check_unstaged()
 
 	if (has_unstaged) {
-		if (force) {
-			console.info('💡 Skipping unstaged files check (force).')
-		} else {
-			await git_prompt.confirm_unstaged_files()
-		}
+		await (force ? stage_tracked_files() : git_prompt.confirm_unstaged_files())
 	}
 
 	await check_and_confirm_package_json(force)
