@@ -130,6 +130,10 @@ async function branch_exists(branch_name: string): Promise<boolean> {
 	}
 }
 
+async function add_tracked(): Promise<void> {
+	await exec_git_command('add -u')
+}
+
 const git_command = {
 	branch,
 	status,
@@ -141,6 +145,7 @@ const git_command = {
 	push,
 	pull,
 	branch_exists,
+	add_tracked,
 }
 
 export { git_command }
