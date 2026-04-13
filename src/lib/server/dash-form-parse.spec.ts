@@ -197,6 +197,17 @@ describe('dash_form_parse.parse_complete_body', () => {
 		if (parsed.isOk()) return
 		expect(parsed.error).toBe(ERROR_TASK_ID_REQUIRED_JA)
 	})
+
+	it('rejects whitespace-only task_id', () => {
+		const form_data = new FormData()
+
+		form_data.set('task_id', '   ')
+		const parsed = dash_form_parse.parse_complete_body(form_data)
+
+		expect(parsed.isErr()).toBe(true)
+		if (parsed.isOk()) return
+		expect(parsed.error).toBe(ERROR_TASK_ID_REQUIRED_JA)
+	})
 })
 
 describe('dash_form_parse.parse_reorder_body', () => {

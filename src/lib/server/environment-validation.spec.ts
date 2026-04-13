@@ -34,9 +34,18 @@ describe('environment_validation.validate_worker_environment', () => {
 	})
 
 	it('rejects empty string for required fields', () => {
-		const environment = { ...VALID_ENVIRONMENT, TELEGRAM_BOT_TOKEN: '' }
+		const environment = { ...VALID_ENVIRONMENT, GOOGLE_CLIENT_SECRET: '' }
 
 		expect(() => environment_validation.validate_worker_environment(environment)).toThrow()
+	})
+
+	it('accepts environment without optional TELEGRAM vars', () => {
+		const without_telegram = { ...VALID_ENVIRONMENT }
+
+		delete (without_telegram as Record<string, unknown>)['TELEGRAM_BOT_TOKEN']
+		delete (without_telegram as Record<string, unknown>)['TELEGRAM_CHAT_ID']
+
+		expect(() => environment_validation.validate_worker_environment(without_telegram)).not.toThrow()
 	})
 })
 

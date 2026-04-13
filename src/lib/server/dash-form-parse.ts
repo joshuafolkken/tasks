@@ -105,7 +105,7 @@ function parse_create_body(form_data: FormData): Result<ParsedCreateTask, string
 	return ok(to_create_task(result.data, form_data))
 }
 
-const task_id_schema = z.string().min(1, ERROR_TASK_ID_REQUIRED)
+const task_id_schema = z.string().trim().min(1, ERROR_TASK_ID_REQUIRED)
 
 const update_task_schema = z.object({
 	task_id: task_id_schema,

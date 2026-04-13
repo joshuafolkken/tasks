@@ -10,7 +10,7 @@ import { z } from 'zod'
 
 const ERROR_TASK_ID_REQUIRED = 'タスクIDが必要です'
 
-const task_id_schema = z.string().min(1, ERROR_TASK_ID_REQUIRED)
+const task_id_schema = z.string().trim().min(1, ERROR_TASK_ID_REQUIRED)
 
 const create_task_schema = z.object({
 	title: z.string().transform((value) => value.trim()),

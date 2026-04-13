@@ -12,8 +12,8 @@ const worker_environment_schema = z.object({
 	GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
 	AUTH_GITHUB_CLIENT_ID: z.string().min(1, 'AUTH_GITHUB_CLIENT_ID is required'),
 	AUTH_GITHUB_CLIENT_SECRET: z.string().min(1, 'AUTH_GITHUB_CLIENT_SECRET is required'),
-	TELEGRAM_BOT_TOKEN: z.string().min(1, 'TELEGRAM_BOT_TOKEN is required'),
-	TELEGRAM_CHAT_ID: z.string().min(1, 'TELEGRAM_CHAT_ID is required'),
+	TELEGRAM_BOT_TOKEN: z.string().min(1).optional(),
+	TELEGRAM_CHAT_ID: z.string().min(1).optional(),
 })
 
 type WorkerEnvironmentStrings = z.infer<typeof worker_environment_schema>
