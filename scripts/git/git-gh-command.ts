@@ -1,6 +1,7 @@
 import { exec, spawn, type ChildProcessByStdio } from 'node:child_process'
 import type { Readable, Writable } from 'node:stream'
 import { promisify } from 'node:util'
+import { git_pr_checks_watch } from './git-pr-checks-watch'
 
 const exec_async = promisify(exec)
 const BODY_FILE_FLAG = '--body-file'
@@ -153,30 +154,6 @@ async function pr_checks(branch_name: string): Promise<string> {
 
 		throw error
 	}
-}
-
-async function pr_checks_watch(branch_name: string): Promise<void> {
-	await new Promise<void>((resolve, reject) => {
-		// eslint-disable-next-line sonarjs/no-os-command-from-path -- gh is a well-known CLI tool and safe to execute
-		const child = spawn('gh', ['pr', 'checks', branch_name, '--watch'], {
-			stdio: 'inherit',
-			shell: false,
-		})
-
-		child.on('error', (error) => {
-			reject(error)
-		})
-
-		child.on('close', (code) => {
-			if (code === 0) {
-				resolve()
-			} else {
-				const exit_code = code === null ? 'unknown' : String(code)
-
-				reject(new Error(`gh pr checks --watch exited with code ${exit_code}`))
-			}
-		})
-	})
 }
 
 async function pr_exists(branch_name: string): Promise<boolean> {
@@ -337,7 +314,7 @@ async function issue_comment(issue_number: string, body: string): Promise<string
 const git_gh_command = {
 	pr_create,
 	pr_checks,
-	pr_checks_watch,
+	pr_checks_watch: git_pr_checks_watch.pr_checks_watch,
 	pr_exists,
 	pr_view,
 	pr_get_state,
@@ -354,3 +331,4 @@ const git_gh_command = {
 }
 
 export { git_gh_command }
+export { PR_CHECKS_WATCH_TIMEOUT_MS } from './git-pr-checks-watch'
