@@ -1,3 +1,4 @@
+import { err, ok, type Result } from '$lib/result'
 import { z } from 'zod'
 
 const MAX_SEED_TITLES = 20
@@ -6,8 +7,6 @@ const ERROR_INVALID = 'invalid body'
 const ERROR_EMPTY_TITLE = 'empty title'
 const ERROR_TOO_MANY = 'too many titles'
 const ERROR_TOO_LONG = 'title too long'
-
-type ParsedSeedBody = { ok: true; titles: Array<string> } | { ok: false; error: string }
 
 const title_schema = z
 	.string({ error: ERROR_INVALID })
@@ -24,16 +23,16 @@ const titles_schema = z
 
 const seed_body_schema = z.object({ titles: titles_schema }, { error: ERROR_INVALID })
 
-function parse_seed_open_tasks_json(body: unknown): ParsedSeedBody {
+function parse_seed_open_tasks_json(body: unknown): Result<Array<string>, string> {
 	const result = seed_body_schema.safeParse(body)
 
 	if (!result.success) {
 		const [first_issue] = result.error.issues
 
-		return { ok: false, error: first_issue?.message ?? ERROR_INVALID }
+		return err(first_issue?.message ?? ERROR_INVALID)
 	}
 
-	return { ok: true, titles: result.data.titles }
+	return ok(result.data.titles)
 }
 
 export {
@@ -45,4 +44,3 @@ export {
 	ERROR_TOO_MANY,
 	ERROR_TOO_LONG,
 }
-export type { ParsedSeedBody }

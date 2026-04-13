@@ -42,9 +42,9 @@ export const actions: Actions = {
 	create: async ({ locals, request }) => {
 		const user_id = require_authenticated_user_id(locals, request)
 		const parsed = dash_form_parse.parse_create_body(await request.formData())
-		if (!parsed.ok) return { error: parsed.error }
+		if (parsed.isErr()) return { error: parsed.error }
 
-		const task_id = await dash_server_actions.create_task_row(user_id, parsed.data)
+		const task_id = await dash_server_actions.create_task_row(user_id, parsed.value)
 
 		return { success: true, task_id }
 	},
@@ -52,28 +52,28 @@ export const actions: Actions = {
 	update_task_title: async ({ locals, request }) => {
 		const user_id = require_authenticated_user_id(locals, request)
 		const parsed = dash_form_parse.parse_update_task_title_body(await request.formData())
-		if (!parsed.ok) return { error: parsed.error }
+		if (parsed.isErr()) return { error: parsed.error }
 
 		const outcome = await dash_server_actions.apply_task_title_lines_update(
 			user_id,
-			parsed.task_id,
-			parsed.title_lines,
+			parsed.value.task_id,
+			parsed.value.title_lines,
 		)
 
-		if (!outcome.ok) return { error: m.dash_error_task_not_found() }
+		if (outcome.isErr()) return { error: m.dash_error_task_not_found() }
 
 		return {
 			success: true,
-			focus_task_id: outcome.focus_task_id,
+			focus_task_id: outcome.value,
 		}
 	},
 
 	update_task: async ({ locals, request }) => {
 		const user_id = require_authenticated_user_id(locals, request)
 		const parsed = dash_form_parse.parse_update_task_body(await request.formData())
-		if (!parsed.ok) return { error: parsed.error }
+		if (parsed.isErr()) return { error: parsed.error }
 
-		const outcome = await dash_server_actions.update_open_task_row(user_id, parsed.data)
+		const outcome = await dash_server_actions.update_open_task_row(user_id, parsed.value)
 
 		if (outcome === 'not_found') return { error: m.dash_error_task_not_found() }
 
@@ -83,9 +83,9 @@ export const actions: Actions = {
 	discard_empty_open_task: async ({ locals, request }) => {
 		const user_id = require_authenticated_user_id(locals, request)
 		const parsed = dash_form_parse.parse_complete_body(await request.formData())
-		if (!parsed.ok) return { error: parsed.error }
+		if (parsed.isErr()) return { error: parsed.error }
 
-		const outcome = await dash_server_actions.delete_open_empty_task(user_id, parsed.task_id)
+		const outcome = await dash_server_actions.delete_open_empty_task(user_id, parsed.value)
 
 		if (outcome === 'not_found') return { error: m.dash_error_task_not_found() }
 		if (outcome === 'not_empty') return { success: true, deleted: false }
@@ -96,9 +96,9 @@ export const actions: Actions = {
 	uncomplete: async ({ locals, request }) => {
 		const user_id = require_authenticated_user_id(locals, request)
 		const parsed = dash_form_parse.parse_complete_body(await request.formData())
-		if (!parsed.ok) return { error: parsed.error }
+		if (parsed.isErr()) return { error: parsed.error }
 
-		const outcome = await dash_server_actions.restore_completed_task(user_id, parsed.task_id)
+		const outcome = await dash_server_actions.restore_completed_task(user_id, parsed.value)
 
 		if (outcome === 'not_found') return { error: m.dash_error_task_not_found() }
 		if (outcome === 'not_completed') return { error: m.dash_error_uncomplete_not_completed() }
@@ -109,10 +109,10 @@ export const actions: Actions = {
 	complete: async ({ locals, request }) => {
 		const user_id = require_authenticated_user_id(locals, request)
 		const parsed = dash_form_parse.parse_complete_body(await request.formData())
-		if (!parsed.ok) return { error: parsed.error }
+		if (parsed.isErr()) return { error: parsed.error }
 
 		const existing_task = await dash_server_data.find_task_with_labels_for_user(
-			parsed.task_id,
+			parsed.value,
 			user_id,
 		)
 
@@ -126,9 +126,9 @@ export const actions: Actions = {
 	delete_completed: async ({ locals, request }) => {
 		const user_id = require_authenticated_user_id(locals, request)
 		const parsed = dash_form_parse.parse_complete_body(await request.formData())
-		if (!parsed.ok) return { error: parsed.error }
+		if (parsed.isErr()) return { error: parsed.error }
 
-		const outcome = await dash_server_actions.delete_completed_task(user_id, parsed.task_id)
+		const outcome = await dash_server_actions.delete_completed_task(user_id, parsed.value)
 
 		if (outcome === 'not_found') return { error: m.dash_error_task_not_found() }
 		if (outcome === 'not_completed') return { error: m.dash_error_delete_not_completed() }
@@ -139,18 +139,18 @@ export const actions: Actions = {
 	reorder: async ({ locals, request }) => {
 		const user_id = require_authenticated_user_id(locals, request)
 		const parsed = dash_form_parse.parse_reorder_body(await request.formData())
-		if (!parsed.ok) return { error: parsed.error }
+		if (parsed.isErr()) return { error: parsed.error }
 
 		const computed = dash_server_actions.compute_reorder_sort_order(
-			parsed.prev_sort_order,
-			parsed.next_sort_order,
+			parsed.value.prev_sort_order,
+			parsed.value.next_sort_order,
 		)
-		if (!computed.ok) return { error: computed.error }
+		if (computed.isErr()) return { error: computed.error }
 
 		await db
 			.update(task)
-			.set({ sort_order: computed.sort_order })
-			.where(and(eq(task.id, parsed.task_id), eq(task.user_id, user_id)))
+			.set({ sort_order: computed.value })
+			.where(and(eq(task.id, parsed.value.task_id), eq(task.user_id, user_id)))
 
 		return { success: true }
 	},

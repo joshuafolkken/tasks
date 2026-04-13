@@ -1,3 +1,4 @@
+import { err, ok, type Result } from '$lib/result'
 import { z } from 'zod'
 
 interface ParsedCreateTask {
@@ -17,6 +18,17 @@ interface ParsedUpdateTask {
 	due_date: string | undefined
 	recurrence_rule: string | undefined
 	label_names: Array<string>
+}
+
+interface ParsedTitleLines {
+	task_id: string
+	title_lines: Array<string>
+}
+
+interface ParsedReorder {
+	task_id: string
+	prev_sort_order: string
+	next_sort_order: string
 }
 
 const ERROR_TASK_ID_REQUIRED = 'タスクIDが必要です'
@@ -86,16 +98,14 @@ function to_create_task(
 	}
 }
 
-function parse_create_body(
-	form_data: FormData,
-): { ok: true; data: ParsedCreateTask } | { ok: false; error: string } {
+function parse_create_body(form_data: FormData): Result<ParsedCreateTask, string> {
 	const result = create_schema.safeParse(read_create_raw(form_data))
-	if (!result.success) return { ok: false, error: first_issue_message(result.error) }
+	if (!result.success) return err(first_issue_message(result.error))
 
-	return { ok: true, data: to_create_task(result.data, form_data) }
+	return ok(to_create_task(result.data, form_data))
 }
 
-const task_id_schema = z.string().min(1, ERROR_TASK_ID_REQUIRED)
+const task_id_schema = z.string().trim().min(1, ERROR_TASK_ID_REQUIRED)
 
 const update_task_schema = z.object({
 	task_id: task_id_schema,
@@ -119,9 +129,7 @@ function to_update_task(
 	}
 }
 
-function parse_update_task_body(
-	form_data: FormData,
-): { ok: true; data: ParsedUpdateTask } | { ok: false; error: string } {
+function parse_update_task_body(form_data: FormData): Result<ParsedUpdateTask, string> {
 	const raw = {
 		task_id: form_string(form_data.get('task_id')),
 		title: form_string(form_data.get('title')),
@@ -130,9 +138,9 @@ function parse_update_task_body(
 		recurrence_rule: optional_string(form_data.get('recurrence_rule')),
 	}
 	const result = update_task_schema.safeParse(raw)
-	if (!result.success) return { ok: false, error: first_issue_message(result.error) }
+	if (!result.success) return err(first_issue_message(result.error))
 
-	return { ok: true, data: to_update_task(result.data, form_data) }
+	return ok(to_update_task(result.data, form_data))
 }
 
 const title_lines_schema = z.object({
@@ -147,32 +155,28 @@ function split_title_lines(raw_title: string): Array<string> {
 		.filter((line) => line.length > 0)
 }
 
-function parse_update_task_title_body(
-	form_data: FormData,
-): { ok: true; task_id: string; title_lines: Array<string> } | { ok: false; error: string } {
+function parse_update_task_title_body(form_data: FormData): Result<ParsedTitleLines, string> {
 	const raw_title = form_data.get('title')
 	const raw = {
 		task_id: form_string(form_data.get('task_id')),
 		title: typeof raw_title === 'string' ? raw_title : '',
 	}
 	const result = title_lines_schema.safeParse(raw)
-	if (!result.success) return { ok: false, error: first_issue_message(result.error) }
+	if (!result.success) return err(first_issue_message(result.error))
 
 	const title_lines = split_title_lines(result.data.title)
-	if (title_lines.length === 0) return { ok: false, error: ERROR_TITLE_LINES_REQUIRED }
+	if (title_lines.length === 0) return err(ERROR_TITLE_LINES_REQUIRED)
 
-	return { ok: true, task_id: result.data.task_id, title_lines }
+	return ok({ task_id: result.data.task_id, title_lines })
 }
 
 const complete_schema = z.object({ task_id: task_id_schema })
 
-function parse_complete_body(
-	form_data: FormData,
-): { ok: true; task_id: string } | { ok: false; error: string } {
+function parse_complete_body(form_data: FormData): Result<string, string> {
 	const result = complete_schema.safeParse({ task_id: form_string(form_data.get('task_id')) })
-	if (!result.success) return { ok: false, error: first_issue_message(result.error) }
+	if (!result.success) return err(first_issue_message(result.error))
 
-	return { ok: true, task_id: result.data.task_id }
+	return ok(result.data.task_id)
 }
 
 const reorder_schema = z.object({
@@ -181,21 +185,16 @@ const reorder_schema = z.object({
 	next_sort_order: z.string(),
 })
 
-function parse_reorder_body(form_data: FormData):
-	| { ok: true; task_id: string; prev_sort_order: string; next_sort_order: string }
-	| {
-			ok: false
-			error: string
-	  } {
+function parse_reorder_body(form_data: FormData): Result<ParsedReorder, string> {
 	const raw = {
 		task_id: form_string(form_data.get('task_id')),
 		prev_sort_order: form_string(form_data.get('prev_sort_order')),
 		next_sort_order: form_string(form_data.get('next_sort_order')),
 	}
 	const result = reorder_schema.safeParse(raw)
-	if (!result.success) return { ok: false, error: first_issue_message(result.error) }
+	if (!result.success) return err(first_issue_message(result.error))
 
-	return { ok: true, ...result.data }
+	return ok(result.data)
 }
 
 const dash_form_parse = {

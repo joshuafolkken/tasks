@@ -1,7 +1,7 @@
 {
 	"name": "tasks",
 	"private": true,
-	"version": "0.72.0",
+	"version": "0.73.0",
 	"type": "module",
 	"packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
 	"engines": {
@@ -95,8 +95,15 @@
 		"db:studio": "drizzle-kit studio",
 		"auth:schema": "better-auth generate --config src/lib/server/auth.better-auth-cli.ts --output src/lib/server/db/auth.schema.ts --yes",
 		"db:generate": "drizzle-kit generate",
-		"db:apply:local": "wrangler d1 migrations apply tasks-db --local"
+		"db:apply:local": "wrangler d1 migrations apply tasks-db --local",
+		"size-limit": "size-limit"
 	},
+	"size-limit": [
+		{
+			"path": ".svelte-kit/output/client/_app/immutable/**/*.js",
+			"limit": "500 kB"
+		}
+	],
 	"devDependencies": {
 		"@better-auth/cli": "~1.4.21",
 		"@chromatic-com/storybook": "^5.1.1",
@@ -106,6 +113,7 @@
 		"@inlang/paraglide-js": "^2.15.3",
 		"@libsql/client": "^0.17.2",
 		"@playwright/test": "^1.59.1",
+		"@size-limit/file": "^12.0.1",
 		"@storybook/addon-a11y": "^10.3.5",
 		"@storybook/addon-docs": "^10.3.5",
 		"@storybook/addon-svelte-csf": "^5.1.2",
@@ -130,21 +138,24 @@
 		"eslint-plugin-import-x": "^4.16.2",
 		"eslint-plugin-promise": "^7.2.1",
 		"eslint-plugin-sonarjs": "^4.0.2",
-		"eslint-plugin-storybook": "^10.3.5",
 		"eslint-plugin-svelte": "^3.17.0",
 		"eslint-plugin-unicorn": "^64.0.0",
 		"globals": "^17.4.0",
 		"kill-port": "^2.0.1",
 		"lefthook": "^2.1.5",
-		"mdsvex": "^0.12.7",
+		"neverthrow": "^8.2.0",
 		"playwright": "^1.59.1",
 		"prettier": "^3.8.2",
 		"prettier-plugin-svelte": "^3.5.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
+		"rollup-plugin-visualizer": "^7.0.1",
+		"size-limit": "^12.0.1",
 		"storybook": "^10.3.5",
 		"svelte": "^5.55.3",
 		"svelte-check": "^4.4.6",
 		"svelte-fast-check": "^0.4.5",
+		"svelte-sonner": "^1.1.0",
+		"sveltekit-superforms": "^2.30.1",
 		"tailwindcss": "^4.2.2",
 		"tsx": "^4.21.0",
 		"typescript": "^6.0.2",
@@ -158,7 +169,6 @@
 	"dependencies": {
 		"fractional-indexing": "^3.2.0",
 		"rrule": "^2.8.1",
-		"svelte-dnd-action": "^0.9.69",
 		"zod": "^4.3.6"
 	}
 }
