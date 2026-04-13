@@ -114,11 +114,29 @@ function read_dep_names(package_json_content: string): Array<string> {
 	return [...Object.keys(parsed.dependencies ?? {}), ...Object.keys(parsed.devDependencies ?? {})]
 }
 
+function build_update_command(
+	overrides: Record<string, string>,
+	package_json_content: string,
+): string | undefined {
+	const capped = extract_capped_package_names(overrides)
+
+	if (capped.length === 0) return 'pnpm update --latest'
+
+	const all_names = read_dep_names(package_json_content)
+	const capped_set = new Set(capped)
+	const targets = all_names.filter((name) => !capped_set.has(name))
+
+	if (targets.length === 0) return undefined
+
+	return `pnpm update --latest ${targets.join(' ')}`
+}
+
 const overrides_check = {
 	compare,
 	read_overrides_from_package,
 	extract_capped_package_names,
 	read_dep_names,
+	build_update_command,
 	SNAPSHOT_PATH,
 }
 
