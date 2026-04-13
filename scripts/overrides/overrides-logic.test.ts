@@ -12,8 +12,8 @@ function make_package_json(
 	return JSON.stringify({ dependencies: deps, devDependencies: development_deps })
 }
 
-const CSPELL_KEY = 'cspell@>=10'
-const CSPELL_VALUE = '^9'
+const CAPPED_PKG_KEY = 'some-pkg@>=5'
+const CAPPED_PKG_VALUE = '^4'
 const ESBUILD_KEY = 'esbuild@<=0.24.2'
 const ESBUILD_VALUE = '>=0.25.0'
 const COOKIE_KEY = 'cookie@<0.7.0'
@@ -23,7 +23,7 @@ const NEW_PKG_KEY = 'new-pkg@>=1'
 describe('overrides_check.compare — no changes', () => {
 	it('returns no changes for identical overrides', () => {
 		const overrides = make_overrides([
-			[CSPELL_KEY, CSPELL_VALUE],
+			[CAPPED_PKG_KEY, CAPPED_PKG_VALUE],
 			[ESBUILD_KEY, ESBUILD_VALUE],
 		])
 		const result = overrides_check.compare(overrides, { ...overrides })
@@ -43,9 +43,9 @@ describe('overrides_check.compare — no changes', () => {
 
 describe('overrides_check.compare — added and removed', () => {
 	it('detects added entries', () => {
-		const snapshot = make_overrides([[CSPELL_KEY, CSPELL_VALUE]])
+		const snapshot = make_overrides([[CAPPED_PKG_KEY, CAPPED_PKG_VALUE]])
 		const current = make_overrides([
-			[CSPELL_KEY, CSPELL_VALUE],
+			[CAPPED_PKG_KEY, CAPPED_PKG_VALUE],
 			[NEW_PKG_KEY, '^2'],
 		])
 		const result = overrides_check.compare(snapshot, current)
@@ -56,26 +56,26 @@ describe('overrides_check.compare — added and removed', () => {
 
 	it('detects removed entries', () => {
 		const snapshot = make_overrides([
-			[CSPELL_KEY, CSPELL_VALUE],
+			[CAPPED_PKG_KEY, CAPPED_PKG_VALUE],
 			[ESBUILD_KEY, ESBUILD_VALUE],
 		])
 		const current = make_overrides([[ESBUILD_KEY, ESBUILD_VALUE]])
 		const result = overrides_check.compare(snapshot, current)
 
 		expect(result.is_changed).toBe(true)
-		expect(result.removed).toEqual([{ key: CSPELL_KEY, value: CSPELL_VALUE }])
+		expect(result.removed).toEqual([{ key: CAPPED_PKG_KEY, value: CAPPED_PKG_VALUE }])
 	})
 })
 
 describe('overrides_check.compare — modified and mixed', () => {
 	it('detects modified entries', () => {
-		const snapshot = make_overrides([[CSPELL_KEY, CSPELL_VALUE]])
-		const current = make_overrides([[CSPELL_KEY, '^10']])
+		const snapshot = make_overrides([[CAPPED_PKG_KEY, CAPPED_PKG_VALUE]])
+		const current = make_overrides([[CAPPED_PKG_KEY, '^10']])
 		const result = overrides_check.compare(snapshot, current)
 
 		expect(result.is_changed).toBe(true)
 		expect(result.modified).toEqual([
-			{ key: CSPELL_KEY, old_value: CSPELL_VALUE, new_value: '^10' },
+			{ key: CAPPED_PKG_KEY, old_value: CAPPED_PKG_VALUE, new_value: '^10' },
 		])
 	})
 
@@ -123,11 +123,11 @@ describe('overrides_check.read_overrides_from_package', () => {
 describe('overrides_check.extract_capped_package_names', () => {
 	it('extracts packages with >= lower-bound constraints', () => {
 		const overrides = make_overrides([
-			[CSPELL_KEY, CSPELL_VALUE],
+			[CAPPED_PKG_KEY, CAPPED_PKG_VALUE],
 			[ESBUILD_KEY, ESBUILD_VALUE],
 		])
 
-		expect(overrides_check.extract_capped_package_names(overrides)).toEqual(['cspell'])
+		expect(overrides_check.extract_capped_package_names(overrides)).toEqual(['some-pkg'])
 	})
 
 	it('extracts packages with > lower-bound constraints', () => {
@@ -171,13 +171,13 @@ describe('overrides_check.extract_capped_package_names', () => {
 describe('integration: filtering capped packages from update targets', () => {
 	it('excludes capped-override packages from dependency list', () => {
 		const overrides = make_overrides([
-			[CSPELL_KEY, CSPELL_VALUE],
+			[CAPPED_PKG_KEY, CAPPED_PKG_VALUE],
 			[ESBUILD_KEY, ESBUILD_VALUE],
 			[COOKIE_KEY, COOKIE_VALUE],
 		])
 		const content = make_package_json(
 			{ svelte: '^5.0.0' },
-			{ cspell: '^9.0.0', esbuild: '^0.25.0', vitest: '^3.0.0' },
+			{ 'some-pkg': '^4.0.0', esbuild: '^0.25.0', vitest: '^3.0.0' },
 		)
 
 		const capped = overrides_check.extract_capped_package_names(overrides)
@@ -185,7 +185,7 @@ describe('integration: filtering capped packages from update targets', () => {
 		const capped_set = new Set(capped)
 		const targets = all_names.filter((name) => !capped_set.has(name))
 
-		expect(capped).toEqual(['cspell'])
+		expect(capped).toEqual(['some-pkg'])
 		expect(targets).toEqual(['svelte', 'esbuild', 'vitest'])
 	})
 
@@ -211,18 +211,18 @@ describe('overrides_check.build_update_command', () => {
 
 	it('excludes capped-override packages from update targets', () => {
 		const overrides = make_overrides([
-			[CSPELL_KEY, CSPELL_VALUE],
+			[CAPPED_PKG_KEY, CAPPED_PKG_VALUE],
 			[ESBUILD_KEY, ESBUILD_VALUE],
 		])
-		const content = make_package_json({ svelte: '^5' }, { cspell: '^9', vitest: '^3' })
+		const content = make_package_json({ svelte: '^5' }, { 'some-pkg': '^4', vitest: '^3' })
 		const result = overrides_check.build_update_command(overrides, content)
 
 		expect(result).toBe('pnpm update --latest svelte vitest')
 	})
 
 	it('returns undefined when all packages are capped', () => {
-		const overrides = make_overrides([[CSPELL_KEY, CSPELL_VALUE]])
-		const content = make_package_json({}, { cspell: '^9' })
+		const overrides = make_overrides([[CAPPED_PKG_KEY, CAPPED_PKG_VALUE]])
+		const content = make_package_json({}, { 'some-pkg': '^4' })
 
 		expect(overrides_check.build_update_command(overrides, content)).toBeUndefined()
 	})
@@ -232,14 +232,14 @@ describe('overrides_check.read_dep_names', () => {
 	it('returns all dependency and devDependency names', () => {
 		const content = make_package_json(
 			{ svelte: '^5.0.0', drizzle: '^1.0.0' },
-			{ vitest: '^3.0.0', cspell: '^9.0.0' },
+			{ vitest: '^3.0.0', typescript: '^6.0.0' },
 		)
 
 		expect(overrides_check.read_dep_names(content)).toEqual([
 			'svelte',
 			'drizzle',
 			'vitest',
-			'cspell',
+			'typescript',
 		])
 	})
 
