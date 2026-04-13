@@ -170,4 +170,4 @@ pnpm git:followup "<issue-title> #<issue-number>" \
 
 - `pnpm latest` や `pnpm update --latest` 実行後は必ず `pnpm.overrides` が変化していないか確認する
 - overrides が自動的に変更・削除された場合は、**理由を調査してから**ユーザーに報告し、明示的な承認なしに変更してはならない
-- 例: `"cspell@>=10": "^9"` などのバージョン制約は、Workers ビルド互換性やパッケージの動作保証のために入れてある場合がある
+- 例: `"esbuild@<=0.24.2": ">=0.25.0"` などのバージョン制約は、Workers ビルド互換性やパッケージの動作保証のために入れてある場合がある

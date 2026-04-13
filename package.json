@@ -1,11 +1,11 @@
 {
 	"name": "tasks",
 	"private": true,
-	"version": "0.69.0",
+	"version": "0.70.0",
 	"type": "module",
 	"packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
 	"engines": {
-		"node": ">=22.16.0"
+		"node": ">=22.18.0"
 	},
 	"devEngines": {
 		"packageManager": {
@@ -23,7 +23,6 @@
 			"cookie@<0.7.0": ">=0.7.0",
 			"lodash@>=4.0.0 <=4.17.22": ">=4.17.23",
 			"drizzle-orm@<0.45.2": ">=0.45.2",
-			"cspell@>=10": "^9",
 			"@sveltejs/kit@<=2.57.0": ">=2.57.1"
 		},
 		"ignoredBuiltDependencies": [
@@ -123,7 +122,7 @@
 		"@vitest/browser-playwright": "^4.1.4",
 		"@vitest/coverage-v8": "^4.1.4",
 		"better-auth": "~1.6.2",
-		"cspell": "^9.0.0",
+		"cspell": "^10",
 		"drizzle-kit": "^0.31.10",
 		"drizzle-orm": "^0.45.2",
 		"eslint": "^10.2.0",
