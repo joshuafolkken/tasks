@@ -79,7 +79,13 @@ function sync_textarea_height(element: HTMLTextAreaElement | undefined): void {
 	if (!element) return
 
 	element.style.height = 'auto'
-	element.style.height = `${String(Math.max(element.scrollHeight, DETAIL_MIN_HEIGHT_PX))}px`
+
+	// scrollHeight excludes border; with border-box, height includes border.
+	// Without this offset the textarea shrinks by the border width after sync,
+	// which causes the inline-editor slide transition to overshoot.
+	const border_height = element.offsetHeight - element.clientHeight
+
+	element.style.height = `${String(Math.max(element.scrollHeight + border_height, DETAIL_MIN_HEIGHT_PX))}px`
 }
 
 function is_focus_still_inside_form(
