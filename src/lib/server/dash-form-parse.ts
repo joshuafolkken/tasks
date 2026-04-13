@@ -22,6 +22,14 @@ interface ParsedUpdateTask {
 const ERROR_TASK_ID_REQUIRED = 'タスクIDが必要です'
 const ERROR_TITLE_LINES_REQUIRED = 'タイトルを1行以上入力してください'
 
+const FALLBACK_VALIDATION_ERROR = 'validation error'
+
+function first_issue_message(error: z.ZodError): string {
+	const [first] = error.issues
+
+	return first?.message ?? FALLBACK_VALIDATION_ERROR
+}
+
 /** Coerce a FormDataEntryValue | null to a trimmed string. */
 function form_string(value: FormDataEntryValue | null): string {
 	return (typeof value === 'string' ? value : '').trim()
@@ -82,7 +90,7 @@ function parse_create_body(
 	form_data: FormData,
 ): { ok: true; data: ParsedCreateTask } | { ok: false; error: string } {
 	const result = create_schema.safeParse(read_create_raw(form_data))
-	if (!result.success) return { ok: false, error: result.error.issues[0].message }
+	if (!result.success) return { ok: false, error: first_issue_message(result.error) }
 
 	return { ok: true, data: to_create_task(result.data, form_data) }
 }
@@ -122,7 +130,7 @@ function parse_update_task_body(
 		recurrence_rule: optional_string(form_data.get('recurrence_rule')),
 	}
 	const result = update_task_schema.safeParse(raw)
-	if (!result.success) return { ok: false, error: result.error.issues[0].message }
+	if (!result.success) return { ok: false, error: first_issue_message(result.error) }
 
 	return { ok: true, data: to_update_task(result.data, form_data) }
 }
@@ -148,7 +156,7 @@ function parse_update_task_title_body(
 		title: typeof raw_title === 'string' ? raw_title : '',
 	}
 	const result = title_lines_schema.safeParse(raw)
-	if (!result.success) return { ok: false, error: result.error.issues[0].message }
+	if (!result.success) return { ok: false, error: first_issue_message(result.error) }
 
 	const title_lines = split_title_lines(result.data.title)
 	if (title_lines.length === 0) return { ok: false, error: ERROR_TITLE_LINES_REQUIRED }
@@ -162,7 +170,7 @@ function parse_complete_body(
 	form_data: FormData,
 ): { ok: true; task_id: string } | { ok: false; error: string } {
 	const result = complete_schema.safeParse({ task_id: form_string(form_data.get('task_id')) })
-	if (!result.success) return { ok: false, error: result.error.issues[0].message }
+	if (!result.success) return { ok: false, error: first_issue_message(result.error) }
 
 	return { ok: true, task_id: result.data.task_id }
 }
@@ -185,7 +193,7 @@ function parse_reorder_body(form_data: FormData):
 		next_sort_order: form_string(form_data.get('next_sort_order')),
 	}
 	const result = reorder_schema.safeParse(raw)
-	if (!result.success) return { ok: false, error: result.error.issues[0].message }
+	if (!result.success) return { ok: false, error: first_issue_message(result.error) }
 
 	return { ok: true, ...result.data }
 }
