@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 const MAX_SEED_TITLES = 20
 const MAX_TITLE_CHARS = 500
 const ERROR_INVALID = 'invalid body'
@@ -7,58 +9,31 @@ const ERROR_TOO_LONG = 'title too long'
 
 type ParsedSeedBody = { ok: true; titles: Array<string> } | { ok: false; error: string }
 
-function is_plain_record(value: unknown): value is Record<string, unknown> {
-	return value !== null && typeof value === 'object'
-}
+const title_schema = z
+	.string({ error: ERROR_INVALID })
+	.transform((value) => value.trim())
+	.check(
+		z.refine((value) => value.length > 0, { error: ERROR_EMPTY_TITLE }),
+		z.refine((value) => value.length <= MAX_TITLE_CHARS, { error: ERROR_TOO_LONG }),
+	)
 
-function normalize_title_candidate(
-	item: unknown,
-): { ok: true; title: string } | { ok: false; error: string } {
-	if (typeof item !== 'string') return { ok: false, error: ERROR_INVALID }
+const titles_schema = z
+	.array(title_schema, { error: ERROR_INVALID })
+	.min(1, ERROR_EMPTY_TITLE)
+	.max(MAX_SEED_TITLES, ERROR_TOO_MANY)
 
-	const trimmed = item.trim()
-	if (trimmed === '') return { ok: false, error: ERROR_EMPTY_TITLE }
-	if (trimmed.length > MAX_TITLE_CHARS) return { ok: false, error: ERROR_TOO_LONG }
-
-	return { ok: true, title: trimmed }
-}
-
-type TitlePushResult = { kind: 'continue' } | { kind: 'stop'; body: ParsedSeedBody }
-
-function try_push_normalized_title(titles: Array<string>, item: unknown): TitlePushResult {
-	const normalized = normalize_title_candidate(item)
-	if (!normalized.ok) return { kind: 'stop', body: { ok: false, error: normalized.error } }
-
-	titles.push(normalized.title)
-
-	if (titles.length > MAX_SEED_TITLES) {
-		return { kind: 'stop', body: { ok: false, error: ERROR_TOO_MANY } }
-	}
-
-	return { kind: 'continue' }
-}
-
-/* eslint-disable-next-line sonarjs/cognitive-complexity -- linear validation over a short list */
-function collect_titles_from_array(raw_titles: unknown): ParsedSeedBody {
-	if (!Array.isArray(raw_titles)) return { ok: false, error: ERROR_INVALID }
-
-	const titles: Array<string> = []
-
-	for (const item of raw_titles) {
-		const step = try_push_normalized_title(titles, item)
-		if (step.kind === 'stop') return step.body
-	}
-
-	if (titles.length === 0) return { ok: false, error: ERROR_EMPTY_TITLE }
-
-	return { ok: true, titles }
-}
+const seed_body_schema = z.object({ titles: titles_schema }, { error: ERROR_INVALID })
 
 function parse_seed_open_tasks_json(body: unknown): ParsedSeedBody {
-	if (!is_plain_record(body)) return { ok: false, error: ERROR_INVALID }
+	const result = seed_body_schema.safeParse(body)
 
-	/* eslint-disable-next-line dot-notation -- svelte-check: index signature requires bracket access */
-	return collect_titles_from_array(body['titles'])
+	if (!result.success) {
+		const [first_issue] = result.error.issues
+
+		return { ok: false, error: first_issue?.message ?? ERROR_INVALID }
+	}
+
+	return { ok: true, titles: result.data.titles }
 }
 
 export {
