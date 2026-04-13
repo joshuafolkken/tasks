@@ -1,7 +1,7 @@
 {
 	"name": "tasks",
 	"private": true,
-	"version": "0.70.0",
+	"version": "0.71.0",
 	"type": "module",
 	"packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
 	"engines": {
@@ -61,7 +61,7 @@
 		"format:eslint": "eslint . --fix --cache --cache-strategy content",
 		"test:unit": "vitest",
 		"test": "pnpm test:unit --run && pnpm test:e2e",
-		"test:e2e": "kill-port 5173 4173 || true && playwright test",
+		"test:e2e": "kill-port 4173 || true && playwright test",
 		"test:e2e:smoke": "playwright test e2e/dash.test.ts e2e/demo.test.ts e2e/dash-guest.test.ts",
 		"test:e2e:dash-core": "playwright test e2e/dash-ux.test.ts e2e/dash-inline-editor.test.ts e2e/dash.test.ts",
 		"test:e2e:save-auth": "tsx scripts/save-playwright-auth-storage.ts",
@@ -122,7 +122,7 @@
 		"@vitest/browser-playwright": "^4.1.4",
 		"@vitest/coverage-v8": "^4.1.4",
 		"better-auth": "~1.6.2",
-		"cspell": "^10",
+		"cspell": "^10.0.0",
 		"drizzle-kit": "^0.31.10",
 		"drizzle-orm": "^0.45.2",
 		"eslint": "^10.2.0",
