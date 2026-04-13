@@ -42,7 +42,7 @@ const getWebServerConfig = () => {
 		command: 'pnpm run dev',
 		url: BASE_URL,
 		timeout: LOCAL_TIMEOUT,
-		reuseExistingServer: false,
+		reuseExistingServer: true,
 		env: { E2E_CLEANUP_ENABLED: '1' },
 	}
 }
