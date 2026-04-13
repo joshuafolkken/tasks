@@ -93,6 +93,7 @@ words:
   - libsql
   - Mdsvex
   - miniflare
+  - neverthrow
   - mischeck
   - ndays
   - networkidle
@@ -119,6 +120,7 @@ words:
   - Shippori
   - sonarcloud
   - sonarjs
+  - superforms
   - sonarqube
   - Stylesheet
   - subsecond

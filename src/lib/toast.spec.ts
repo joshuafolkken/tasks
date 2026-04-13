@@ -1,55 +1,36 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { toast, toast_store } from './Toast.svelte'
+import { toast as sonner_toast } from 'svelte-sonner'
+import { describe, expect, it, vi } from 'vitest'
+import { toast } from './Toast.svelte'
+
+vi.mock('svelte-sonner', () => ({
+	toast: {
+		error: vi.fn(),
+		success: vi.fn(),
+		dismiss: vi.fn(),
+	},
+}))
 
 const MSG_SOMETHING_WRONG = 'Something went wrong'
-const MSG_TEMPORARY_ERROR = 'Temporary error'
+const MSG_TASK_CREATED = 'Task created'
 
-describe('toast store', () => {
-	beforeEach(() => {
-		vi.useFakeTimers()
-		toast_store.items = []
-	})
-
-	afterEach(() => {
-		vi.useRealTimers()
-		toast_store.items = []
-	})
-
-	it('push_error adds an error item', () => {
+describe('toast wrapper delegates to svelte-sonner', () => {
+	it('push_error calls sonner toast.error', () => {
 		toast.push_error(MSG_SOMETHING_WRONG)
 
-		expect(toast_store.items).toHaveLength(1)
-		expect(toast_store.items[0]?.message).toBe(MSG_SOMETHING_WRONG)
-		expect(toast_store.items[0]?.type).toBe('error')
+		expect(sonner_toast.error).toHaveBeenCalledWith(MSG_SOMETHING_WRONG)
 	})
 
-	it('dismiss removes the item by id', () => {
-		toast.push_error('Error A')
-		toast.push_error('Error B')
+	it('push_success calls sonner toast.success', () => {
+		toast.push_success(MSG_TASK_CREATED)
 
-		const first_id = toast_store.items[0]?.id ?? -1
-
-		toast.dismiss(first_id)
-
-		expect(toast_store.items).toHaveLength(1)
-		expect(toast_store.items[0]?.message).toBe('Error B')
+		expect(sonner_toast.success).toHaveBeenCalledWith(MSG_TASK_CREATED)
 	})
 
-	it('auto-dismisses after 4 seconds', () => {
-		toast.push_error(MSG_TEMPORARY_ERROR)
+	it('dismiss calls sonner toast.dismiss', () => {
+		const SAMPLE_ID = 42
 
-		expect(toast_store.items).toHaveLength(1)
+		toast.dismiss(SAMPLE_ID)
 
-		vi.advanceTimersByTime(4000)
-
-		expect(toast_store.items).toHaveLength(0)
-	})
-
-	it('does not dismiss before 4 seconds', () => {
-		toast.push_error(MSG_TEMPORARY_ERROR)
-
-		vi.advanceTimersByTime(3999)
-
-		expect(toast_store.items).toHaveLength(1)
+		expect(sonner_toast.dismiss).toHaveBeenCalledWith(SAMPLE_ID)
 	})
 })

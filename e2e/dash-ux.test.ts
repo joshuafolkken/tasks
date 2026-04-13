@@ -109,7 +109,7 @@ test.describe('/ja/dash authenticated UX (issue #18)', () => {
 					await route.fulfill({ status: 500 })
 				})
 				await page.getByTestId(tid.add_task).click()
-				await expect(page.getByTestId('toast-error')).toBeVisible()
+				await expect(page.locator('[data-sonner-toast][data-type="error"]')).toBeVisible()
 			})
 		})
 	})

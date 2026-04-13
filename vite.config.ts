@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs'
 import { paraglideVitePlugin } from '@inlang/paraglide-js'
 import { sveltekit } from '@sveltejs/kit/vite'
 import tailwindcss from '@tailwindcss/vite'
+import { visualizer } from 'rollup-plugin-visualizer'
+import type { PluginOption } from 'vite'
 import devtoolsJson from 'vite-plugin-devtools-json'
 import { defineConfig } from 'vitest/config'
 
@@ -28,6 +30,7 @@ export default defineConfig({
 			strategy: ['url', 'cookie', 'baseLocale'],
 			emitTsDeclarations: true,
 		}),
+		visualizer({ filename: 'stats.html', gzipSize: true }) as PluginOption,
 	],
 	test: {
 		expect: { requireAssertions: true },

@@ -16,6 +16,7 @@
  * `building` で `cloudflare:workers` import を回避する必要がある。
  */
 import { building } from '$app/environment'
+import { environment_validation } from './environment-validation'
 
 function is_vitest_run(): boolean {
 	return Boolean(process.env['VITEST'])
@@ -43,5 +44,9 @@ async function load_worker_environment(): Promise<Env> {
 }
 
 const environment = await load_worker_environment()
+
+if (!building && !is_vitest_run()) {
+	environment_validation.warn_if_invalid(environment)
+}
 
 export const worker_environment = { environment }

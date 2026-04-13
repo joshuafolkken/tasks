@@ -40,6 +40,9 @@ storybook-static
 # ESLint cache
 .eslintcache
 
+# Bundle analysis
+stats.html
+
 # Playwright
 playwright-report
 e2e/.auth/user.json
