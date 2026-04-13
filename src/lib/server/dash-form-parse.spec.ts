@@ -17,9 +17,9 @@ describe('dash_form_parse.parse_create_body / validation and trimming', () => {
 		form_data.set('title', '   ')
 		const parsed = dash_form_parse.parse_create_body(form_data)
 
-		expect(parsed.ok).toBe(true)
-		if (!parsed.ok) return
-		expect(parsed.data.title).toBe('')
+		expect(parsed.isOk()).toBe(true)
+		if (parsed.isErr()) return
+		expect(parsed.value.title).toBe('')
 	})
 
 	it('parses trimmed title and body', () => {
@@ -29,12 +29,12 @@ describe('dash_form_parse.parse_create_body / validation and trimming', () => {
 		form_data.set('detail', '  body  ')
 		const parsed = dash_form_parse.parse_create_body(form_data)
 
-		expect(parsed.ok).toBe(true)
-		if (!parsed.ok) return
-		expect(parsed.data.title).toBe('Hello')
-		expect(parsed.data.detail).toBe('body')
-		expect(parsed.data.insert_after_task_id).toBeUndefined()
-		expect(parsed.data.insert_at_top).toBe(false)
+		expect(parsed.isOk()).toBe(true)
+		if (parsed.isErr()) return
+		expect(parsed.value.title).toBe('Hello')
+		expect(parsed.value.detail).toBe('body')
+		expect(parsed.value.insert_after_task_id).toBeUndefined()
+		expect(parsed.value.insert_at_top).toBe(false)
 	})
 })
 
@@ -47,10 +47,10 @@ describe('dash_form_parse.parse_create_body / optional fields (due, labels)', ()
 		form_data.set('recurrence_rule', SAMPLE_RECURRENCE)
 		const parsed = dash_form_parse.parse_create_body(form_data)
 
-		expect(parsed.ok).toBe(true)
-		if (!parsed.ok) return
-		expect(parsed.data.due_date).toBe(SAMPLE_DUE_DATE)
-		expect(parsed.data.recurrence_rule).toBe(SAMPLE_RECURRENCE)
+		expect(parsed.isOk()).toBe(true)
+		if (parsed.isErr()) return
+		expect(parsed.value.due_date).toBe(SAMPLE_DUE_DATE)
+		expect(parsed.value.recurrence_rule).toBe(SAMPLE_RECURRENCE)
 	})
 
 	it('dedupes label values', () => {
@@ -63,9 +63,9 @@ describe('dash_form_parse.parse_create_body / optional fields (due, labels)', ()
 		form_data.append('labels', 'b')
 		const parsed = dash_form_parse.parse_create_body(form_data)
 
-		expect(parsed.ok).toBe(true)
-		if (!parsed.ok) return
-		expect(parsed.data.label_names).toEqual(['a', 'b'])
+		expect(parsed.isOk()).toBe(true)
+		if (parsed.isErr()) return
+		expect(parsed.value.label_names).toEqual(['a', 'b'])
 	})
 })
 
@@ -77,10 +77,10 @@ describe('dash_form_parse.parse_create_body / insert position', () => {
 		form_data.set('insert_after_task_id', 'after-1')
 		const parsed = dash_form_parse.parse_create_body(form_data)
 
-		expect(parsed.ok).toBe(true)
-		if (!parsed.ok) return
-		expect(parsed.data.insert_after_task_id).toBe('after-1')
-		expect(parsed.data.insert_at_top).toBe(false)
+		expect(parsed.isOk()).toBe(true)
+		if (parsed.isErr()) return
+		expect(parsed.value.insert_after_task_id).toBe('after-1')
+		expect(parsed.value.insert_at_top).toBe(false)
 	})
 
 	it('parses insert_at_top when set to 1', () => {
@@ -90,9 +90,9 @@ describe('dash_form_parse.parse_create_body / insert position', () => {
 		form_data.set('insert_at_top', '1')
 		const parsed = dash_form_parse.parse_create_body(form_data)
 
-		expect(parsed.ok).toBe(true)
-		if (!parsed.ok) return
-		expect(parsed.data.insert_at_top).toBe(true)
+		expect(parsed.isOk()).toBe(true)
+		if (parsed.isErr()) return
+		expect(parsed.value.insert_at_top).toBe(true)
 	})
 })
 
@@ -101,10 +101,11 @@ describe('dash_form_parse.parse_update_task_body', () => {
 		const form_data = new FormData()
 
 		form_data.set('title', 'Hi')
-		expect(dash_form_parse.parse_update_task_body(form_data)).toEqual({
-			ok: false,
-			error: ERROR_TASK_ID_REQUIRED_JA,
-		})
+		const parsed = dash_form_parse.parse_update_task_body(form_data)
+
+		expect(parsed.isErr()).toBe(true)
+		if (parsed.isOk()) return
+		expect(parsed.error).toBe(ERROR_TASK_ID_REQUIRED_JA)
 	})
 
 	it('parses task fields and labels', () => {
@@ -116,9 +117,9 @@ describe('dash_form_parse.parse_update_task_body', () => {
 		form_data.append('labels', 'x')
 		const parsed = dash_form_parse.parse_update_task_body(form_data)
 
-		expect(parsed.ok).toBe(true)
-		if (!parsed.ok) return
-		expect(parsed.data).toEqual({
+		expect(parsed.isOk()).toBe(true)
+		if (parsed.isErr()) return
+		expect(parsed.value).toEqual({
 			task_id: SAMPLE_UPDATE_TASK_ID,
 			title: 'T',
 			detail: 'd',
@@ -140,10 +141,10 @@ describe('dash_form_parse.parse_update_task_body / empty title', () => {
 		form_data.set('detail', DETAIL_WITHOUT_TITLE)
 		const parsed = dash_form_parse.parse_update_task_body(form_data)
 
-		expect(parsed.ok).toBe(true)
-		if (!parsed.ok) return
-		expect(parsed.data.title).toBe('')
-		expect(parsed.data.detail).toBe(DETAIL_WITHOUT_TITLE)
+		expect(parsed.isOk()).toBe(true)
+		if (parsed.isErr()) return
+		expect(parsed.value.title).toBe('')
+		expect(parsed.value.detail).toBe(DETAIL_WITHOUT_TITLE)
 	})
 })
 
@@ -152,10 +153,11 @@ describe('dash_form_parse.parse_update_task_title_body', () => {
 		const form_data = new FormData()
 
 		form_data.set('title', 'Hello')
-		expect(dash_form_parse.parse_update_task_title_body(form_data)).toEqual({
-			ok: false,
-			error: ERROR_TASK_ID_REQUIRED_JA,
-		})
+		const parsed = dash_form_parse.parse_update_task_title_body(form_data)
+
+		expect(parsed.isErr()).toBe(true)
+		if (parsed.isOk()) return
+		expect(parsed.error).toBe(ERROR_TASK_ID_REQUIRED_JA)
 	})
 
 	it('rejects blank title lines', () => {
@@ -163,10 +165,11 @@ describe('dash_form_parse.parse_update_task_title_body', () => {
 
 		form_data.set('task_id', SAMPLE_UPDATE_TASK_ID)
 		form_data.set('title', '  \n  ')
-		expect(dash_form_parse.parse_update_task_title_body(form_data)).toEqual({
-			ok: false,
-			error: ERROR_TITLE_LINES_REQUIRED_JA,
-		})
+		const parsed = dash_form_parse.parse_update_task_title_body(form_data)
+
+		expect(parsed.isErr()).toBe(true)
+		if (parsed.isOk()) return
+		expect(parsed.error).toBe(ERROR_TITLE_LINES_REQUIRED_JA)
 	})
 
 	it('splits trimmed non-empty lines', () => {
@@ -176,8 +179,9 @@ describe('dash_form_parse.parse_update_task_title_body', () => {
 		form_data.set('title', ' First \n Second ')
 		const parsed = dash_form_parse.parse_update_task_title_body(form_data)
 
-		expect(parsed).toEqual({
-			ok: true,
+		expect(parsed.isOk()).toBe(true)
+		if (parsed.isErr()) return
+		expect(parsed.value).toEqual({
 			task_id: SAMPLE_UPDATE_TASK_ID,
 			title_lines: ['First', 'Second'],
 		})
@@ -187,11 +191,11 @@ describe('dash_form_parse.parse_update_task_title_body', () => {
 describe('dash_form_parse.parse_complete_body', () => {
 	it('rejects missing task_id', () => {
 		const form_data = new FormData()
+		const parsed = dash_form_parse.parse_complete_body(form_data)
 
-		expect(dash_form_parse.parse_complete_body(form_data)).toEqual({
-			ok: false,
-			error: ERROR_TASK_ID_REQUIRED_JA,
-		})
+		expect(parsed.isErr()).toBe(true)
+		if (parsed.isOk()) return
+		expect(parsed.error).toBe(ERROR_TASK_ID_REQUIRED_JA)
 	})
 })
 
@@ -202,8 +206,11 @@ describe('dash_form_parse.parse_reorder_body', () => {
 		form_data.set('task_id', 'tid')
 		form_data.set('prev_sort_order', 'a')
 		form_data.set('next_sort_order', 'b')
-		expect(dash_form_parse.parse_reorder_body(form_data)).toEqual({
-			ok: true,
+		const parsed = dash_form_parse.parse_reorder_body(form_data)
+
+		expect(parsed.isOk()).toBe(true)
+		if (parsed.isErr()) return
+		expect(parsed.value).toEqual({
 			task_id: 'tid',
 			prev_sort_order: 'a',
 			next_sort_order: 'b',

@@ -32,7 +32,7 @@ async function parse_body_titles(request: Request): Promise<Array<string> | unde
 	try {
 		const parsed = extract_titles(await request.json())
 
-		return parsed.ok ? parsed.titles : undefined
+		return parsed.isOk() ? parsed.value : undefined
 	} catch {
 		return undefined
 	}

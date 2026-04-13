@@ -1,4 +1,5 @@
 import { json } from '@sveltejs/kit'
+import { err, ok, type Result } from '$lib/result'
 import { parse_seed_open_tasks_json } from '$lib/server/automation-seed-open-tasks-body'
 import { is_playwright_test_api_enabled } from '$lib/server/playwright-test-api-enabled'
 /* eslint-disable-next-line @typescript-eslint/no-restricted-imports -- dash actions are co-located with the page route */
@@ -9,15 +10,13 @@ function get_user_id(locals: App.Locals): string | undefined {
 	return locals.user?.id
 }
 
-async function read_json_body(
-	request: Request,
-): Promise<{ ok: true; body: unknown } | { ok: false }> {
+async function read_json_body(request: Request): Promise<Result<unknown, string>> {
 	try {
 		const body: unknown = await request.json()
 
-		return { ok: true, body }
+		return ok(body)
 	} catch {
-		return { ok: false }
+		return err('invalid json')
 	}
 }
 
@@ -28,12 +27,12 @@ async function post_seed_handler(locals: App.Locals, request: Request): Promise<
 	if (user_id === undefined) return json({ error: 'unauthorized' }, { status: 401 })
 
 	const raw = await read_json_body(request)
-	if (!raw.ok) return json({ error: 'invalid json' }, { status: 400 })
+	if (raw.isErr()) return json({ error: raw.error }, { status: 400 })
 
-	const parsed = parse_seed_open_tasks_json(raw.body)
-	if (!parsed.ok) return json({ error: parsed.error }, { status: 400 })
+	const parsed = parse_seed_open_tasks_json(raw.value)
+	if (parsed.isErr()) return json({ error: parsed.error }, { status: 400 })
 
-	await dash_server_actions.seed_open_tasks_at_top(user_id, parsed.titles)
+	await dash_server_actions.seed_open_tasks_at_top(user_id, parsed.value)
 
 	return json({ ok: true })
 }

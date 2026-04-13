@@ -1,4 +1,5 @@
 import { m } from '$lib/paraglide/messages'
+import { err, ok, type Result } from '$lib/result'
 import type { ParsedCreateTask, ParsedUpdateTask } from '$lib/server/dash-form-parse'
 import {
 	apply_task_complete,
@@ -150,7 +151,7 @@ async function apply_task_title_lines_update(
 	user_id: string,
 	task_id: string,
 	title_lines: Array<string>,
-): Promise<{ ok: true; focus_task_id: string | undefined } | { ok: false; error: 'not_found' }> {
+): Promise<Result<string | undefined, 'not_found'>> {
 	const existing_row = await db.query.task.findFirst({
 		where: (task_row, operators) =>
 			operators.and(
@@ -161,7 +162,7 @@ async function apply_task_title_lines_update(
 		with: { task_labels: true },
 	})
 
-	if (!existing_row) return { ok: false, error: 'not_found' }
+	if (!existing_row) return err('not_found' as const)
 
 	await db.update(task).set({ title: title_lines[0] }).where(eq(task.id, task_id))
 
@@ -172,7 +173,7 @@ async function apply_task_title_lines_update(
 		existing_row.task_labels,
 	)
 
-	return { ok: true, focus_task_id }
+	return ok(focus_task_id)
 }
 
 async function seed_open_tasks_at_top(user_id: string, titles: Array<string>): Promise<void> {
@@ -194,16 +195,16 @@ async function seed_open_tasks_at_top(user_id: string, titles: Array<string>): P
 function compute_reorder_sort_order(
 	previous_sort_order: string,
 	next_sort_order: string,
-): { ok: true; sort_order: string } | { ok: false; error: string } {
+): Result<string, string> {
 	try {
 		const sort_order = generateKeyBetween(
 			previous_sort_order === '' ? undefined : previous_sort_order,
 			next_sort_order === '' ? undefined : next_sort_order,
 		)
 
-		return { ok: true, sort_order }
+		return ok(sort_order)
 	} catch {
-		return { ok: false, error: m.dash_error_reorder_failed() }
+		return err(m.dash_error_reorder_failed())
 	}
 }
 
