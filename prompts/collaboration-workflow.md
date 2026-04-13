@@ -8,8 +8,18 @@
 
 1. Issue を作成する
 2. Issue を元に実装提案を作る
-3. 計画コメントを Issue に残してから実装を進める
-4. 実装完了後に Issue へ完了コメントを投稿する
+3. 計画コメントを Issue に残して Telegram 通知を送る
+4. 実装を進める
+5. 実装完了後に Issue へ完了コメントを投稿する
+
+### フェーズ分離
+
+ワークフローは 2 つのフェーズに分けて実行できる。
+
+- **Planning phase（`kickoff`）**: Step 1〜3 — Issue 作成・計画投稿・Telegram 通知で止まる。実装前にレビューや承認を挟みたい場合に使う。
+- **Execution phase（`fullrun #N`）**: Step 4〜5 — 既存 Issue の計画に基づいて実装・PR 作成・完了通知を行う。
+
+一括実行する場合は `fullrun new` で Step 1〜5 を通しで実行する。
 
 ## Step 1: Issue 作成テンプレ
 
@@ -66,21 +76,31 @@ Issue: <issue-url>
 5. リスクと対策
 ```
 
-## Step 3: 計画コメントを記録して実行
+## Step 3: 計画コメントを記録して通知する
 
 1. 提案を人間が判断する
 2. 採用した計画を Issue に記録する（Issue body が空の場合は `gh issue edit <N> --body "<plan>"` で body に書き込む。body が既にある場合は `gh issue comment <N> --body "<plan>"` でコメント追加する）
-3. メインブランチへ切り替えて最新を取得する:
+3. Telegram で計画開始を通知する:
+
+   ```bash
+   pnpm telegram:test --message "📋 Planning: <title>\n- <bullet1>\n- <bullet2>" --issue-url "<issue-url>"
+   ```
+
+   - Issue URL を必ず含める
+   - 箇条書きの間に改行を入れて読みやすくする
+   - `kickoff` コマンドの場合はここで **停止** する（実装に進まない）
+
+4. メインブランチへ切り替えて最新を取得する:
    ```bash
    git switch main && git pull
    ```
-4. 依存関係を最新化し、脆弱性を確認する（`pnpm latest` は内部で `pnpm audit` も実行する）:
+5. 依存関係を最新化し、脆弱性を確認する（`pnpm latest` は内部で `pnpm audit` も実行する）:
    ```bash
    pnpm latest
    # 脆弱性が見つかった場合: package.json の overrides に対象バージョンを追加して pnpm install 後に再確認
    ```
-5. 実装を開始する
-6. 実装後は `AGENTS.md` の検証ゲートを実行する
+6. 実装を開始する
+7. 実装後は `AGENTS.md` の検証ゲートを実行する
 
 `pnpm git` の基本実行（`-y` で確認プロンプトをスキップ）。**初回コミット前に必ず `pnpm version:minor` を実行する。** ただし、同一 PR 内の追加修正コミット（CodeRabbit 指摘対応など）では実行しない。
 
@@ -93,7 +113,7 @@ pnpm git -y "<issue-title> #<issue-number>"
 > 日本語で書かれている場合は英語に変換する。すでに英語で書かれている場合でも、文法・明確さ・簡潔さの観点で改善できるなら書き換えて良い（AI ツールは実装前にタイトル品質を判断する）。
 > いずれの場合も `gh issue edit <number> --title "<english-title>"` で GitHub Issue タイトルを合わせて更新する。
 
-## Step 4: PR結果確認 + 完了通知（別スクリプト）
+## Step 5: PR結果確認 + 完了通知（別スクリプト）
 
 `pnpm git` の後に、別スクリプト `pnpm git:followup` を実行する。
 

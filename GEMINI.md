@@ -107,6 +107,13 @@ If you changed **only** docs or config that does not affect tests, still run lin
 
 ### Shorthand Commands
 
+#### `kickoff` — Planning phase only (plan → Issue → Telegram notify → stop)
+
+- `kickoff #<N>`: Read existing Issue #N → analyze requirements → post the plan to the Issue (if body is blank, use `gh issue edit <N> --body "<plan>"`; otherwise `gh issue comment <N> --body "<plan>"`) → send Telegram notification → **stop** (do not implement). Plan comments MUST be in English. Telegram notification: `pnpm telegram:test --message "📋 Planning: <title>\n- <bullet1>\n- <bullet2>\n..." --issue-url "<issue-url>"`. Include line breaks between bullets for readability.
+- `kickoff new` or `kickoff new "<title>"`: No Issue exists yet. Steps: (1) Derive an English title from the conversation, or use the provided title. (2) Create Issue. (3) Post the plan in English. (4) Send Telegram notification. (5) **Stop**.
+
+#### `fullrun` — Full execution (plan → implement → PR → completion notify)
+
 - `fullrun #<N>`: Post the agreed plan to Issue #N (if the Issue body is blank, use `gh issue edit <N> --body "<plan>"` to fill the body; otherwise use `gh issue comment <N> --body "<plan>"`) → implement → `pnpm version:minor` → `pnpm git -y` → `pnpm git:followup` (full run from Step 3 onward in `prompts/collaboration-workflow.md`). Issue plan comments MUST be written in English. When running `pnpm git:followup`, compose an implementation summary in English and pass it via `--notify-message`. Format: `"<title>\n- <change1>\n- <change2>\n..."` (one bullet per meaningful change — what was added, changed, or fixed).
 
 ## MCP Tools (Svelte)
