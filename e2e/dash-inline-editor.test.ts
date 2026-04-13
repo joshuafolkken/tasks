@@ -538,4 +538,40 @@ test.describe('/ja/dash inline editor labels, arrows, and sustained focus', () =
 			expect(is_wrapper_in_dom_at_fetch).toBe(true)
 		})
 	})
+
+	// Regression #214: slide-in transition measured height before effects (textarea auto-resize)
+	// settled, causing the row to overshoot and snap smaller after the animation ended.
+	test('Edit row height is stable after slide-in transition completes', async ({ page }) => {
+		const run_id = `E2E_SLH_${String(Date.now())}`
+		const TRANSITION_SETTLE_MS = 300
+		const POST_SETTLE_MS = 150
+		const MAX_HEIGHT_DRIFT_PX = 1
+
+		await playwright_dash_ux.run_authed(page, async () => {
+			await playwright_dash_ux.save_new_task(page, run_id)
+			await page.getByRole('button', { name: run_id }).click()
+			await expect(page.getByTestId(tid.inline_title)).toBeVisible({
+				timeout: RELOAD_STABLE_TIMEOUT_MS,
+			})
+
+			// Wait for transition to fully complete
+			await page.waitForTimeout(TRANSITION_SETTLE_MS)
+			const row_locator = page
+				.getByTestId(tid.task_row)
+				.filter({ has: page.getByTestId(tid.inline_title) })
+			const height_after_transition = await row_locator.evaluate(
+				(element) => element.getBoundingClientRect().height,
+			)
+
+			// Wait a bit more and measure again — height must not drift
+			await page.waitForTimeout(POST_SETTLE_MS)
+			const height_settled = await row_locator.evaluate(
+				(element) => element.getBoundingClientRect().height,
+			)
+
+			expect(Math.abs(height_after_transition - height_settled)).toBeLessThanOrEqual(
+				MAX_HEIGHT_DRIFT_PX,
+			)
+		}, [run_id])
+	})
 })

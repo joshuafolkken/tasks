@@ -101,7 +101,7 @@
 	data-testid="dash-inline-editor-slide-wrapper"
 	transition:slide|global={{ duration: 200, axis: 'y' }}
 >
-	<div class="-m-1 overflow-hidden p-1">
+	<div class="-mx-1 overflow-hidden px-1 py-1">
 		<form
 			bind:this={state.form_element}
 			method="POST"

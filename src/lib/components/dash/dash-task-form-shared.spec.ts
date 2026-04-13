@@ -273,3 +273,41 @@ describe('is_inline_form_dirty / labels and schedule', () => {
 		expect(dash_task_form_shared.is_inline_form_dirty(form, task)).toBe(false)
 	})
 })
+
+const MOCK_SCROLL_HEIGHT = 36
+const MOCK_BORDER_HEIGHT = 2
+
+function make_textarea_mock(scroll_height: number, border: number): HTMLTextAreaElement {
+	return {
+		scrollHeight: scroll_height,
+		offsetHeight: scroll_height + border,
+		clientHeight: scroll_height,
+		style: { height: '' },
+	} as unknown as HTMLTextAreaElement
+}
+
+describe('sync_textarea_height', () => {
+	it('adds border width to scrollHeight so border-box height is correct', () => {
+		const textarea = make_textarea_mock(MOCK_SCROLL_HEIGHT, MOCK_BORDER_HEIGHT)
+
+		dash_task_form_shared.sync_textarea_height(textarea)
+
+		expect(textarea.style.height).toBe(`${String(MOCK_SCROLL_HEIGHT + MOCK_BORDER_HEIGHT)}px`)
+	})
+
+	it('applies minimum height when scrollHeight plus border is below threshold', () => {
+		const small_scroll = 10
+		const textarea = make_textarea_mock(small_scroll, MOCK_BORDER_HEIGHT)
+
+		dash_task_form_shared.sync_textarea_height(textarea)
+
+		expect(textarea.style.height).toBe('36px')
+	})
+
+	it('does nothing when element is undefined', () => {
+		expect(() => {
+			// eslint-disable-next-line unicorn/no-useless-undefined -- explicit undefined to verify guard clause
+			dash_task_form_shared.sync_textarea_height(undefined)
+		}).not.toThrow()
+	})
+})
