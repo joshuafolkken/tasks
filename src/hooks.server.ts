@@ -3,6 +3,8 @@ import { sequence } from '@sveltejs/kit/hooks'
 import { building } from '$app/environment'
 import { paraglideMiddleware } from '$lib/paraglide/server'
 import { auth } from '$lib/server/auth'
+import { rate_limiter } from '$lib/server/rate-limiter'
+import { security_headers } from '$lib/server/security-headers'
 import { svelteKitHandler } from 'better-auth/svelte-kit'
 
 type AuthSessionPayload = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>
@@ -38,4 +40,9 @@ const handle_better_auth: Handle = async ({ event, resolve }) => {
 }
 
 // eslint-disable-next-line no-restricted-syntax
-export const handle: Handle = sequence(handle_better_auth, handle_paraglide)
+export const handle: Handle = sequence(
+	security_headers.handle_security_headers,
+	rate_limiter.handle_rate_limit,
+	handle_better_auth,
+	handle_paraglide,
+)
