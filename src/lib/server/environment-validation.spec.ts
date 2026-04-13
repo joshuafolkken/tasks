@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { environment_validation } from './environment-validation'
 
 const VALID_ENVIRONMENT = {
@@ -47,5 +47,28 @@ describe('environment_validation.is_valid_worker_environment', () => {
 
 	it('returns false for incomplete environment', () => {
 		expect(environment_validation.is_valid_worker_environment({})).toBe(false)
+	})
+})
+
+describe('environment_validation.warn_if_invalid', () => {
+	it('does not warn for valid environment', () => {
+		// eslint-disable-next-line @typescript-eslint/no-empty-function -- suppress console output
+		const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+		environment_validation.warn_if_invalid(VALID_ENVIRONMENT)
+
+		expect(spy).not.toHaveBeenCalled()
+		spy.mockRestore()
+	})
+
+	it('warns for each missing field without throwing', () => {
+		// eslint-disable-next-line @typescript-eslint/no-empty-function -- suppress console output
+		const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+		expect(() => {
+			environment_validation.warn_if_invalid({})
+		}).not.toThrow()
+		expect(spy).toHaveBeenCalled()
+		spy.mockRestore()
 	})
 })

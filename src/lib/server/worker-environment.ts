@@ -46,7 +46,7 @@ async function load_worker_environment(): Promise<Env> {
 const environment = await load_worker_environment()
 
 if (!building && !is_vitest_run()) {
-	environment_validation.validate_worker_environment(environment)
+	environment_validation.warn_if_invalid(environment)
 }
 
 export const worker_environment = { environment }

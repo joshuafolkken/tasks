@@ -26,9 +26,21 @@ function is_valid_worker_environment(environment: object): boolean {
 	return worker_environment_schema.safeParse(environment).success
 }
 
+/** Log missing env vars as warnings without crashing the server. */
+function warn_if_invalid(environment: object): void {
+	const result = worker_environment_schema.safeParse(environment)
+	if (result.success) return
+
+	for (const issue of result.error.issues) {
+		// eslint-disable-next-line no-console -- intentional startup diagnostic
+		console.warn(`[env] ${issue.message} (path: ${issue.path.join('.')})`)
+	}
+}
+
 const environment_validation = {
 	validate_worker_environment,
 	is_valid_worker_environment,
+	warn_if_invalid,
 	worker_environment_schema,
 }
 
