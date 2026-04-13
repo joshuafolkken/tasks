@@ -1,5 +1,7 @@
 import type { Handle } from '@sveltejs/kit'
 
+// CSP intentionally omitted: SvelteKit inline scripts require nonce-based CSP
+// which needs kit.csp configuration. Planned as a separate follow-up.
 const SECURITY_HEADERS: ReadonlyArray<readonly [string, string]> = [
 	['X-Frame-Options', 'DENY'],
 	['X-Content-Type-Options', 'nosniff'],

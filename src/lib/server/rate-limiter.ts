@@ -18,9 +18,13 @@ interface RateLimitEntry {
 const rate_limit_store = new Map<string, RateLimitEntry>()
 
 function get_client_ip(request: Request): string {
-	return (
-		request.headers.get('cf-connecting-ip') ?? request.headers.get('x-forwarded-for') ?? '0.0.0.0'
-	)
+	const cf_ip = request.headers.get('cf-connecting-ip')
+	if (cf_ip) return cf_ip
+
+	const forwarded = request.headers.get('x-forwarded-for')
+	if (forwarded) return forwarded.split(',')[0].trim()
+
+	return '0.0.0.0'
 }
 
 function is_rate_limited_path(pathname: string): boolean {

@@ -101,6 +101,14 @@ describe('rate_limiter.get_client_ip', () => {
 		expect(rate_limiter.get_client_ip(request)).toBe(FORWARDED_IP)
 	})
 
+	it('extracts the first IP from a comma-separated x-forwarded-for', () => {
+		const request = new Request(TEST_URL, {
+			headers: { 'x-forwarded-for': `${FORWARDED_IP}, 203.0.113.50, 70.41.3.18` },
+		})
+
+		expect(rate_limiter.get_client_ip(request)).toBe(FORWARDED_IP)
+	})
+
 	it('falls back to 0.0.0.0 when no IP headers present', () => {
 		const request = new Request(TEST_URL)
 
