@@ -61,26 +61,14 @@ function handle_overrides_change(snapshot: Record<string, string>): void {
 	console.info('\n✔ Overrides restored from snapshot. Please review before proceeding.')
 }
 
-function filter_update_targets(overrides: Record<string, string>): Array<string> {
-	const capped = overrides_check.extract_capped_package_names(overrides)
-	const all_names = overrides_check.read_dep_names(read_package_json())
-	const capped_set = new Set(capped)
-
-	console.info(`\n⏭ Skipping capped-override packages: ${capped.join(', ')}`)
-
-	return all_names.filter((name) => !capped_set.has(name))
-}
-
 function build_update_command(overrides: Record<string, string>): string | undefined {
 	const capped = overrides_check.extract_capped_package_names(overrides)
 
-	if (capped.length === 0) return 'pnpm update --latest'
+	if (capped.length > 0) {
+		console.info(`\n⏭ Skipping capped-override packages: ${capped.join(', ')}`)
+	}
 
-	const targets = filter_update_targets(overrides)
-
-	if (targets.length === 0) return undefined
-
-	return `pnpm update --latest ${targets.join(' ')}`
+	return overrides_check.build_update_command(overrides, read_package_json())
 }
 
 // Step 1: switch to main and pull
