@@ -22,7 +22,7 @@ function get_client_ip(request: Request): string {
 	if (cf_ip) return cf_ip
 
 	const forwarded = request.headers.get('x-forwarded-for')
-	if (forwarded) return forwarded.split(',')[0].trim()
+	if (forwarded) return forwarded.split(',').at(0)?.trim() ?? forwarded.trim()
 
 	return '0.0.0.0'
 }
